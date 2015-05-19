@@ -6,13 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Unosquare.Labs.SshDeploy
+namespace Unosquare.Labs.SshDeploy.Options
 {
     public class CliOptions
     {
         public const string PushVerb = "push";
         public const string RunVerb = "run";
         public const string ShellVerb = "shell";
+        public const string MonitorVerb = "monitor";
 
         [HelpVerbOption]
         public string GetUsage(string verb)
@@ -28,5 +29,6 @@ namespace Unosquare.Labs.SshDeploy
 
         [VerbOption(ShellVerb, HelpText = "Opens an interactive mode shell.")]
         public ShellVerbOptions ShellVerbOptions { get; set; }
+
     }
 }

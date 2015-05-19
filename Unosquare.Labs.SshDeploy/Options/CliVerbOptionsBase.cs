@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Unosquare.Labs.SshDeploy
+namespace Unosquare.Labs.SshDeploy.Options
 {
     public abstract class CliVerbOptionsBase
     {

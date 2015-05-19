@@ -63,15 +63,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CliOptions.cs" />
-    <Compile Include="CliVerbOptionsBase.cs" />
+    <Compile Include="FileSystemMonitor.cs" />
+    <Compile Include="Options\CliOptions.cs" />
+    <Compile Include="Options\CliVerbOptionsBase.cs" />
     <Compile Include="ConsoleManager.cs" />
     <Compile Include="DeploymentManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PushVerbOptions.cs" />
-    <Compile Include="RunVerbOptions.cs" />
-    <Compile Include="ShellVerbOptions.cs" />
+    <Compile Include="Options\PushVerbOptions.cs" />
+    <Compile Include="Options\RunVerbOptions.cs" />
+    <Compile Include="Options\ShellVerbOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

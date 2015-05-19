@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Unosquare.Labs.SshDeploy
+namespace Unosquare.Labs.SshDeploy.Options
 {
     public class PushVerbOptions
         : CliVerbOptionsBase
@@ -15,5 +15,11 @@ namespace Unosquare.Labs.SshDeploy
 
         [Option('t', "target", HelpText = "The target path of the files to transfer", Required = true)]
         public string TargetPath { get; set; }
+
+        [Option("pre", HelpText = "Command to execute prior file transfer to target", Required = false)]
+        public string PreCommand { get; set; }
+
+        [Option("post", HelpText = "Command to execute after file transfer to target", Required = false)]
+        public string PostCommand { get; set; }
     }
 }

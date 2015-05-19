@@ -7,15 +7,30 @@ using CommandLine;
 using CommandLine.Text;
 using Renci.SshNet;
 using Renci.SshNet.Common;
+using System.Threading;
+using Unosquare.Labs.SshDeploy.Options;
 
 namespace Unosquare.Labs.SshDeploy
 {
     class Program
     {
-
+        private static readonly string MutexName = string.Format("Global\\{0}", typeof(Program).Namespace);
+        static private Mutex AppMutex = null;
 
         static void Main(string[] args)
         {
+            #region Handle Single Instance Application
+            
+            bool isNewMutex;
+            AppMutex = new Mutex(true, MutexName, out isNewMutex);
+            if (isNewMutex == false)
+            {
+                AppMutex = null;
+                Environment.ExitCode = CommandLine.Parser.DefaultExitCodeFail;
+                return;
+            }
+
+            #endregion
 
             var invokedVerbName = string.Empty;
             CliVerbOptionsBase invokedVerbOptions = null;
@@ -34,7 +49,6 @@ namespace Unosquare.Labs.SshDeploy
                 Environment.ExitCode = CommandLine.Parser.DefaultExitCodeFail;
                 return;
             }
-
 
             try
             {
