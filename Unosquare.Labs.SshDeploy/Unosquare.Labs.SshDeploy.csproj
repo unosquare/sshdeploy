@@ -68,6 +68,7 @@
     <Compile Include="Options\CliVerbOptionsBase.cs" />
     <Compile Include="ConsoleManager.cs" />
     <Compile Include="DeploymentManager.cs" />
+    <Compile Include="Options\MonitorVerbOptions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Options\PushVerbOptions.cs" />
@@ -96,6 +97,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>echo %25DATE%25 %25TIME%25 &gt;&gt; "$(TargetDir)sshdeploy.ready"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

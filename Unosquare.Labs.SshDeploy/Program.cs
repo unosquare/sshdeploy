@@ -20,7 +20,7 @@ namespace Unosquare.Labs.SshDeploy
         static void Main(string[] args)
         {
             #region Handle Single Instance Application
-            
+
             bool isNewMutex;
             AppMutex = new Mutex(true, MutexName, out isNewMutex);
             if (isNewMutex == false)
@@ -32,6 +32,9 @@ namespace Unosquare.Labs.SshDeploy
 
             #endregion
 
+            Console.WriteLine("SSH Deployment Tool [Version " + typeof(Unosquare.Labs.SshDeploy.Program).Assembly.GetName().Version.ToString() + "]");
+            Console.WriteLine("(c) 2015 Unosquare SA de CV. All Rights Reserved.");
+
             var invokedVerbName = string.Empty;
             CliVerbOptionsBase invokedVerbOptions = null;
             var options = new CliOptions();
@@ -41,7 +44,8 @@ namespace Unosquare.Labs.SshDeploy
                 invokedVerbName = verb;
                 invokedVerbOptions = verbOptions as CliVerbOptionsBase;
 
-                ConsoleManager.Verbose = invokedVerbOptions.Verbose;
+                if (invokedVerbOptions != null)
+                    ConsoleManager.Verbose = invokedVerbOptions.Verbose;
             });
 
             if (parseResult == false)
@@ -56,17 +60,23 @@ namespace Unosquare.Labs.SshDeploy
                 switch (invokedVerbName)
                 {
                     case CliOptions.RunVerb:
-                    {
-                        var verbOptions = invokedVerbOptions as RunVerbOptions;
-                        DeploymentManager.ExecuteRunVerb(verbOptions);
-                        break;
-                    }
+                        {
+                            var verbOptions = invokedVerbOptions as RunVerbOptions;
+                            DeploymentManager.ExecuteRunVerb(verbOptions);
+                            break;
+                        }
                     case CliOptions.ShellVerb:
-                    {
-                        var verbOptions = invokedVerbOptions as ShellVerbOptions;
-                        DeploymentManager.ExecuteShellVerb(verbOptions);
-                        break;
-                    }
+                        {
+                            var verbOptions = invokedVerbOptions as ShellVerbOptions;
+                            DeploymentManager.ExecuteShellVerb(verbOptions);
+                            break;
+                        }
+                    case CliOptions.MonitorVerb:
+                        {
+                            var verbOptions = invokedVerbOptions as MonitorVerbOptions;
+                            DeploymentManager.ExecuteMonitorVerb(verbOptions);
+                            break;
+                        }
                 }
             }
             catch (Exception ex)

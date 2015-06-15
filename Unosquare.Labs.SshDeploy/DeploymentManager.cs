@@ -2,6 +2,7 @@
 using Renci.SshNet.Common;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -260,6 +261,229 @@ namespace Unosquare.Labs.SshDeploy
                 }
 
                 sshClient.Disconnect();
+            }
+        }
+
+        private static void DeleteDirectoryRecursive(SftpClient client, string path)
+        {
+            var files = client.ListDirectory(path);
+            foreach (var file in files)
+            {
+                if (file.Name.Equals(".") || file.Name.Equals(".."))
+                    continue;
+
+                if (file.IsDirectory)
+                {
+                    DeleteDirectoryRecursive(client, file.FullName);
+                }
+
+                try
+                {
+                    client.Delete(file.FullName);
+                }
+                catch
+                {
+                    ConsoleManager.ErrorWriteLine("WARNING: Failed to delete file or folder '" + file.FullName + "'");
+                }
+            }
+        }
+
+        private static void CreateDirectoryRecursive(SftpClient client, string path)
+        {
+
+            if (path.StartsWith("/") == false)
+                throw new ArgumentException("Argument path must start with '/'");
+
+            if (client.Exists(path))
+            {
+                var info = client.GetAttributes(path);
+                if (info.IsDirectory)
+                    return;
+            }
+            var pathParts = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            pathParts = pathParts.Skip(0).Take(pathParts.Length - 1).ToArray();
+            var priorPath = "/" + string.Join("/", pathParts);
+
+            if (pathParts.Length > 1)
+                CreateDirectoryRecursive(client, priorPath);
+
+            client.CreateDirectory(path);
+
+        }
+
+        private static string MakeRelativePath(string filePath, string referencePath)
+        {
+            var fileUri = new Uri(filePath);
+            var referenceUri = new Uri(referencePath);
+            return referenceUri.MakeRelativeUri(fileUri).ToString();
+        }
+
+        private static string MakeAbsolutePath(string filePath, string referencePath)
+        {
+            var referenceUri = new Uri(referencePath, UriKind.Relative);
+            var fileUri = new Uri(referenceUri, filePath);
+            return fileUri.ToString();
+        }
+
+        internal static void ExecuteMonitorVerb(MonitorVerbOptions verbOptions)
+        {
+            var sourcePath = System.IO.Path.GetFullPath(verbOptions.SourcePath.Trim());
+            var targetPath = verbOptions.TargetPath.Trim();
+            var monitorFile = System.IO.Path.IsPathRooted(verbOptions.MonitorFile) ? System.IO.Path.GetFullPath(verbOptions.MonitorFile) : System.IO.Path.Combine(sourcePath, verbOptions.MonitorFile);
+            ConsoleManager.WriteLine(string.Empty);
+            ConsoleManager.WriteLine("Monitor mode starting");
+            ConsoleManager.WriteLine("Monitor parameters follow: ");
+            ConsoleManager.WriteLine("    Monitor File    " + monitorFile, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Source Path     " + sourcePath, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Excluded Files  " + verbOptions.ExcludeFileSuffixes, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Target Address  " + verbOptions.Host + ":" + verbOptions.Port.ToString(), ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Username        " + verbOptions.Username, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Target Path     " + targetPath, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Clean Target    " + (verbOptions.CleanTarget ? "YES" : "NO"), ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Pre Deployment  " + verbOptions.PreCommand, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Post Deployment " + verbOptions.PostCommand, ConsoleColor.DarkYellow);
+
+            
+
+           
+
+            if (System.IO.Directory.Exists(sourcePath) == false)
+                throw new DirectoryNotFoundException("Source Path '" + sourcePath + "' was not found.");
+
+            var fsMonitor = new FileSystemMonitor(1, sourcePath);
+            var isDeploying = false;
+            var deploymentNumber = 1;
+            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port, verbOptions.Username, verbOptions.Password);
+            var ignoreFileSuffixes = string.IsNullOrWhiteSpace(verbOptions.ExcludeFileSuffixes) ?
+                new string[] { } : verbOptions.ExcludeFileSuffixes.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+            using (var sftpClient = new Renci.SshNet.SftpClient(simpleConnectionInfo))
+            {
+                ConsoleManager.WriteLine("Connecting to host " + verbOptions.Host + ":" + verbOptions.Port + " via SFTP.");
+                sftpClient.Connect();
+
+                fsMonitor.FileSystemEntryChanged += (s, e) =>
+                {
+                    if (e.ChangeType != FileSystemEntryChangeType.FileAdded && e.ChangeType != FileSystemEntryChangeType.FileModified)
+                        return;
+
+                    if (e.Path.ToLowerInvariant().Equals(monitorFile.ToLowerInvariant()) == false)
+                        return;
+
+                    ConsoleManager.WriteLine(string.Empty);
+
+                    if (isDeploying)
+                    {
+                        ConsoleManager.WriteLine("WARNING: Deployment already in progress. Deployment will not occur.", ConsoleColor.DarkYellow);
+                        return;
+                    }
+
+                    isDeploying = true;
+                    var stopwatch = new System.Diagnostics.Stopwatch();
+                    stopwatch.Start();
+
+                    try
+                    {
+                        ConsoleManager.WriteLine("    Starting deployment ID " + deploymentNumber + " - "
+                            + DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString(), ConsoleColor.Green);
+                        deploymentNumber++;
+
+                        if (sftpClient.IsConnected == false)
+                        {
+                            ConsoleManager.WriteLine("Reconnecting to host " + verbOptions.Host + ":" + verbOptions.Port + " via SFTP.");
+                            sftpClient.Connect();
+                        }
+
+                        if (sftpClient.Exists(targetPath) == false)
+                        {
+                            ConsoleManager.WriteLine("    Target Path '" + targetPath + "' does not exist. -- Will attempt to create.", ConsoleColor.Green);
+                            CreateDirectoryRecursive(sftpClient, targetPath);
+                            ConsoleManager.WriteLine("    Target Path '" + targetPath + "' created successfully.", ConsoleColor.Green);
+                        }
+
+                        if (verbOptions.CleanTarget)
+                        {
+                            ConsoleManager.WriteLine("    Cleaning Target Path '" + targetPath + "'", ConsoleColor.Green);
+                            DeleteDirectoryRecursive(sftpClient, targetPath);
+                        }
+
+                        var filesInSource = System.IO.Directory.GetFiles(sourcePath, FileSystemMonitor.AllFilesPattern, System.IO.SearchOption.AllDirectories);
+                        var filesToDeploy = new List<string>();
+
+                        foreach (var file in filesInSource)
+                        {
+                            var ignore = false;
+
+                            foreach (var ignoreSuffix in ignoreFileSuffixes)
+                            {
+                                if (file.EndsWith(ignoreSuffix))
+                                {
+                                    ignore = true;
+                                    break;
+                                }
+                            }
+
+                            if (ignore) continue;
+                            filesToDeploy.Add(file);
+                        }
+
+                        ConsoleManager.WriteLine("    Deploying " + filesToDeploy.Count + " files.", ConsoleColor.Green);
+                        foreach (var file in filesToDeploy)
+                        {
+                            var relativePath = MakeRelativePath(file, sourcePath + Path.DirectorySeparatorChar);
+                            var fileTargetPath = Path.Combine(targetPath, relativePath).Replace(Path.DirectorySeparatorChar, '/');
+                            var targetDirectory = Path.GetDirectoryName(fileTargetPath).Replace(Path.DirectorySeparatorChar, '/');
+
+                            CreateDirectoryRecursive(sftpClient, targetDirectory);
+
+                            using (var fileStream = System.IO.File.OpenRead(file))
+                            {
+                                sftpClient.UploadFile(fileStream, fileTargetPath);
+                            }
+
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        ConsoleManager.ErrorWriteLine("Deployment failed.");
+                        ConsoleManager.ErrorWriteLine("    Error - " + ex.GetType().Name);
+                        ConsoleManager.ErrorWriteLine("    " + ex.Message);
+                        ConsoleManager.ErrorWriteLine("    " + ex.StackTrace);
+                    }
+                    finally
+                    {
+
+                        isDeploying = false;
+                        stopwatch.Stop();
+                        ConsoleManager.WriteLine("    Finished deployment in " + Math.Round(stopwatch.Elapsed.TotalSeconds, 2).ToString() + " seconds.", ConsoleColor.Green);
+                    }
+
+                };
+
+                fsMonitor.Start();
+                ConsoleManager.WriteLine("File System Monitor is now running.");
+                ConsoleManager.WriteLine("Writing a new monitor file will trigger a new deployment.");
+                ConsoleManager.WriteLine("Remember: Press Q to quit.");
+                ConsoleManager.WriteLine("Ground Control to Major Tom: Have a nice trip in space!", ConsoleColor.DarkCyan);
+
+                while (true)
+                {
+                    if (Console.ReadKey(true).Key == ConsoleKey.Q)
+                        break;
+                }
+
+                ConsoleManager.WriteLine(string.Empty);
+
+                fsMonitor.Stop();
+                ConsoleManager.WriteLine("File System monitor was stopped.");
+
+                if (sftpClient.IsConnected == true)
+                    sftpClient.Disconnect();
+
+                ConsoleManager.WriteLine("SFTP client disconnected.");
+                ConsoleManager.WriteLine("Application will exit now.");
             }
         }
     }

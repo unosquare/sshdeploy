@@ -92,7 +92,7 @@ namespace Unosquare.Labs.SshDeploy
     /// </summary>
     public class FileSystemMonitor
     {
-        private const string AllFilesPattern = "*.*";
+        public const string AllFilesPattern = "*.*";
         private readonly FileSystemEntryDictionary Entries = new FileSystemEntryDictionary();
         private BackgroundWorker Worker = null;
         public delegate void FileSystemEntryChangedHandler(object sender, FileSystemEntryChangedEventArgs e);
@@ -171,7 +171,7 @@ namespace Unosquare.Labs.SshDeploy
         /// <param name="e">The <see cref="DoWorkEventArgs" /> instance containing the event data.</param>
         protected void DoWork(object sender, DoWorkEventArgs e)
         {
-            const int minimumInterval = 2;
+            const int minimumInterval = 1;
             const int maximumInterval = 60;
 
             // validate argumets
