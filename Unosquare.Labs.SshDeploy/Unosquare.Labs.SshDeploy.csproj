@@ -63,6 +63,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeploymentManager.Monitor.cs" />
+    <Compile Include="DeploymentManager.Shell.cs" />
     <Compile Include="FileSystemMonitor.cs" />
     <Compile Include="Options\CliOptions.cs" />
     <Compile Include="Options\CliVerbOptionsBase.cs" />
