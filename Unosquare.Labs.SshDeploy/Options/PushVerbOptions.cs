@@ -27,5 +27,17 @@ namespace Unosquare.Labs.SshDeploy.Options
 
         [Option("exclude", DefaultValue = ".ready|.vshost.exe|.vshost.exe.config", HelpText = "a pipe (|) separated list of file suffixes to ignore while deploying.", Required = false)]
         public string ExcludeFileSuffixes { get; set; }
+
+        public string[] ExcludeFileSuffixList
+        {
+            get
+            {
+                var ignoreFileSuffixes = string.IsNullOrWhiteSpace(ExcludeFileSuffixes) ?
+                    new string[] { } :
+                    ExcludeFileSuffixes.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+                return ignoreFileSuffixes;
+            }
+        }
     }
 }

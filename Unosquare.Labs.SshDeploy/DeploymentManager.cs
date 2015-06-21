@@ -98,7 +98,7 @@ namespace Unosquare.Labs.SshDeploy
                     case "31": Console.ForegroundColor = ConsoleColor.Red; break;
                     case "32": Console.ForegroundColor = ConsoleColor.Green; break;
                     case "33": Console.ForegroundColor = ConsoleColor.Yellow; break;
-                    case "34": Console.ForegroundColor = ConsoleColor.Blue; break;
+                    case "34": Console.ForegroundColor = ConsoleColor.Cyan; break;
                     case "35": Console.ForegroundColor = ConsoleColor.Magenta; break;
                     case "36": Console.ForegroundColor = ConsoleColor.Cyan; break;
                     case "37": Console.ForegroundColor = ConsoleColor.Gray; break;
@@ -110,7 +110,7 @@ namespace Unosquare.Labs.SshDeploy
                     case "41": Console.BackgroundColor = ConsoleColor.Red; break;
                     case "42": Console.BackgroundColor = ConsoleColor.Green; break;
                     case "43": Console.BackgroundColor = ConsoleColor.Yellow; break;
-                    case "44": Console.BackgroundColor = ConsoleColor.Blue; break;
+                    case "44": Console.BackgroundColor = ConsoleColor.DarkBlue; break;
                     case "45": Console.BackgroundColor = ConsoleColor.Magenta; break;
                     case "46": Console.BackgroundColor = ConsoleColor.Cyan; break;
                     case "47": Console.BackgroundColor = ConsoleColor.Gray; break;

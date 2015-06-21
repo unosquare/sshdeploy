@@ -10,6 +10,15 @@
 
     partial class DeploymentManager
     {
+        #region State Variables
+
+        private static bool ForwardShellStreamOutput = false;
+        private static bool ForwardShellStreamInput = false;
+        private static bool IsDeploying = false;
+        private static int DeploymentNumber = 0;
+
+        #endregion
+
         #region Supporting Methods
 
         /// <summary>
@@ -89,8 +98,9 @@
         /// </summary>
         /// <param name="sshClient">The SSH client.</param>
         /// <param name="commandText">The command text.</param>
-        private static void RunDeploymentCommand(ShellStream shellStream, string commandText)
+        private static void RunShellStreamCommand(ShellStream shellStream, MonitorVerbOptions verbOptions)
         {
+            var commandText = verbOptions.PostCommand;
             if (string.IsNullOrWhiteSpace(commandText) == true) return;
 
             ConsoleManager.WriteLine("    Executing shell command.", ConsoleColor.Green);
@@ -104,8 +114,9 @@
         /// </summary>
         /// <param name="sshClient">The SSH client.</param>
         /// <param name="commandText">The command text.</param>
-        private static void RunDeploymentCommand(SshClient sshClient, string commandText)
+        private static void RunSshClientCommand(SshClient sshClient, MonitorVerbOptions verbOptions)
         {
+            var commandText = verbOptions.PreCommand;
             if (string.IsNullOrWhiteSpace(commandText) == true) return;
 
             ConsoleManager.WriteLine("    Executing SSH client command.", ConsoleColor.Green);
@@ -121,17 +132,17 @@
         /// <param name="monitorFile">The monitor file.</param>
         /// <param name="sourcePath">The source path.</param>
         /// <param name="targetPath">The target path.</param>
-        private static void PrintMonitorOptions(MonitorVerbOptions verbOptions, string monitorFile, string sourcePath, string targetPath)
+        private static void PrintMonitorOptions(MonitorVerbOptions verbOptions)
         {
             ConsoleManager.WriteLine(string.Empty);
             ConsoleManager.WriteLine("Monitor mode starting");
             ConsoleManager.WriteLine("Monitor parameters follow: ");
-            ConsoleManager.WriteLine("    Monitor File    " + monitorFile, ConsoleColor.DarkYellow);
-            ConsoleManager.WriteLine("    Source Path     " + sourcePath, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Monitor File    " + verbOptions.MonitorFile, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Source Path     " + verbOptions.SourcePath, ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Excluded Files  " + verbOptions.ExcludeFileSuffixes, ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Target Address  " + verbOptions.Host + ":" + verbOptions.Port.ToString(), ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Username        " + verbOptions.Username, ConsoleColor.DarkYellow);
-            ConsoleManager.WriteLine("    Target Path     " + targetPath, ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Target Path     " + verbOptions.TargetPath, ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Clean Target    " + (verbOptions.CleanTarget ? "YES" : "NO"), ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Pre Deployment  " + verbOptions.PreCommand, ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Post Deployment " + verbOptions.PostCommand, ConsoleColor.DarkYellow);
@@ -163,13 +174,13 @@
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="targetPath">The target path.</param>
-        private static void CreateTargetPath(SftpClient sftpClient, string targetPath)
+        private static void CreateTargetPath(SftpClient sftpClient, MonitorVerbOptions verbOptions)
         {
-            if (sftpClient.Exists(targetPath) == true) return;
+            if (sftpClient.Exists(verbOptions.TargetPath) == true) return;
 
-            ConsoleManager.WriteLine("    Target Path '" + targetPath + "' does not exist. -- Will attempt to create.", ConsoleColor.Green);
-            CreateLinuxDirectoryRecursive(sftpClient, targetPath);
-            ConsoleManager.WriteLine("    Target Path '" + targetPath + "' created successfully.", ConsoleColor.Green);
+            ConsoleManager.WriteLine("    Target Path '" + verbOptions.TargetPath + "' does not exist. -- Will attempt to create.", ConsoleColor.Green);
+            CreateLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
+            ConsoleManager.WriteLine("    Target Path '" + verbOptions.TargetPath + "' created successfully.", ConsoleColor.Green);
 
         }
 
@@ -179,11 +190,11 @@
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="targetPath">The target path.</param>
         /// <param name="cleanTarget">if set to <c>true</c> [clean target].</param>
-        private static void PrepareTargetPath(SftpClient sftpClient, string targetPath, bool cleanTarget)
+        private static void PrepareTargetPath(SftpClient sftpClient, MonitorVerbOptions verbOptions)
         {
-            if (cleanTarget == false) return;
-            ConsoleManager.WriteLine("    Cleaning Target Path '" + targetPath + "'", ConsoleColor.Green);
-            DeleteLinuxDirectoryRecursive(sftpClient, targetPath);
+            if (verbOptions.CleanTarget == false) return;
+            ConsoleManager.WriteLine("    Cleaning Target Path '" + verbOptions.TargetPath + "'", ConsoleColor.Green);
+            DeleteLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
 
         }
 
@@ -194,16 +205,16 @@
         /// <param name="targetPath">The target path.</param>
         /// <param name="sourcePath">The source path.</param>
         /// <param name="ignoreFileSuffixes">The ignore file suffixes.</param>
-        private static void UploadFilesToTarget(SftpClient sftpClient, string targetPath, string sourcePath, string[] ignoreFileSuffixes)
+        private static void UploadFilesToTarget(SftpClient sftpClient, MonitorVerbOptions verbOptions)
         {
-            var filesInSource = System.IO.Directory.GetFiles(sourcePath, FileSystemMonitor.AllFilesPattern, System.IO.SearchOption.AllDirectories);
+            var filesInSource = System.IO.Directory.GetFiles(verbOptions.SourcePath, FileSystemMonitor.AllFilesPattern, System.IO.SearchOption.AllDirectories);
             var filesToDeploy = new List<string>();
 
             foreach (var file in filesInSource)
             {
                 var ignore = false;
 
-                foreach (var ignoreSuffix in ignoreFileSuffixes)
+                foreach (var ignoreSuffix in verbOptions.ExcludeFileSuffixList)
                 {
                     if (file.EndsWith(ignoreSuffix))
                     {
@@ -219,8 +230,8 @@
             ConsoleManager.WriteLine("    Deploying " + filesToDeploy.Count + " files.", ConsoleColor.Green);
             foreach (var file in filesToDeploy)
             {
-                var relativePath = MakeRelativePath(file, sourcePath + Path.DirectorySeparatorChar);
-                var fileTargetPath = Path.Combine(targetPath, relativePath).Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
+                var relativePath = MakeRelativePath(file, verbOptions.SourcePath + Path.DirectorySeparatorChar);
+                var fileTargetPath = Path.Combine(verbOptions.TargetPath, relativePath).Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
                 var targetDirectory = Path.GetDirectoryName(fileTargetPath).Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
 
                 CreateLinuxDirectoryRecursive(sftpClient, targetDirectory);
@@ -280,6 +291,11 @@
                 + DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString(), ConsoleColor.Green);
         }
 
+        /// <summary>
+        /// Creates the shell stream for interactive mode.
+        /// </summary>
+        /// <param name="sshClient">The SSH client.</param>
+        /// <returns></returns>
         private static ShellStream CreateShellStream(SshClient sshClient)
         {
             var terminalModes = new Dictionary<TerminalModes, uint>();
@@ -323,14 +339,14 @@
                     {
                         if (rxByte >= 32 || (rxByte >= 8 && rxByte <= 13))
                         {
-                            if (AllowShellStreamPrint)
+                            if (ForwardShellStreamOutput)
                                 Console.Write((char)rxByte);
                         }
                         else
                         {
                             var originalColor = Console.ForegroundColor;
                             Console.ForegroundColor = ConsoleColor.DarkYellow;
-                            if (AllowShellStreamPrint)
+                            if (ForwardShellStreamOutput)
                                 Console.Write("[NPC " + rxByte.ToString() + "]");
                             Console.ForegroundColor = originalColor;
                         }
@@ -396,7 +412,196 @@
 
         }
 
-        private static bool AllowShellStreamPrint = false;
+        /// <summary>
+        /// Creates a new deployment cycle.
+        /// </summary>
+        /// <param name="sshClient">The SSH client.</param>
+        /// <param name="sftpClient">The SFTP client.</param>
+        /// <param name="shellStream">The shell stream.</param>
+        /// <param name="verbOptions">The verb options.</param>
+        private static void CreateNewDeployment(SshClient sshClient, SftpClient sftpClient, ShellStream shellStream, MonitorVerbOptions verbOptions)
+        {
+            // At this point the change has been detected; Make sure we are not deploying
+            ConsoleManager.WriteLine(string.Empty);
+
+            if (IsDeploying)
+            {
+                ConsoleManager.WriteLine("WARNING: Deployment already in progress. Deployment will not occur.", ConsoleColor.DarkYellow);
+                return;
+            }
+
+            // Lock Deployment
+            IsDeploying = true;
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+
+            try
+            {
+                ForwardShellStreamOutput = false;
+                PrintDeploymentNumber(DeploymentNumber);
+                RunSshClientCommand(sshClient, verbOptions);
+                CreateTargetPath(sftpClient, verbOptions);
+                PrepareTargetPath(sftpClient, verbOptions);
+                UploadFilesToTarget(sftpClient, verbOptions);
+            }
+            catch (Exception ex)
+            {
+                PrintException(ex);
+            }
+            finally
+            {
+                // Unlock deployment
+                IsDeploying = false;
+                DeploymentNumber++;
+                stopwatch.Stop();
+                ConsoleManager.WriteLine("    Finished deployment in "
+                    + Math.Round(stopwatch.Elapsed.TotalSeconds, 2).ToString()
+                    + " seconds.", ConsoleColor.Green);
+
+                ForwardShellStreamOutput = true;
+                RunShellStreamCommand(shellStream, verbOptions);
+            }
+        }
+
+        /// <summary>
+        /// Normalizes the monitor verb options.
+        /// </summary>
+        /// <param name="verbOptions">The verb options.</param>
+        private static void NormalizeMonitorVerbOptions(MonitorVerbOptions verbOptions)
+        {
+            var sourcePath = System.IO.Path.GetFullPath(verbOptions.SourcePath.Trim());
+            var targetPath = verbOptions.TargetPath.Trim();
+            var monitorFile = System.IO.Path.IsPathRooted(verbOptions.MonitorFile) ?
+                System.IO.Path.GetFullPath(verbOptions.MonitorFile) :
+                System.IO.Path.Combine(sourcePath, verbOptions.MonitorFile);
+
+            verbOptions.SourcePath = sourcePath;
+            verbOptions.TargetPath = targetPath;
+            verbOptions.MonitorFile = monitorFile;
+        }
+
+        /// <summary>
+        /// Starts the monitor mode.
+        /// </summary>
+        /// <param name="fsMonitor">The fs monitor.</param>
+        /// <param name="sshClient">The SSH client.</param>
+        /// <param name="sftpClient">The SFTP client.</param>
+        /// <param name="shellStream">The shell stream.</param>
+        /// <param name="verbOptions">The verb options.</param>
+        private static void StartMonitorMode(FileSystemMonitor fsMonitor, SshClient sshClient, SftpClient sftpClient, ShellStream shellStream, MonitorVerbOptions verbOptions)
+        {
+            fsMonitor.FileSystemEntryChanged += (s, e) =>
+            {
+                // Detect changes to the monitor file by ignoring deletions and checking file paths.
+                if (e.ChangeType != FileSystemEntryChangeType.FileAdded && e.ChangeType != FileSystemEntryChangeType.FileModified)
+                    return;
+
+                // If the change was not in the monitor file, then ignore it
+                if (e.Path.ToLowerInvariant().Equals(verbOptions.MonitorFile.ToLowerInvariant()) == false)
+                    return;
+
+                // Create a new deployment once
+                CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
+            };
+
+            fsMonitor.Start();
+            ConsoleManager.WriteLine("File System Monitor is now running.");
+            ConsoleManager.WriteLine("Writing a new monitor file will trigger a new deployment.");
+            ConsoleManager.WriteLine("Press H for help!");
+            ConsoleManager.WriteLine("Ground Control to Major Tom: Have a nice trip in space!", ConsoleColor.DarkCyan);
+        }
+
+        /// <summary>
+        /// Starts the user interaction.
+        /// </summary>
+        /// <param name="fsMonitor">The fs monitor.</param>
+        /// <param name="sshClient">The SSH client.</param>
+        /// <param name="sftpClient">The SFTP client.</param>
+        /// <param name="shellStream">The shell stream.</param>
+        /// <param name="verbOptions">The verb options.</param>
+        private static void StartUserInteraction(FileSystemMonitor fsMonitor, SshClient sshClient, SftpClient sftpClient, ShellStream shellStream, MonitorVerbOptions verbOptions)
+        {
+            ForwardShellStreamInput = false;
+
+            while (true)
+            {
+                var readKey = Console.ReadKey(true);
+                
+                if (readKey.Key == ConsoleKey.F1)
+                {
+                    ForwardShellStreamInput = !ForwardShellStreamInput;
+                    if (ForwardShellStreamInput)
+                        ConsoleManager.WriteLine("    >> Entered console input forwarding.", ConsoleColor.Green);
+                    else
+                        ConsoleManager.WriteLine("    >> Left console input forwarding.", ConsoleColor.Red);
+
+                    continue;
+                }
+
+                if (ForwardShellStreamInput)
+                {
+                    if (readKey.Key == ConsoleKey.Enter)
+                    {
+                        shellStream.WriteLine(string.Empty);
+                    }
+                    else
+                    {
+                        shellStream.WriteByte((byte)readKey.KeyChar);
+                    }
+                    
+                    shellStream.Flush();
+                    continue;
+                }
+                
+                if (readKey.Key == ConsoleKey.Q)
+                    break;
+
+                if (readKey.Key == ConsoleKey.C)
+                {
+                    ConsoleManager.Clear();
+                    continue;
+                }
+
+                if (readKey.Key == ConsoleKey.N)
+                {
+                    CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
+                    continue;
+                }
+
+                if (readKey.Key == ConsoleKey.E)
+                {
+                    RunSshClientCommand(sshClient, verbOptions);
+                    continue;
+                }
+
+                if (readKey.Key == ConsoleKey.S)
+                {
+                    RunShellStreamCommand(shellStream, verbOptions);
+                    continue;
+                }
+
+                if (readKey.Key != ConsoleKey.H)
+                {
+                    ConsoleManager.WriteLine("Unrecognized command '" + readKey.KeyChar + "' -- Press 'H' to get a list of available commands.", ConsoleColor.Red);
+                }
+
+                if (readKey.Key == ConsoleKey.H)
+                {
+                    var helpColor = ConsoleColor.Cyan;
+                    ConsoleManager.WriteLine("Console help", helpColor);
+                    ConsoleManager.WriteLine("    H    Prints this screen", helpColor);
+                    ConsoleManager.WriteLine("    Q    Quits this application", helpColor);
+                    ConsoleManager.WriteLine("    C    Clears the screen", helpColor);
+                    ConsoleManager.WriteLine("    N    Force a deployment cycle", helpColor);
+                    ConsoleManager.WriteLine("    E    Run the Pre-deployment command", helpColor);
+                    ConsoleManager.WriteLine("    S    Run the Post-deployment command", helpColor);
+                    ConsoleManager.WriteLine("    F1   Toggle shell-interactive mode", helpColor);
+
+                    ConsoleManager.WriteLine(string.Empty);
+                    continue;
+                }
+            }
+        }
 
         #endregion
 
@@ -409,27 +614,21 @@
         /// <exception cref="DirectoryNotFoundException">Source Path ' + sourcePath + ' was not found.</exception>
         public static void ExecuteMonitorVerb(MonitorVerbOptions verbOptions)
         {
+            // Initialize Variables
+            IsDeploying = false;
+            DeploymentNumber = 1;
 
-            // Working variables
-            var sourcePath = System.IO.Path.GetFullPath(verbOptions.SourcePath.Trim());
-            var targetPath = verbOptions.TargetPath.Trim();
-            var monitorFile = System.IO.Path.IsPathRooted(verbOptions.MonitorFile) ?
-                System.IO.Path.GetFullPath(verbOptions.MonitorFile) :
-                System.IO.Path.Combine(sourcePath, verbOptions.MonitorFile);
-            var fsMonitor = new FileSystemMonitor(1, sourcePath);
-            var isDeploying = false;
-            var deploymentNumber = 1;
+            // Normalize and show the options to the user so he knows what he's doing
+            NormalizeMonitorVerbOptions(verbOptions);
+            PrintMonitorOptions(verbOptions);
+
+            // Create the FS Monitor and connection info
+            var fsMonitor = new FileSystemMonitor(1, verbOptions.SourcePath);
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port, verbOptions.Username, verbOptions.Password);
-            var ignoreFileSuffixes = string.IsNullOrWhiteSpace(verbOptions.ExcludeFileSuffixes) ?
-                new string[] { } :
-                verbOptions.ExcludeFileSuffixes.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // Show the options to the user so he knows what he's doing
-            PrintMonitorOptions(verbOptions, monitorFile, sourcePath, targetPath);
 
             // Validate source path exists
-            if (System.IO.Directory.Exists(sourcePath) == false)
-                throw new DirectoryNotFoundException("Source Path '" + sourcePath + "' was not found.");
+            if (System.IO.Directory.Exists(verbOptions.SourcePath) == false)
+                throw new DirectoryNotFoundException("Source Path '" + verbOptions.SourcePath + "' was not found.");
 
             // Instantiate an SFTP client and an SSH client
             // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
@@ -444,70 +643,13 @@
                     // Create the shell stream so we can get debugging info from the post-deployment command
                     using (var shellStream = CreateShellStream(sshClient))
                     {
-                        fsMonitor.FileSystemEntryChanged += (s, e) =>
-                        {
-                            // Detect changes to the monitor file by ignoring deletions and checking file paths.
-                            if (e.ChangeType != FileSystemEntryChangeType.FileAdded && e.ChangeType != FileSystemEntryChangeType.FileModified)
-                                return;
+                        // Starts the FS Monitor and binds the event handler
+                        StartMonitorMode(fsMonitor, sshClient, sftpClient, shellStream, verbOptions);
 
-                            if (e.Path.ToLowerInvariant().Equals(monitorFile.ToLowerInvariant()) == false)
-                                return;
+                        // Allows user interaction with the shell
+                        StartUserInteraction(fsMonitor, sshClient, sftpClient, shellStream, verbOptions);
 
-                            // At this point the change has been detected; Make sure we are not deploying
-                            ConsoleManager.WriteLine(string.Empty);
-
-                            if (isDeploying)
-                            {
-                                ConsoleManager.WriteLine("WARNING: Deployment already in progress. Deployment will not occur.", ConsoleColor.DarkYellow);
-                                return;
-                            }
-
-                            // Lock Deployment
-                            isDeploying = true;
-                            var stopwatch = new System.Diagnostics.Stopwatch();
-                            stopwatch.Start();
-
-                            try
-                            {
-                                AllowShellStreamPrint = false;
-                                PrintDeploymentNumber(deploymentNumber);
-                                RunDeploymentCommand(sshClient, verbOptions.PreCommand);
-                                CreateTargetPath(sftpClient, targetPath);
-                                PrepareTargetPath(sftpClient, targetPath, verbOptions.CleanTarget);
-                                UploadFilesToTarget(sftpClient, targetPath, sourcePath, ignoreFileSuffixes);
-                            }
-                            catch (Exception ex)
-                            {
-                                PrintException(ex);
-                            }
-                            finally
-                            {
-                                // Unlock deployment
-                                isDeploying = false;
-                                deploymentNumber++;
-                                stopwatch.Stop();
-                                ConsoleManager.WriteLine("    Finished deployment in "
-                                    + Math.Round(stopwatch.Elapsed.TotalSeconds, 2).ToString()
-                                    + " seconds.", ConsoleColor.Green);
-
-                                AllowShellStreamPrint = true;
-                                RunDeploymentCommand(shellStream, verbOptions.PostCommand);
-                            }
-
-                        };
-
-                        fsMonitor.Start();
-                        ConsoleManager.WriteLine("File System Monitor is now running.");
-                        ConsoleManager.WriteLine("Writing a new monitor file will trigger a new deployment.");
-                        ConsoleManager.WriteLine("Remember: Press Q to quit.");
-                        ConsoleManager.WriteLine("Ground Control to Major Tom: Have a nice trip in space!", ConsoleColor.DarkCyan);
-
-                        while (true)
-                        {
-                            if (Console.ReadKey(true).Key == ConsoleKey.Q)
-                                break;
-                        }
-
+                        // When we quit, we stop the monitor and disconnect the clients
                         StopMonitorMode(sftpClient, sshClient, fsMonitor);
                     }
                 }

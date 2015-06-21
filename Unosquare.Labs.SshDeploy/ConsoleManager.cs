@@ -55,5 +55,11 @@ namespace Unosquare.Labs.SshDeploy
         {
             ErrorWrite(text + Environment.NewLine);
         }
+
+        public static void Clear()
+        {
+            if (Verbose == false) return;
+            Console.Clear();
+        }
     }
 }
