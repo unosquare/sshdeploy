@@ -28,8 +28,7 @@ The following steps outline a continuous deployment of a Visual Studio solution 
      <li>
      Go back to the Command Prompt window you opened in a prior step and run this tool with some arguments. Here is an example so you can get started quickly.
      <br />
-     <code>
-     sshdeploy monitor -s "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug" -t "/home/pi/target" -h 192.168.2.194 -u pi -p raspberry
+     <code>sshdeploy monitor -s "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug" -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
      </code>
      <br />
      In the above command,
@@ -38,7 +37,7 @@ The following steps outline a continuous deployment of a Visual Studio solution 
      <li><code>-t</code> refers to the full path of the target directory.</li>
      <li><code>-h</code> refers to the host (IP address of the Raspberry Pi).</li>
      <li><code>-u</code> refers to the login.</li>
-     <li><code>-p</code> refers to the password.</li>
+     <li><code>-w</code> refers to the password.</li>
      </ul>
      Note that there are many more arguments you can use. Simply issue <br />
      <code>
