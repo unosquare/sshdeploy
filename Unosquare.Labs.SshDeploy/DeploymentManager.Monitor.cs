@@ -342,6 +342,11 @@
                             if (ForwardShellStreamOutput)
                                 Console.Write((char)rxByte);
                         }
+                        else if (rxByte == 7)
+                        {
+                            if (ForwardShellStreamOutput)
+                                Console.Beep();
+                        }
                         else
                         {
                             var originalColor = Console.ForegroundColor;
