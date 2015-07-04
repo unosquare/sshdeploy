@@ -81,7 +81,12 @@ Ground Control to Major Tom: Have a nice trip in space!
      </li>
 </ol>
 
-<i>In order to make this tool much more useful, I still need to implement the pre and the post command arguments! The idea is to find the process and kill it if it is currently running on the pre-command, and run the process once the deployment has been completed using the post-command argument. Further improvements will include the ability see the live output of the post-command. The hope is thay this will make the deploy, run, and debug cycle, much less tedious for a .NET developer using a Raspberry Pi.</i>
+<i>In order to make this tool much more useful, we need to take advantage of the pre and post commands. The idea is to find the process and kill it if it is currently running on the pre-command, and run the process once the deployment has been completed using the post-command argument. The hope is thay this will make the deploy, run, and debug cycle, much less tedious for a .NET developer using a Raspberry Pi.</i>
+
+Here's a good example of using pre and post commands to acocmplish the above
+
+<code>monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False
+</code>
 
 <h2>Monitor Mode Documentation</h2><small>from command line help output</small>
 
