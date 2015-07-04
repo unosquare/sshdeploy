@@ -9,8 +9,8 @@ namespace Unosquare.Labs.SshDeploy.Options
 {
     public abstract class CliVerbOptionsBase
     {
-        [Option('v', "verbose", DefaultValue = true, HelpText = "Add this option to print messages to standard error and standard output streams.", Required = false)]
-        public bool Verbose { get; set; }
+        [Option('v', "verbose", DefaultValue = 1, HelpText = "Add this option to print messages to standard error and standard output streams. 0 to disable, any other number to enable.", Required = false)]
+        public int Verbose { get; set; }
 
         [Option('h', "host", HelpText = "Hostname or IP Address of the target. -- Must be running an SSH server.", Required = true)]
         public string Host { get; set; }

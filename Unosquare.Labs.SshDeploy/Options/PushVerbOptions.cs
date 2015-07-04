@@ -22,8 +22,8 @@ namespace Unosquare.Labs.SshDeploy.Options
         [Option("post", HelpText = "Command to execute after file transfer to target", Required = false)]
         public string PostCommand { get; set; }
 
-        [Option("clean", DefaultValue = true, HelpText = "Deletes all files and folders on the target before pushing the new files", Required = false)]
-        public bool CleanTarget { get; set; }
+        [Option("clean", DefaultValue = 0, HelpText = "Deletes all files and folders on the target before pushing the new files.  0 to disable, any other number to enable.", Required = false)]
+        public int CleanTarget { get; set; }
 
         [Option("exclude", DefaultValue = ".ready|.vshost.exe|.vshost.exe.config", HelpText = "a pipe (|) separated list of file suffixes to ignore while deploying.", Required = false)]
         public string ExcludeFileSuffixes { get; set; }

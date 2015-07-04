@@ -143,7 +143,7 @@
             ConsoleManager.WriteLine("    Target Address  " + verbOptions.Host + ":" + verbOptions.Port.ToString(), ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Username        " + verbOptions.Username, ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Target Path     " + verbOptions.TargetPath, ConsoleColor.DarkYellow);
-            ConsoleManager.WriteLine("    Clean Target    " + (verbOptions.CleanTarget ? "YES" : "NO"), ConsoleColor.DarkYellow);
+            ConsoleManager.WriteLine("    Clean Target    " + (verbOptions.CleanTarget == 0 ? "NO" : "YES"), ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Pre Deployment  " + verbOptions.PreCommand, ConsoleColor.DarkYellow);
             ConsoleManager.WriteLine("    Post Deployment " + verbOptions.PostCommand, ConsoleColor.DarkYellow);
         }
@@ -192,7 +192,7 @@
         /// <param name="cleanTarget">if set to <c>true</c> [clean target].</param>
         private static void PrepareTargetPath(SftpClient sftpClient, MonitorVerbOptions verbOptions)
         {
-            if (verbOptions.CleanTarget == false) return;
+            if (verbOptions.CleanTarget == 0) return;
             ConsoleManager.WriteLine("    Cleaning Target Path '" + verbOptions.TargetPath + "'", ConsoleColor.Green);
             DeleteLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
 
@@ -299,7 +299,7 @@
         private static ShellStream CreateShellStream(SshClient sshClient)
         {
             var terminalModes = new Dictionary<TerminalModes, uint>();
-            terminalModes.Add(TerminalModes.ECHO, 0);
+            terminalModes.Add(TerminalModes.ECHO, 1);
             terminalModes.Add(TerminalModes.IGNCR, 1);
 
             var bufferWidth = (uint)Console.BufferWidth;
@@ -531,9 +531,15 @@
                 {
                     ForwardShellStreamInput = !ForwardShellStreamInput;
                     if (ForwardShellStreamInput)
+                    {
                         ConsoleManager.WriteLine("    >> Entered console input forwarding.", ConsoleColor.Green);
+                        ForwardShellStreamOutput = true;
+                    }
                     else
+                    {
                         ConsoleManager.WriteLine("    >> Left console input forwarding.", ConsoleColor.Red);
+                    }
+                        
 
                     continue;
                 }

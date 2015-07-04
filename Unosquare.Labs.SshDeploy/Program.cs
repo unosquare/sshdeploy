@@ -45,7 +45,7 @@ namespace Unosquare.Labs.SshDeploy
                 invokedVerbOptions = verbOptions as CliVerbOptionsBase;
 
                 if (invokedVerbOptions != null)
-                    ConsoleManager.Verbose = invokedVerbOptions.Verbose;
+                    ConsoleManager.Verbose = invokedVerbOptions.Verbose != 0;
             });
 
             if (parseResult == false)
