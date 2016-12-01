@@ -33,7 +33,8 @@ namespace Unosquare.Labs.SshDeploy
             #endregion
 
             Console.WriteLine("SSH Deployment Tool [Version " + typeof(Unosquare.Labs.SshDeploy.Program).Assembly.GetName().Version.ToString() + "]");
-            Console.WriteLine("(c) 2015 Unosquare SA de CV. All Rights Reserved.");
+            Console.WriteLine("(c) 2015-2016 Unosquare SA de CV. All Rights Reserved.");
+            Console.WriteLine("For additional help, please visit https://github.com/unosquare/sshdeploy");
 
             var invokedVerbName = string.Empty;
             CliVerbOptionsBase invokedVerbOptions = null;
