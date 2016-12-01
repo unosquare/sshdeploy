@@ -8,12 +8,12 @@ A command-line tool that enables quick deployments over SSH. This is program was
 The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
 
 <ol>
-     <li>Download and compile this tool. You should end up with SshDeploy.exe and a few dll files.</li>
+     <li>Download and extract the latest binary release of this tool. https://github.com/unosquare/sshdeploy/releases/tag/1.0.1</li>
      <li>Open a Command Prompt (Start, Run, cmd, [Enter Key])</li>
      <li>
      Navigate to the folder where the SshDeploy.exe file is located (output of step 1).
      <br />Example:
-     <code>cd "C:\projects\sshdeploy\trunk\Unosquare.Labs.SshDeploy\bin\Debug"</code>
+     <code>cd "C:\utils\sshdeploy\"</code>
      </li>
      <li>Now go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
      </li>
