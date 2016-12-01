@@ -1,15 +1,10 @@
-﻿using Renci.SshNet;
-using Renci.SshNet.Common;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unosquare.Labs.SshDeploy.Options;
-
-namespace Unosquare.Labs.SshDeploy
+﻿namespace Unosquare.Labs.SshDeploy
 {
+    using Renci.SshNet;
+    using System;
+    using System.Linq;
+    using Unosquare.Labs.SshDeploy.Options;
+
     public static partial class DeploymentManager
     {
 
@@ -132,8 +127,5 @@ namespace Unosquare.Labs.SshDeploy
                 */
             }
         }
-
-
-
     }
 }
