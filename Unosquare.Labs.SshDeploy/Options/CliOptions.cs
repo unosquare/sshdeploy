@@ -1,13 +1,8 @@
-﻿using CommandLine;
-using CommandLine.Text;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Unosquare.Labs.SshDeploy.Options
+﻿namespace Unosquare.Labs.SshDeploy.Options
 {
+    using CommandLine;
+    using CommandLine.Text;
+
     public class CliOptions
     {
         public const string PushVerb = "push";

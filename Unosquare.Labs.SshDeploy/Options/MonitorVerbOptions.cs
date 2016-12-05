@@ -1,12 +1,7 @@
-﻿using CommandLine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Unosquare.Labs.SshDeploy.Options
+﻿namespace Unosquare.Labs.SshDeploy.Options
 {
+    using CommandLine;
+
     public class MonitorVerbOptions
         : PushVerbOptions
     {

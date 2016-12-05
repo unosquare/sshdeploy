@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Unosquare.Labs.SshDeploy
+﻿namespace Unosquare.Labs.SshDeploy
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Linq;
+
     /// <summary>
     /// Represents the different change types that the
     /// FileSystemMonitor class can detect
@@ -235,7 +232,6 @@ namespace Unosquare.Labs.SshDeploy
                     // swallow; no access
                 }
             }
-
         }
 
         /// <summary>

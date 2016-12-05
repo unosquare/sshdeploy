@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Unosquare.Labs.SshDeploy
 {
     public static class ConsoleManager
     {
         public static readonly ConsoleColor DefaultForeground = Console.ForegroundColor;
-        
-
         public static bool Verbose { get; set; }
         public static ConsoleColor ErrorColor { get; set; }
 

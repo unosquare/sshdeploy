@@ -1,13 +1,11 @@
-﻿using Renci.SshNet.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unosquare.Labs.SshDeploy.Options;
-
-namespace Unosquare.Labs.SshDeploy
+﻿namespace Unosquare.Labs.SshDeploy
 {
+    using Renci.SshNet.Common;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Unosquare.Labs.SshDeploy.Options;
+
     partial class DeploymentManager
     {
         static public void ExecuteShellVerb(ShellVerbOptions invokedVerbOptions)

@@ -1,12 +1,7 @@
-﻿using CommandLine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Unosquare.Labs.SshDeploy.Options
+﻿namespace Unosquare.Labs.SshDeploy.Options
 {
+    using CommandLine;
+
     public abstract class CliVerbOptionsBase
     {
         [Option('v', "verbose", DefaultValue = 1, HelpText = "Add this option to print messages to standard error and standard output streams. 0 to disable, any other number to enable.", Required = false)]

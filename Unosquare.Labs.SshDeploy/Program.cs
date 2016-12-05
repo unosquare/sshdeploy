@@ -1,12 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommandLine;
-using CommandLine.Text;
-using Renci.SshNet;
-using Renci.SshNet.Common;
 using System.Threading;
 using Unosquare.Labs.SshDeploy.Options;
 
@@ -92,8 +84,6 @@ namespace Unosquare.Labs.SshDeploy
                 ConsoleManager.ErrorWriteLine("Completed with errors. Exit Code " + Environment.ExitCode.ToString());
             else
                 ConsoleManager.WriteLine("Completed.");
-
-
         }
     }
 

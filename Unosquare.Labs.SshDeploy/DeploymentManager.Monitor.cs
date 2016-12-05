@@ -104,7 +104,7 @@
             if (string.IsNullOrWhiteSpace(commandText) == true) return;
 
             ConsoleManager.WriteLine("    Executing shell command.", ConsoleColor.Green);
-            shellStream.WriteLine(commandText);
+            shellStream.Write($"{commandText}\r\n");
             shellStream.Flush();
             ConsoleManager.WriteLine("    TX: " + commandText, ConsoleColor.DarkYellow);
         }
@@ -539,6 +539,7 @@
                     {
                         ConsoleManager.WriteLine("    >> Entered console input forwarding.", ConsoleColor.Green);
                         ForwardShellStreamOutput = true;
+                        shellStream.Write($"echo \r\n");
                     }
                     else
                     {
@@ -553,7 +554,7 @@
                 {
                     if (readKey.Key == ConsoleKey.Enter)
                     {
-                        shellStream.WriteLine(string.Empty);
+                        shellStream.Write("\r\n");
                     }
                     else
                     {
