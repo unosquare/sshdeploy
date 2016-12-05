@@ -118,13 +118,6 @@
                     System.Diagnostics.Debug.WriteLine("Unhandled escape sequence.\r\n    Text:  {0}\r\n    Bytes: {1}",
                         escapeString, string.Join(" ", escapeSequence.Select(s => s.ToString()).ToArray()));
                 }
-
-                /*
-                var originalColor = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.Write(string.Format("{0}", escapeString));
-                Console.ForegroundColor = originalColor;
-                */
             }
         }
     }

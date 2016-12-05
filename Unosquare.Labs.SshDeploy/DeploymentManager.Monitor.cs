@@ -6,7 +6,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Unosquare.Labs.SshDeploy.Options;
+    using Options;
 
     partial class DeploymentManager
     {
@@ -537,12 +537,15 @@
                     ForwardShellStreamInput = !ForwardShellStreamInput;
                     if (ForwardShellStreamInput)
                     {
+                        Program.Title = "Monitor (Interactive)";
                         ConsoleManager.WriteLine("    >> Entered console input forwarding.", ConsoleColor.Green);
                         ForwardShellStreamOutput = true;
+
                         //shellStream.Write($"echo \r\n");
                     }
                     else
                     {
+                        Program.Title = "Monitor (Press H for Help)";
                         ConsoleManager.WriteLine("    >> Left console input forwarding.", ConsoleColor.Red);
                     }
                         

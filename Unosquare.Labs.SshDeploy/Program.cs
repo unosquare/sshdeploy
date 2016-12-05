@@ -4,13 +4,24 @@ using Unosquare.Labs.SshDeploy.Options;
 
 namespace Unosquare.Labs.SshDeploy
 {
-    class Program
+    static public class Program
     {
         private static readonly string MutexName = string.Format("Global\\{0}", typeof(Program).Namespace);
         static private Mutex AppMutex = null;
 
+        static public string Title
+        {
+            get { return Console.Title; }
+            set { Console.Title = value + TitleSuffix; }
+        }
+
+        static public string TitleSuffix { get; set; } = " - SSH Deploy";
+
+
         static void Main(string[] args)
         {
+            Title = "Unosquare";
+
             #region Handle Single Instance Application
 
             bool isNewMutex;
@@ -24,9 +35,9 @@ namespace Unosquare.Labs.SshDeploy
 
             #endregion
 
-            Console.WriteLine("SSH Deployment Tool [Version " + typeof(Unosquare.Labs.SshDeploy.Program).Assembly.GetName().Version.ToString() + "]");
-            Console.WriteLine("(c) 2015-2016 Unosquare SA de CV. All Rights Reserved.");
-            Console.WriteLine("For additional help, please visit https://github.com/unosquare/sshdeploy");
+            ConsoleManager.WriteLine("SSH Deployment Tool [Version " + typeof(Unosquare.Labs.SshDeploy.Program).Assembly.GetName().Version.ToString() + "]");
+            ConsoleManager.WriteLine("(c) 2015-2016 Unosquare SA de CV. All Rights Reserved.");
+            ConsoleManager.WriteLine("For additional help, please visit https://github.com/unosquare/sshdeploy");
 
             var invokedVerbName = string.Empty;
             CliVerbOptionsBase invokedVerbOptions = null;
@@ -54,18 +65,24 @@ namespace Unosquare.Labs.SshDeploy
                 {
                     case CliOptions.RunVerb:
                         {
+                            TitleSuffix = " - Run Mode" + TitleSuffix;
+                            Title = "Command";
                             var verbOptions = invokedVerbOptions as RunVerbOptions;
                             DeploymentManager.ExecuteRunVerb(verbOptions);
                             break;
                         }
                     case CliOptions.ShellVerb:
                         {
+                            TitleSuffix = " - Shell Mode" + TitleSuffix;
+                            Title = "Interactive";
                             var verbOptions = invokedVerbOptions as ShellVerbOptions;
                             DeploymentManager.ExecuteShellVerb(verbOptions);
                             break;
                         }
                     case CliOptions.MonitorVerb:
                         {
+                            TitleSuffix = " - Monitor Mode" + TitleSuffix;
+                            Title = "Monitor";
                             var verbOptions = invokedVerbOptions as MonitorVerbOptions;
                             DeploymentManager.ExecuteMonitorVerb(verbOptions);
                             break;
