@@ -539,7 +539,7 @@
                     {
                         ConsoleManager.WriteLine("    >> Entered console input forwarding.", ConsoleColor.Green);
                         ForwardShellStreamOutput = true;
-                        shellStream.Write($"echo \r\n");
+                        //shellStream.Write($"echo \r\n");
                     }
                     else
                     {
