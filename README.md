@@ -6,6 +6,8 @@
 
 A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
 
+*:star:Please star this project if you find it useful!*
+
 <h2>Usage Example</h2>
 
 The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
