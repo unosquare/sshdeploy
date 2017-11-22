@@ -30,7 +30,7 @@ namespace Unosquare.Labs.SshDeploy
             if (isNewMutex == false)
             {
                 AppMutex = null;
-                Environment.ExitCode = -1;
+                Environment.ExitCode = 1;
                 return;
             }
 
@@ -41,9 +41,56 @@ namespace Unosquare.Labs.SshDeploy
             $"For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
             var options = new CliOptions();
             
-                Runtime.ArgumentParser.ParseArguments(args, options);
-      
-            Console.ReadKey();
+            if( !(args.Length > 0))
+            {               
+                Environment.ExitCode = 1;
+                Console.ReadKey();
+                return;
+            }
+            var parseResult =  Runtime.ArgumentParser.ParseArguments(args, options);
+
+
+            if (parseResult == false)
+            {                
+                Environment.ExitCode = 1;
+                Console.ReadKey();
+                return;
+            }
+
+            try
+            {
+                if ( options.RunVerbOptions != null)
+                {
+                    TitleSuffix = " - Run Mode" + TitleSuffix;
+                    Title = "Command";
+                    DeploymentManager.ExecuteRunVerb(options.RunVerbOptions);
+                }
+                else if( options.ShellVerbOptions != null)
+                {
+                    TitleSuffix = " - Shell Mode" + TitleSuffix;
+                    Title = "Interactive";
+                    DeploymentManager.ExecuteShellVerb(options.ShellVerbOptions);
+                }
+                else if(options.MonitorVerbOptions != null)
+                {
+                    TitleSuffix = " - Monitor Mode" + TitleSuffix;
+                    Title = "Monitor";
+                    DeploymentManager.ExecuteMonitorVerb(options.MonitorVerbOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                $"Error - {ex.GetType().Name}".Error();
+                ex.Message.Error();
+                ex.StackTrace.Error();
+                Environment.ExitCode = 1;
+            }
+            if (Environment.ExitCode != 0)
+                $"Completed with errors. Exit Code {Environment.ExitCode.ToString()}".Error();
+            else
+                $"Completed.".WriteLine();
+
+            
 
 
         }
