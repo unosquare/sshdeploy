@@ -5,7 +5,7 @@ using Unosquare.Swan.Attributes;
 
 namespace Unosquare.Labs.SshDeploy.Options
 {
-    public class PushVerbOptions
+    public class PushVerbOptions : CliVerbOptionsBase
     {
         [ArgumentOption('s', "source",HelpText = "The source path for the files to transfer", Required = true)]
         public string SourcePath { get; set; }
