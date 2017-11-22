@@ -1,9 +1,9 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unosquare.Labs.SshDeploy", "Unosquare.Labs.SshDeploy\Unosquare.Labs.SshDeploy.csproj", "{8455A6D2-9174-4237-BAE6-FAF2520BD61B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unosquare.Labs.SshDeploy", "Unosquare.Labs.SshDeploy\Unosquare.Labs.SshDeploy.csproj", "{24BAC92F-A5E9-44EE-BD09-071B6ED9C189}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,12 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8455A6D2-9174-4237-BAE6-FAF2520BD61B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8455A6D2-9174-4237-BAE6-FAF2520BD61B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8455A6D2-9174-4237-BAE6-FAF2520BD61B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8455A6D2-9174-4237-BAE6-FAF2520BD61B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24BAC92F-A5E9-44EE-BD09-071B6ED9C189}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24BAC92F-A5E9-44EE-BD09-071B6ED9C189}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24BAC92F-A5E9-44EE-BD09-071B6ED9C189}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24BAC92F-A5E9-44EE-BD09-071B6ED9C189}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {43A0E767-C8DA-447B-AF83-9578D6B96A3B}
 	EndGlobalSection
 EndGlobal

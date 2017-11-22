@@ -1,11 +1,34 @@
-﻿namespace Unosquare.Labs.SshDeploy.Options
-{
-    using CommandLine;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Unosquare.Swan.Attributes;
 
-    public class MonitorVerbOptions
-        : PushVerbOptions
+namespace Unosquare.Labs.SshDeploy.Options
+{
+    public class MonitorVerbOptions : CliVerbOptionsBase
     {
-        [Option('m', "monitor", DefaultValue = "sshdeploy.ready", HelpText = "The path to the file used as a signal that the files are ready to be deployed. Once the deployemtn is completed, the file is deleted.", Required = false)]
+        [ArgumentOption('m', "monitor", DefaultValue = "sshdeploy.ready", HelpText = "The command to run on the target machine", Required = false)]       
         public string MonitorFile { get; set; }
+
+        [ArgumentOption('s', "source", HelpText = "The source path for the files to transfer", Required = true)]  
+        public string SourcePath { get; set; }
+
+        [ArgumentOption('t', "target", HelpText = "The target path of the files to transfer", Required = true)]
+        public string TargetPath { get; set; }
+
+        [ArgumentOption("pre", HelpText = "Command to execute prior file transfer to target", Required = false)]
+        public string PreCommand { get; set; }
+
+        [ArgumentOption("post", HelpText = "Command to execute after file transfer to target", Required = false)]
+        public string PostCommand { get; set; }
+
+        [ArgumentOption("clean", DefaultValue = 0, HelpText = "Deletes all files and folders on the target before pushing the new files.  0 to disable, any other number to enable.", Required = false)]
+        public int CleanTarget { get; set; }
+
+        [ArgumentOption("exclude", DefaultValue = ".ready|.vshost.exe|.vshost.exe.config", HelpText = "a pipe (|) separated list of file suffixes to ignore while deploying.", Required = false)]
+        public string ExcludeFileSuffixes { get; set; }
+
+       
+ 
     }
 }
