@@ -9,18 +9,9 @@ namespace Unosquare.Labs.SshDeploy
     {
         public static void Main(string[] args)
         {
-            var app = new ArgumentParser();
             var options = new CliOptions();
-            var cli = new CliVerbOptionsBase();
-            try
-            {
+          
                 Runtime.ArgumentParser.ParseArguments(args, options);
-            }
-            catch( Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-
       
             Console.ReadKey();
 

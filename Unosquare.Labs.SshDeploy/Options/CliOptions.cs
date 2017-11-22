@@ -9,8 +9,15 @@ namespace Unosquare.Labs.SshDeploy.Options
     {
         [VerbOption("push")]
         public PushVerbOptions PushVerbOptions { get; set; }
+
         [VerbOption("monitor")]
         public MonitorVerbOptions MonitorVerbOptions { get; set; }
+
+        [VerbOption("run")]
+        public RunVerbOptions RunVerbOptions { get; set; }
+
+        [VerbOption("shell")]
+        public ShellVerbOptions ShellVerbOptions { get; set; }
 
     }
 }

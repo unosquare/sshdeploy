@@ -5,10 +5,10 @@ using Unosquare.Swan.Attributes;
 
 namespace Unosquare.Labs.SshDeploy.Options
 {
-    public class CliVerbOptionsBase
+    public abstract class CliVerbOptionsBase
     {
-        [ArgumentOption('v', "verbose", DefaultValue = 1, HelpText = "Add this option to print messages to standard error and standard output streams. 0 to disable, any other number to enable.", Required = false)]
-        public int Verbose { get; set; }
+        [ArgumentOption('v', "verbose", DefaultValue = true, HelpText = "Add this option to print messages to standard error and standard output streams. 0 to disable, any other number to enable.", Required = false)]
+        public bool Verbose { get; set; }
 
         [ArgumentOption('h', "host", DefaultValue = 1, HelpText = "Hostname or IP Address of the target. -- Must be running an SSH server.", Required = true)]
         public string Host { get; set; }
