@@ -3,20 +3,20 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
     <AssemblyName>dotnet-sshdeploy</AssemblyName>
 
     <PackageId>DotNetSSHDeploy</PackageId>
-    <PackageVersion>1.0.3</PackageVersion>
+    <PackageVersion>1.0.5</PackageVersion>
     <Authors>Unosquare</Authors>
     <Description>...</Description>
 
     <PackageType>DotnetCliTool</PackageType>
+    <PackageTags>dotnet cli tool</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
-    <PackageReference Include="Unosquare.Swan" Version="0.20.0" />
+    <PackageReference Include="Unosquare.Swan" Version="0.21.0" />
   </ItemGroup>
 
 </Project>
