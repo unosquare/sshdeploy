@@ -21,14 +21,7 @@ A command-line tool that enables quick deployments over SSH. This is program was
 The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
 
 <ol>
-     <li>Download and extract the latest binary release of this tool. https://github.com/unosquare/sshdeploy/releases/tag/1.0.1</li>
-     <li>Open a Command Prompt (Start, Run, cmd, [Enter Key])</li>
-     <li>
-     Navigate to the folder where the SshDeploy.exe file is located (output of step 1).
-     <br />Example:
-     <code>cd "C:\utils\sshdeploy\"</code>
-     </li>
-     <li>Now go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
+     <li>Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
      </li>
      <li>Right click on the project and click on the menu item "Properties"</li>
      <li>Go to the "Build Events" tab, and under Post-build events, enter the following: <br />
@@ -37,11 +30,17 @@ The following steps outline a continuous deployment of a Visual Studio solution 
          </code>
          <br />
          This simply writes the date and time to the <code>sshdeploy.ready</code> file. Whenever this file CHANGES, the deployment tool will perform a deployment.
-     </li>
-     <li>
-     Go back to the Command Prompt window you opened in a prior step and run this tool with some arguments. Here is an example so you can get started quickly.
+     </li> 
+ <li>Open a Command Prompt (Start, Run, cmd, [Enter Key])</li>
+ <li>
+     Navigate to  your project folder
+     <br />Example:
+     <code>cd "C:\projects\project1\"</code>
+ </li>
+ <li>
+     Run this tool with some arguments. Here is an example so you can get started quickly.
      <br />
-     <code>sshdeploy monitor -s "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug" -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
+     <code>dotnet sshdeploy monitor -s "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug" -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
      </code>
      <br />
      In the above command,
@@ -54,7 +53,7 @@ The following steps outline a continuous deployment of a Visual Studio solution 
      </ul>
      Note that there are many more arguments you can use. Simply issue <br />
      <code>
-     sshdeploy monitor
+     dotnet sshdeploy monitor
      </code>
      <br />This will get you all the options you can use.
      </li>
