@@ -1,35 +1,33 @@
-﻿using Renci.SshNet.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Unosquare.Labs.SshDeploy.Options;
-
-namespace Unosquare.Labs.SshDeploy
+﻿namespace Unosquare.Labs.SshDeploy
 {
+    using System;
+    using Swan;
+    using System.Collections.Generic;
+    using System.Text;
+    using Renci.SshNet.Common;
+    using Options;
+
     partial class DeploymentManager
     {
-        static public void ExecuteShellVerb(ShellVerbOptions invokedVerbOptions)
+        public static void ExecuteShellVerb(ShellVerbOptions invokedVerbOptions)
         {
-            using (var sshClient = DeploymentManager.CreateClient(invokedVerbOptions))
+            using (var sshClient = CreateClient(invokedVerbOptions))
             {
-
-                var exitEvent = new System.Threading.ManualResetEventSlim(false);
                 sshClient.Connect();
 
-                var terminalModes = new Dictionary<TerminalModes, uint>();
-                terminalModes.Add(TerminalModes.ECHO, 0);
-                terminalModes.Add(TerminalModes.IGNCR, 1);
+                var terminalModes =
+                    new Dictionary<TerminalModes, uint> {{TerminalModes.ECHO, 0}, {TerminalModes.IGNCR, 1}};
 
-                var bufferWidth = (uint)Console.BufferWidth;
-                var bufferHeight = (uint)Console.BufferHeight;
-                var windowWidth = (uint)Console.WindowWidth;
-                var windowHeight = (uint)Console.WindowHeight;
+                var bufferWidth = (uint) Console.BufferWidth;
+                var bufferHeight = (uint) Console.BufferHeight;
+                var windowWidth = (uint) Console.WindowWidth;
+                var windowHeight = (uint) Console.WindowHeight;
                 var bufferSize = Console.BufferWidth * Console.BufferHeight;
 
-                var encoding = System.Text.Encoding.ASCII;
+                var encoding = Encoding.ASCII;
 
-                using (var shell = sshClient.CreateShellStream(TerminalName, bufferWidth, bufferHeight, windowWidth, windowHeight, bufferSize, terminalModes))
+                using (var shell = sshClient.CreateShellStream(TerminalName, bufferWidth, bufferHeight, windowWidth,
+                    windowHeight, bufferSize, terminalModes))
                 {
                     var escapeSequenceBytes = new List<byte>(128);
                     var isInEscapeSequence = false;
@@ -40,6 +38,7 @@ namespace Unosquare.Labs.SshDeploy
                     shell.DataReceived += (s, e) =>
                     {
                         var rxBuffer = e.Data;
+
                         for (var i = 0; i < rxBuffer.Length; i++)
                         {
                             rxByte = rxBuffer[i];
@@ -58,7 +57,7 @@ namespace Unosquare.Labs.SshDeploy
                             {
                                 if (rxByte >= 32 || (rxByte >= 8 && rxByte <= 13))
                                 {
-                                    Console.Write((char)rxByte);
+                                    Console.Write((char) rxByte);
                                 }
                                 else
                                 {
@@ -72,7 +71,7 @@ namespace Unosquare.Labs.SshDeploy
                                 continue;
                             }
 
-                            if (isInEscapeSequence == true)
+                            if (isInEscapeSequence)
                             {
                                 // Add the byte to the escape sequence
                                 escapeSequenceBytes.Add(rxByte);
@@ -86,16 +85,14 @@ namespace Unosquare.Labs.SshDeploy
                                         escapeSequenceType = rxByte;
                                         continue;
                                     }
-                                    else
-                                    {
-                                        escapeSequenceType = 0;
-                                    }
+                                    escapeSequenceType = 0;
                                 }
 
                                 // Detect if it's the last byte of the escape sequence (64 to 126)
                                 // This last character determines the command to execute
-                                var endOfSequenceType91 = escapeSequenceType == (byte)'[' && (rxByte >= 64 && rxByte <= 126);
-                                var endOfSequenceType93 = escapeSequenceType == (byte)']' && (rxByte == 7);
+                                var endOfSequenceType91 =
+                                    escapeSequenceType == (byte) '[' && (rxByte >= 64 && rxByte <= 126);
+                                var endOfSequenceType93 = escapeSequenceType == (byte) ']' && (rxByte == 7);
                                 if (endOfSequenceType91 || endOfSequenceType93)
                                 {
                                     try
@@ -119,10 +116,7 @@ namespace Unosquare.Labs.SshDeploy
                         }
                     };
 
-                    shell.ErrorOccurred += (s, e) =>
-                    {
-                        System.Diagnostics.Debug.WriteLine(e.Exception.Message);
-                    };
+                    shell.ErrorOccurred += (s, e) => e.Exception.Message.Debug();
 
                     while (true)
                     {
@@ -131,13 +125,12 @@ namespace Unosquare.Labs.SshDeploy
                         shell.Write(lineData, 0, lineData.Length);
                         shell.Flush();
 
-                        if (line.Equals("exit"))
+                        if (!line.Equals("exit")) continue;
+
+                        var expectResult = shell.Expect("logout", TimeSpan.FromSeconds(2));
+                        if (string.IsNullOrWhiteSpace(expectResult) == false && expectResult.Trim().EndsWith("logout"))
                         {
-                            var expectResult = shell.Expect("logout", TimeSpan.FromSeconds(2));
-                            if (string.IsNullOrWhiteSpace(expectResult) == false && expectResult.Trim().EndsWith("logout"))
-                            {
-                                break;
-                            }
+                            break;
                         }
                     }
                 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Unosquare.Swan.Attributes;
 
 namespace Unosquare.Labs.SshDeploy.Options
@@ -31,7 +29,7 @@ namespace Unosquare.Labs.SshDeploy.Options
             {
                 var ignoreFileSuffixes = string.IsNullOrWhiteSpace(ExcludeFileSuffixes) ?
                     new string[] { } :
-                    ExcludeFileSuffixes.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    ExcludeFileSuffixes.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
                 return ignoreFileSuffixes;
             }

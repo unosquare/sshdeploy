@@ -1,10 +1,10 @@
-﻿using Renci.SshNet;
-using Renci.SshNet.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
+using Renci.SshNet;
+using Renci.SshNet.Common;
 using Unosquare.Labs.SshDeploy.Options;
 using Unosquare.Swan;
 
@@ -12,13 +12,12 @@ namespace Unosquare.Labs.SshDeploy
 {
     partial class DeploymentManager
     {
-
         #region State Variables
 
-        private static bool ForwardShellStreamOutput = false;
-        private static bool ForwardShellStreamInput = false;
-        private static bool IsDeploying = false;
-        private static int DeploymentNumber = 0;
+        private static bool _forwardShellStreamOutput;
+        private static bool _forwardShellStreamInput;
+        private static bool _isDeploying;
+        private static int _deploymentNumber;
 
         #endregion
 
@@ -32,6 +31,7 @@ namespace Unosquare.Labs.SshDeploy
         private static void DeleteLinuxDirectoryRecursive(SftpClient client, string path)
         {
             var files = client.ListDirectory(path);
+
             foreach (var file in files)
             {
                 if (file.Name.Equals(LinuxCurrentDirectory) || file.Name.Equals(LinuxParentDirectory))
@@ -71,7 +71,7 @@ namespace Unosquare.Labs.SshDeploy
                 if (info.IsDirectory)
                     return;
             }
-            var pathParts = path.Split(new char[] { LinuxDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            var pathParts = path.Split(new[] { LinuxDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
             pathParts = pathParts.Skip(0).Take(pathParts.Length - 1).ToArray();
             var priorPath = LinuxDirectorySeparator + string.Join(LinuxDirectorySeparator, pathParts);
@@ -99,12 +99,12 @@ namespace Unosquare.Labs.SshDeploy
         /// <summary>
         /// Runs pre and post deployment commands over the SSH client
         /// </summary>
-        /// <param name="sshClient">The SSH client.</param>
-        /// <param name="commandText">The command text.</param>
+        /// <param name="shellStream">The shell stream.</param>
+        /// <param name="verbOptions">The verb options.</param>
         private static void RunShellStreamCommand(ShellStream shellStream, MonitorVerbOptions verbOptions)
         {
             var commandText = verbOptions.PostCommand;
-            if (string.IsNullOrWhiteSpace(commandText) == true) return;
+            if (string.IsNullOrWhiteSpace(commandText)) return;
 
             $"    Executing shell command.".WriteLine(ConsoleColor.Green);
             shellStream.Write($"{commandText}\r\n");
@@ -116,11 +116,11 @@ namespace Unosquare.Labs.SshDeploy
         /// Runs the deployment command.
         /// </summary>
         /// <param name="sshClient">The SSH client.</param>
-        /// <param name="commandText">The command text.</param>
+        /// <param name="verbOptions">The verb options.</param>
         private static void RunSshClientCommand(SshClient sshClient, MonitorVerbOptions verbOptions)
         {
             var commandText = verbOptions.PreCommand;
-            if (string.IsNullOrWhiteSpace(commandText) == true) return;
+            if (string.IsNullOrWhiteSpace(commandText)) return;
 
             $"    Executing SSH client command.".WriteLine(ConsoleColor.Green);
             var result = sshClient.RunCommand(commandText);
@@ -132,9 +132,6 @@ namespace Unosquare.Labs.SshDeploy
         /// Prints the currently supplied monitor mode options.
         /// </summary>
         /// <param name="verbOptions">The verb options.</param>
-        /// <param name="monitorFile">The monitor file.</param>
-        /// <param name="sourcePath">The source path.</param>
-        /// <param name="targetPath">The target path.</param>
         private static void PrintMonitorOptions(MonitorVerbOptions verbOptions)
         {
             string.Empty.WriteLine();
@@ -143,7 +140,7 @@ namespace Unosquare.Labs.SshDeploy
             $"    Monitor File    {verbOptions.MonitorFile}".WriteLine(ConsoleColor.DarkYellow);
             $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
             $"    Excluded Files  {verbOptions.ExcludeFileSuffixes}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Target Address  {verbOptions.Host}:{verbOptions.Port.ToString()}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
             $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
             $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
             $"    Clean Target    { (verbOptions.CleanTarget ? "YES" : "NO") }".WriteLine(ConsoleColor.DarkYellow);
@@ -176,10 +173,10 @@ namespace Unosquare.Labs.SshDeploy
         /// Creates the given directory structure on the target machine.
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
-        /// <param name="targetPath">The target path.</param>
+        /// <param name="verbOptions">The verb options.</param>
         private static void CreateTargetPath(SftpClient sftpClient, MonitorVerbOptions verbOptions)
         {
-            if (sftpClient.Exists(verbOptions.TargetPath) == true) return;
+            if (sftpClient.Exists(verbOptions.TargetPath)) return;
 
             $"    Target Path '{verbOptions.TargetPath}' does not exist. -- Will attempt to create.".WriteLine(ConsoleColor.Green);
             CreateLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
@@ -191,8 +188,7 @@ namespace Unosquare.Labs.SshDeploy
         /// Prepares the given target path for deployment. If clean target is false, it does nothing.
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
-        /// <param name="targetPath">The target path.</param>
-        /// <param name="cleanTarget">if set to <c>true</c> [clean target].</param>
+        /// <param name="verbOptions">The verb options.</param>
         private static void PrepareTargetPath(SftpClient sftpClient, MonitorVerbOptions verbOptions)
         {
             if (!verbOptions.CleanTarget) return;
@@ -205,32 +201,14 @@ namespace Unosquare.Labs.SshDeploy
         /// Uploads the files in the source Windows path to the target Linux path.
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
-        /// <param name="targetPath">The target path.</param>
-        /// <param name="sourcePath">The source path.</param>
-        /// <param name="ignoreFileSuffixes">The ignore file suffixes.</param>
+        /// <param name="verbOptions">The verb options.</param>
         private static void UploadFilesToTarget(SftpClient sftpClient, MonitorVerbOptions verbOptions)
         {
-            var filesInSource = System.IO.Directory.GetFiles(verbOptions.SourcePath, FileSystemMonitor.AllFilesPattern, System.IO.SearchOption.AllDirectories);
-            var filesToDeploy = new List<string>();
-
-            foreach (var file in filesInSource)
-            {
-                var ignore = false;
-
-                foreach (var ignoreSuffix in verbOptions.ExcludeFileSuffixList)
-                {
-                    if (file.EndsWith(ignoreSuffix))
-                    {
-                        ignore = true;
-                        break;
-                    }
-                }
-
-                if (ignore) continue;
-                filesToDeploy.Add(file);
-            }
+            var filesInSource = Directory.GetFiles(verbOptions.SourcePath, FileSystemMonitor.AllFilesPattern, SearchOption.AllDirectories);
+            var filesToDeploy = filesInSource.Where(file => !verbOptions.ExcludeFileSuffixList.Any(file.EndsWith)).ToList();
 
             $"    Deploying {filesToDeploy.Count} files.".WriteLine(ConsoleColor.Green);
+
             foreach (var file in filesToDeploy)
             {
                 var relativePath = MakeRelativePath(file, verbOptions.SourcePath + Path.DirectorySeparatorChar);
@@ -239,11 +217,10 @@ namespace Unosquare.Labs.SshDeploy
 
                 CreateLinuxDirectoryRecursive(sftpClient, targetDirectory);
 
-                using (var fileStream = System.IO.File.OpenRead(file))
+                using (var fileStream = File.OpenRead(file))
                 {
                     sftpClient.UploadFile(fileStream, fileTargetPath);
                 }
-
             }
         }
 
@@ -260,12 +237,12 @@ namespace Unosquare.Labs.SshDeploy
             fsMonitor.Stop();
             $"File System monitor was stopped.".WriteLine();
 
-            if (sftpClient.IsConnected == true)
+            if (sftpClient.IsConnected)
                 sftpClient.Disconnect();
 
             $"SFTP client disconnected.".WriteLine();
 
-            if (sshClient.IsConnected == true)
+            if (sshClient.IsConnected)
                 sshClient.Disconnect();
 
             $"SSH client disconnected.".WriteLine();
@@ -278,12 +255,12 @@ namespace Unosquare.Labs.SshDeploy
             watcher.EnableRaisingEvents = false;
             $"File System monitor was stopped.".WriteLine();
 
-            if (sftpClient.IsConnected == true)
+            if (sftpClient.IsConnected)
                 sftpClient.Disconnect();
 
             $"SFTP client disconnected.".WriteLine();
 
-            if (sshClient.IsConnected == true)
+            if (sshClient.IsConnected)
                 sshClient.Disconnect();
 
             $"SSH client disconnected.".WriteLine();
@@ -319,19 +296,16 @@ namespace Unosquare.Labs.SshDeploy
         /// <returns></returns>
         private static ShellStream CreateShellStream(SshClient sshClient)
         {
-            var terminalModes = new Dictionary<TerminalModes, uint>();
-            terminalModes.Add(TerminalModes.ECHO, 1);
-            terminalModes.Add(TerminalModes.IGNCR, 1);
+            var terminalModes = new Dictionary<TerminalModes, uint> {{TerminalModes.ECHO, 1}, {TerminalModes.IGNCR, 1}};
 
-            var bufferWidth = (uint)Console.BufferWidth;
-            var bufferHeight = (uint)Console.BufferHeight;
-            var windowWidth = (uint)Console.WindowWidth;
-            var windowHeight = (uint)Console.WindowHeight;
+            var bufferWidth = (uint) Console.BufferWidth;
+            var bufferHeight = (uint) Console.BufferHeight;
+            var windowWidth = (uint) Console.WindowWidth;
+            var windowHeight = (uint) Console.WindowHeight;
             var bufferSize = Console.BufferWidth * Console.BufferHeight;
 
-            var encoding = System.Text.Encoding.ASCII;
-
-            var shell = sshClient.CreateShellStream(TerminalName, bufferWidth, bufferHeight, windowWidth, windowHeight, bufferSize, terminalModes);
+            var shell = sshClient.CreateShellStream(TerminalName, bufferWidth, bufferHeight, windowWidth, windowHeight,
+                bufferSize, terminalModes);
 
             var escapeSequenceBytes = new List<byte>(128);
             var isInEscapeSequence = false;
@@ -360,19 +334,19 @@ namespace Unosquare.Labs.SshDeploy
                     {
                         if (rxByte >= 32 || (rxByte >= 8 && rxByte <= 13))
                         {
-                            if (ForwardShellStreamOutput)
-                                Console.Write((char)rxByte);
+                            if (_forwardShellStreamOutput)
+                                Console.Write((char) rxByte);
                         }
                         else if (rxByte == 7)
                         {
-                            if (ForwardShellStreamOutput)
+                            if (_forwardShellStreamOutput)
                                 Console.Beep();
                         }
                         else
                         {
                             var originalColor = Console.ForegroundColor;
                             Console.ForegroundColor = ConsoleColor.DarkYellow;
-                            if (ForwardShellStreamOutput)
+                            if (_forwardShellStreamOutput)
                                 Console.Write("[NPC " + rxByte.ToString() + "]");
                             Console.ForegroundColor = originalColor;
                         }
@@ -382,7 +356,7 @@ namespace Unosquare.Labs.SshDeploy
                     }
 
                     // If we are already inside an escape sequence . . .
-                    if (isInEscapeSequence == true)
+                    if (isInEscapeSequence)
                     {
                         // Add the byte to the escape sequence
                         escapeSequenceBytes.Add(rxByte);
@@ -396,16 +370,13 @@ namespace Unosquare.Labs.SshDeploy
                                 escapeSequenceType = rxByte;
                                 continue;
                             }
-                            else
-                            {
-                                escapeSequenceType = 0;
-                            }
+                            escapeSequenceType = 0;
                         }
 
                         // Detect if it's the last byte of the escape sequence (64 to 126)
                         // This last character determines the command to execute
-                        var endOfSequenceType91 = escapeSequenceType == (byte)'[' && (rxByte >= 64 && rxByte <= 126);
-                        var endOfSequenceType93 = escapeSequenceType == (byte)']' && (rxByte == 7);
+                        var endOfSequenceType91 = escapeSequenceType == (byte) '[' && (rxByte >= 64 && rxByte <= 126);
+                        var endOfSequenceType93 = escapeSequenceType == (byte) ']' && (rxByte == 7);
                         if (endOfSequenceType91 || endOfSequenceType93)
                         {
                             try
@@ -425,17 +396,12 @@ namespace Unosquare.Labs.SshDeploy
                     }
 
                     rxBytePrevious = rxByte;
-
                 }
             };
 
-            shell.ErrorOccurred += (s, e) =>
-            {
-                PrintException(e.Exception);
-            };
+            shell.ErrorOccurred += (s, e) => PrintException(e.Exception);
 
             return shell;
-
         }
 
         /// <summary>
@@ -450,21 +416,21 @@ namespace Unosquare.Labs.SshDeploy
             // At this point the change has been detected; Make sure we are not deploying
             string.Empty.WriteLine();
 
-            if (IsDeploying)
+            if (_isDeploying)
             {
                 $"WARNING: Deployment already in progress. Deployment will not occur.".WriteLine(ConsoleColor.DarkYellow);
                 return;
             }
 
             // Lock Deployment
-            IsDeploying = true;
-            var stopwatch = new System.Diagnostics.Stopwatch();
+            _isDeploying = true;
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             try
             {
-                ForwardShellStreamOutput = false;
-                PrintDeploymentNumber(DeploymentNumber);
+                _forwardShellStreamOutput = false;
+                PrintDeploymentNumber(_deploymentNumber);
                 RunSshClientCommand(sshClient, verbOptions);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
@@ -477,13 +443,13 @@ namespace Unosquare.Labs.SshDeploy
             finally
             {
                 // Unlock deployment
-                IsDeploying = false;
-                DeploymentNumber++;
+                _isDeploying = false;
+                _deploymentNumber++;
                 stopwatch.Stop();
-                $"    Finished deployment in {Math.Round(stopwatch.Elapsed.TotalSeconds, 2).ToString()} seconds."
+                $"    Finished deployment in {Math.Round(stopwatch.Elapsed.TotalSeconds, 2)} seconds."
                 .WriteLine(ConsoleColor.Green);
 
-                ForwardShellStreamOutput = true;
+                _forwardShellStreamOutput = true;
                 RunShellStreamCommand(shellStream, verbOptions);
             }
         }
@@ -494,11 +460,11 @@ namespace Unosquare.Labs.SshDeploy
         /// <param name="verbOptions">The verb options.</param>
         private static void NormalizeMonitorVerbOptions(MonitorVerbOptions verbOptions)
         {
-            var sourcePath = System.IO.Path.GetFullPath(verbOptions.SourcePath.Trim());
+            var sourcePath = Path.GetFullPath(verbOptions.SourcePath.Trim());
             var targetPath = verbOptions.TargetPath.Trim();
-            var monitorFile = System.IO.Path.IsPathRooted(verbOptions.MonitorFile) ?
-                System.IO.Path.GetFullPath(verbOptions.MonitorFile) :
-                System.IO.Path.Combine(sourcePath, verbOptions.MonitorFile);
+            var monitorFile = Path.IsPathRooted(verbOptions.MonitorFile) ?
+                Path.GetFullPath(verbOptions.MonitorFile) :
+                Path.Combine(sourcePath, verbOptions.MonitorFile);
 
             verbOptions.SourcePath = sourcePath;
             verbOptions.TargetPath = targetPath;
@@ -538,14 +504,13 @@ namespace Unosquare.Labs.SshDeploy
         /// <summary>
         /// Starts the user interaction.
         /// </summary>
-        /// <param name="fsMonitor">The fs monitor.</param>
         /// <param name="sshClient">The SSH client.</param>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
         private static void StartUserInteraction( SshClient sshClient, SftpClient sftpClient, ShellStream shellStream, MonitorVerbOptions verbOptions)
         {
-            ForwardShellStreamInput = false;
+            _forwardShellStreamInput = false;
 
             while (true)
             {
@@ -553,12 +518,12 @@ namespace Unosquare.Labs.SshDeploy
 
                 if (readKey.Key == ConsoleKey.F1)
                 {
-                    ForwardShellStreamInput = !ForwardShellStreamInput;
-                    if (ForwardShellStreamInput)
+                    _forwardShellStreamInput = !_forwardShellStreamInput;
+                    if (_forwardShellStreamInput)
                     {
                         Program.Title = "Monitor (Interactive)";
                         $"    >> Entered console input forwarding.".WriteLine(ConsoleColor.Green);
-                        ForwardShellStreamOutput = true;
+                        _forwardShellStreamOutput = true;
 
                         //shellStream.Write($"echo \r\n");
                     }
@@ -572,7 +537,7 @@ namespace Unosquare.Labs.SshDeploy
                     continue;
                 }
 
-                if (ForwardShellStreamInput)
+                if (_forwardShellStreamInput)
                 {
                     if (readKey.Key == ConsoleKey.Enter)
                     {
@@ -621,7 +586,7 @@ namespace Unosquare.Labs.SshDeploy
 
                 if (readKey.Key == ConsoleKey.H)
                 {
-                    var helpColor = ConsoleColor.Cyan;
+                    const ConsoleColor helpColor = ConsoleColor.Cyan;
                     $"Console help".WriteLine(helpColor);
                     $"    H    Prints this screen".WriteLine(helpColor);
                     $"    Q    Quits this application".WriteLine(helpColor);
@@ -632,7 +597,6 @@ namespace Unosquare.Labs.SshDeploy
                     $"    F1   Toggle shell-interactive mode".WriteLine(helpColor);
 
                     string.Empty.WriteLine();
-                    continue;
                 }
             }
         }
@@ -649,8 +613,8 @@ namespace Unosquare.Labs.SshDeploy
         public static void ExecuteMonitorVerbLegacy(MonitorVerbOptions verbOptions)
         {
             // Initialize Variables
-            IsDeploying = false;
-            DeploymentNumber = 1;
+            _isDeploying = false;
+            _deploymentNumber = 1;
 
             // Normalize and show the options to the user so he knows what he's doing
             NormalizeMonitorVerbOptions(verbOptions);
@@ -661,7 +625,7 @@ namespace Unosquare.Labs.SshDeploy
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port, verbOptions.Username, verbOptions.Password);            
 
             // Validate source path exists
-            if (System.IO.Directory.Exists(verbOptions.SourcePath) == false)
+            if (Directory.Exists(verbOptions.SourcePath) == false)
                 throw new DirectoryNotFoundException("Source Path '" + verbOptions.SourcePath + "' was not found.");
 
             // Instantiate an SFTP client and an SSH client
@@ -697,8 +661,8 @@ namespace Unosquare.Labs.SshDeploy
         public static void ExecuteMonitorVerb(MonitorVerbOptions verbOptions)
         {
             // Initialize Variables
-            IsDeploying = false;
-            DeploymentNumber = 1;
+            _isDeploying = false;
+            _deploymentNumber = 1;
 
             // Normalize and show the options to the user so he knows what he's doing
             NormalizeMonitorVerbOptions(verbOptions);
@@ -707,17 +671,15 @@ namespace Unosquare.Labs.SshDeploy
             // Create connection info
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port, verbOptions.Username, verbOptions.Password);
             // Create a file watcher
-            var watcher = new FileSystemWatcher()
+            var watcher = new FileSystemWatcher
             {
                 Path = verbOptions.SourcePath,
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
+                Filter = Path.GetFileName(verbOptions.MonitorFile)
             };
-            // Add a filter specifying the file that will be observed for changes
-            watcher.Filter = Path.GetFileName(verbOptions.MonitorFile);
-
-
+            
             // Validate source path exists
-            if (System.IO.Directory.Exists(verbOptions.SourcePath) == false)
+            if (Directory.Exists(verbOptions.SourcePath) == false)
                 throw new DirectoryNotFoundException("Source Path '" + verbOptions.SourcePath + "' was not found.");
 
             // Instantiate an SFTP client and an SSH client
@@ -734,7 +696,7 @@ namespace Unosquare.Labs.SshDeploy
                     using (var shellStream = CreateShellStream(sshClient))
                     {
                         // Adds an onChange event and enables it
-                        watcher.Changed += new FileSystemEventHandler((s, e) => CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions));
+                        watcher.Changed += (s, e) => CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
                         watcher.EnableRaisingEvents = true;
 
                         $"File System Monitor is now running.".WriteLine();

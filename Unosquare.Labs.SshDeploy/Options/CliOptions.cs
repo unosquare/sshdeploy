@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Unosquare.Swan.Attributes;
+﻿using Unosquare.Swan.Attributes;
 
 namespace Unosquare.Labs.SshDeploy.Options
 {
