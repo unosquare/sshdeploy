@@ -271,6 +271,24 @@ namespace Unosquare.Labs.SshDeploy
             $"SSH client disconnected.".WriteLine();
             $"Application will exit now.".WriteLine();
         }
+        private static void StopMonitorMode(SftpClient sftpClient, SshClient sshClient, FileSystemWatcher watcher)
+        {
+            string.Empty.WriteLine();
+
+            watcher.EnableRaisingEvents = false;
+            $"File System monitor was stopped.".WriteLine();
+
+            if (sftpClient.IsConnected == true)
+                sftpClient.Disconnect();
+
+            $"SFTP client disconnected.".WriteLine();
+
+            if (sshClient.IsConnected == true)
+                sshClient.Disconnect();
+
+            $"SSH client disconnected.".WriteLine();
+            $"Application will exit now.".WriteLine();
+        }
 
         /// <summary>
         /// Prints the given exception using the Console Manager.
@@ -525,7 +543,7 @@ namespace Unosquare.Labs.SshDeploy
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void StartUserInteraction(FileSystemMonitor fsMonitor, SshClient sshClient, SftpClient sftpClient, ShellStream shellStream, MonitorVerbOptions verbOptions)
+        private static void StartUserInteraction( SshClient sshClient, SftpClient sftpClient, ShellStream shellStream, MonitorVerbOptions verbOptions)
         {
             ForwardShellStreamInput = false;
 
@@ -624,6 +642,54 @@ namespace Unosquare.Labs.SshDeploy
         #region Main Verb Methods
 
         /// <summary>
+        /// Executes the monitor verb. Using a legacy method.
+        /// </summary>
+        /// <param name="verbOptions">The verb options.</param>
+        /// <exception cref="DirectoryNotFoundException">Source Path ' + sourcePath + ' was not found.</exception>
+        public static void ExecuteMonitorVerbLegacy(MonitorVerbOptions verbOptions)
+        {
+            // Initialize Variables
+            IsDeploying = false;
+            DeploymentNumber = 1;
+
+            // Normalize and show the options to the user so he knows what he's doing
+            NormalizeMonitorVerbOptions(verbOptions);
+            PrintMonitorOptions(verbOptions);
+
+            // Create the FS Monitor and connection info
+            var fsMonitor = new FileSystemMonitor(1, verbOptions.SourcePath);
+            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port, verbOptions.Username, verbOptions.Password);            
+
+            // Validate source path exists
+            if (System.IO.Directory.Exists(verbOptions.SourcePath) == false)
+                throw new DirectoryNotFoundException("Source Path '" + verbOptions.SourcePath + "' was not found.");
+
+            // Instantiate an SFTP client and an SSH client
+            // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
+            using (var sftpClient = new SftpClient(simpleConnectionInfo))
+            {
+                // SSH will be used to execute commands and to get the output back from the program we are running
+                using (var sshClient = new SshClient(simpleConnectionInfo))
+                {
+                    // Connect SSH and SFTP clients
+                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
+                   
+                    // Create the shell stream so we can get debugging info from the post-deployment command
+                    using (var shellStream = CreateShellStream(sshClient))
+                    {
+                        // Starts the FS Monitor and binds the event handler
+                        StartMonitorMode(fsMonitor, sshClient, sftpClient, shellStream, verbOptions);
+
+                        // Allows user interaction with the shell
+                        StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
+
+                        // When we quit, we stop the monitor and disconnect the clients
+                        StopMonitorMode(sftpClient, sshClient, fsMonitor);
+                    }
+                }
+            }
+        }
+        /// <summary>
         /// Executes the monitor verb. This is the main method.
         /// </summary>
         /// <param name="verbOptions">The verb options.</param>
@@ -638,9 +704,17 @@ namespace Unosquare.Labs.SshDeploy
             NormalizeMonitorVerbOptions(verbOptions);
             PrintMonitorOptions(verbOptions);
 
-            // Create the FS Monitor and connection info
-            var fsMonitor = new FileSystemMonitor(1, verbOptions.SourcePath);
+            // Create connection info
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port, verbOptions.Username, verbOptions.Password);
+            // Create a file watcher
+            var watcher = new FileSystemWatcher()
+            {
+                Path = verbOptions.SourcePath,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
+            };
+            // Add a filter specifying the file that will be observed for changes
+            watcher.Filter = Path.GetFileName(verbOptions.MonitorFile);
+
 
             // Validate source path exists
             if (System.IO.Directory.Exists(verbOptions.SourcePath) == false)
@@ -659,14 +733,20 @@ namespace Unosquare.Labs.SshDeploy
                     // Create the shell stream so we can get debugging info from the post-deployment command
                     using (var shellStream = CreateShellStream(sshClient))
                     {
-                        // Starts the FS Monitor and binds the event handler
-                        StartMonitorMode(fsMonitor, sshClient, sftpClient, shellStream, verbOptions);
+                        // Adds an onChange event and enables it
+                        watcher.Changed += new FileSystemEventHandler((s, e) => CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions));
+                        watcher.EnableRaisingEvents = true;
+
+                        $"File System Monitor is now running.".WriteLine();
+                        $"Writing a new monitor file will trigger a new deployment.".WriteLine();
+                        $"Press H for help!".WriteLine();
+                        $"Ground Control to Major Tom: Have a nice trip in space!.".WriteLine(ConsoleColor.DarkCyan);
 
                         // Allows user interaction with the shell
-                        StartUserInteraction(fsMonitor, sshClient, sftpClient, shellStream, verbOptions);
+                        StartUserInteraction( sshClient, sftpClient, shellStream, verbOptions);
 
                         // When we quit, we stop the monitor and disconnect the clients
-                        StopMonitorMode(sftpClient, sshClient, fsMonitor);
+                        StopMonitorMode(sftpClient, sshClient, watcher);
                     }
                 }
             }
