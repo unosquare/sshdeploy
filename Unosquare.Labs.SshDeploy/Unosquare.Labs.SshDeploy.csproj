@@ -16,6 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
+    <PackageReference Include="System.IO.FileSystem.Watcher" Version="4.3.0" />
     <PackageReference Include="Unosquare.Swan" Version="0.21.0" />
   </ItemGroup>
 
