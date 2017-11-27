@@ -75,7 +75,11 @@ namespace Unosquare.Labs.SshDeploy
                 {
                     TitleSuffix = " - Monitor Mode" + TitleSuffix;
                     Title = "Monitor";
-                    DeploymentManager.ExecuteMonitorVerb(options.MonitorVerbOptions);
+
+                    if(options.MonitorVerbOptions.Legacy)
+                        DeploymentManager.ExecuteMonitorVerbLegacy(options.MonitorVerbOptions);
+                    else
+                        DeploymentManager.ExecuteMonitorVerb(options.MonitorVerbOptions);
                 }
             }
             catch (Exception ex)
@@ -89,10 +93,6 @@ namespace Unosquare.Labs.SshDeploy
                 $"Completed with errors. Exit Code {Environment.ExitCode.ToString()}".Error();
             else
                 $"Completed.".WriteLine();
-
-            
-
-
         }
     }
 }
