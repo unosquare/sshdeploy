@@ -20,19 +20,8 @@ namespace Unosquare.Labs.SshDeploy.Options
         [ArgumentOption("clean", DefaultValue = false, HelpText = "Deletes all files and folders on the target before pushing the new files.  0 to disable, any other number to enable.", Required = false)]
         public bool CleanTarget { get; set; }
 
-        [ArgumentOption("exclude", DefaultValue = ".ready|.vshost.exe|.vshost.exe.config", HelpText = "a pipe (|) separated list of file suffixes to ignore while deploying.", Required = false)]
-        public string ExcludeFileSuffixes { get; set; }
-
-        public string[] ExcludeFileSuffixList
-        {
-            get
-            {
-                var ignoreFileSuffixes = string.IsNullOrWhiteSpace(ExcludeFileSuffixes) ?
-                    new string[] { } :
-                    ExcludeFileSuffixes.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-
-                return ignoreFileSuffixes;
-            }
-        }
+        [ArgumentOption("exclude", Separator ='|', DefaultValue = ".ready|.vshost.exe|.vshost.exe.config", HelpText = "a pipe (|) separated list of file suffixes to ignore while deploying.", Required = false)]
+        public string[] ExcludeFileSuffixes { get; set; }
+        
     }
 }

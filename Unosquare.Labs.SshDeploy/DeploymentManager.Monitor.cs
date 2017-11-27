@@ -137,7 +137,7 @@
             "Monitor parameters follow: ".WriteLine();
             $"    Monitor File    {verbOptions.MonitorFile}".WriteLine(ConsoleColor.DarkYellow);
             $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Excluded Files  {verbOptions.ExcludeFileSuffixes}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Excluded Files {String.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
             $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
             $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
             $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
@@ -206,7 +206,7 @@
         {
             var filesInSource = Directory.GetFiles(verbOptions.SourcePath, FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
-            var filesToDeploy = filesInSource.Where(file => !verbOptions.ExcludeFileSuffixList.Any(file.EndsWith))
+            var filesToDeploy = filesInSource.Where(file => !verbOptions.ExcludeFileSuffixes.Any(file.EndsWith))
                 .ToList();
 
             $"    Deploying {filesToDeploy.Count} files.".WriteLine(ConsoleColor.Green);
