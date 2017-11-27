@@ -8,6 +8,14 @@ A command-line tool that enables quick deployments over SSH. This is program was
 
 *:star:Please star this project if you find it useful!*
 
+## Install
+ As for now  CLI does not currently allow command line installation so you'll need to modify your csproj manually.
+ ```xml
+    <ItemGroup>
+     <DotNetCliToolReference Include="dotnet-sshdeploy" Version="*" />
+    </ItemGroup>
+ ```
+ 
 <h2>Usage Example</h2>
 
 The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
