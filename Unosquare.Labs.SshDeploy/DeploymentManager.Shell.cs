@@ -61,10 +61,7 @@
                                 }
                                 else
                                 {
-                                    var originalColor = Console.ForegroundColor;
-                                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                                    Console.Write("[NPC " + rxByte.ToString() + "]");
-                                    Console.ForegroundColor = originalColor;
+                                    $"[NPC {rxByte}]".WriteLine(ConsoleColor.DarkYellow);
                                 }
 
                                 rxBytePrevious = rxByte;

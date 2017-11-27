@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -26,11 +25,7 @@
         public FileSystemEntryChangeType ChangeType { get; }
         public string Path { get; }
 
-        public override string ToString()
-        {
-            return string.Format(CultureInfo.InvariantCulture,
-                "{0}: {1}", ChangeType, Path);
-        }
+        public override string ToString() => $"{ChangeType}: {Path}";
     }
 
     /// <summary>
@@ -212,6 +207,7 @@
         {
             ClearMonitorEntries();
             var files = Directory.GetFiles(FileSystemPath, AllFilesPattern, SearchOption.AllDirectories);
+
             foreach (var file in files)
             {
                 try
@@ -284,9 +280,6 @@
         /// Clears all the dictionary entries.
         /// This method is used when we startup or reset the file system monitor
         /// </summary>
-        private void ClearMonitorEntries()
-        {
-            _entries.Clear();
-        }
+        private void ClearMonitorEntries() => _entries.Clear();
     }
 }
