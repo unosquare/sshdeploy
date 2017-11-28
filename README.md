@@ -137,5 +137,5 @@ Here's a good example of using pre and post commands to acocmplish the above
 
 <h2>Special Thanks</h2>
 <p>
-This code uses the very cool Renci's <a href="https://github.com/sshnet/SSH.NET" target="_blank">SSH.NET library</a> and the awesome Command Line Parser library available <a href="https://github.com/gsscoder/commandline" target="_blank">here</a>.
+This code uses the very cool Renci's <a href="https://github.com/sshnet/SSH.NET" target="_blank">SSH.NET library</a> and the awesome SWAN library available <a href="https://github.com/unosquare/swan" target="_blank">here</a>.
 </p>
