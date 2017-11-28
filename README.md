@@ -4,7 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/p6c0whp2xfajuu0c?svg=true)](https://ci.appveyor.com/project/geoperez/sshdeploy)
 [![NuGet version](https://badge.fury.io/nu/sshdeploy.svg)](https://badge.fury.io/nu/sshdeploy)
 
-A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
+A `dotnet` CLI extension that enables quick deployments over SSH. This program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
 
 *:star:Please star this project if you find it useful!*
 
