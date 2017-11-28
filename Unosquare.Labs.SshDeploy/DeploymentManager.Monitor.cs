@@ -146,6 +146,21 @@
             $"    Post Deployment {verbOptions.PostCommand}".WriteLine(ConsoleColor.DarkYellow);
         }
 
+        private static void PrintPushOptions ( PushVerbOptions verbOptions)
+        {
+            string.Empty.WriteLine();
+            "Deploying....".WriteLine();
+            $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Excluded Files {String.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Clean Target    {(verbOptions.CleanTarget ? "YES" : "NO")}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Pre Deployment  {verbOptions.PreCommand}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Post Deployment {verbOptions.PostCommand}".WriteLine(ConsoleColor.DarkYellow);
+
+        }
+
         /// <summary>
         /// Checks that both, SFTP and SSH clients have a working connection. If they don't it attempts to reconnect.
         /// </summary>
@@ -204,7 +219,15 @@
         /// <param name="verbOptions">The verb options.</param>
         private static void UploadFilesToTarget(SftpClient sftpClient, PushVerbOptions verbOptions)
         {
-            var filesInSource = Directory.GetFiles(verbOptions.SourcePath, FileSystemMonitor.AllFilesPattern,
+            var recentlyUpdatedDirectory = new DirectoryInfo(Path.Combine(Program.CurrentDirectory, "bin")).GetDirectories()
+                .OrderByDescending(d => d.LastWriteTimeUtc).FirstOrDefault() ?? throw new ArgumentNullException("bin folder does not exist");
+
+            var recentBuildDirectory = new DirectoryInfo(Path.Combine(Program.CurrentDirectory, "bin",recentlyUpdatedDirectory.ToString())).GetDirectories()
+               .OrderByDescending(d => d.LastWriteTimeUtc).FirstOrDefault() ?? throw new  ArgumentNullException("There is no build folder to deploy");
+
+            var directoryPath = Path.Combine(Program.CurrentDirectory, "bin", recentlyUpdatedDirectory.ToString(), recentBuildDirectory.ToString());
+
+            var filesInSource = Directory.GetFiles(directoryPath, FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
             var filesToDeploy = filesInSource.Where(file => !verbOptions.ExcludeFileSuffixes.Any(file.EndsWith))
                 .ToList();
@@ -213,7 +236,7 @@
 
             foreach (var file in filesToDeploy)
             {
-                var relativePath = MakeRelativePath(file, verbOptions.SourcePath + Path.DirectorySeparatorChar);
+                var relativePath = Path.GetFileName(file);
                 var fileTargetPath = Path.Combine(verbOptions.TargetPath, relativePath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
                 var targetDirectory = Path.GetDirectoryName(fileTargetPath)
@@ -706,7 +729,9 @@
         }
 
         public static void ExecutePushVerb(PushVerbOptions verbOptions)
-        {        
+        {
+            PrintPushOptions(verbOptions);
+
             // Create connection info
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
                 verbOptions.Username, verbOptions.Password);
@@ -727,16 +752,6 @@
 
                     using (var shellStream = CreateShellStream(sshClient))
                     {
-                        "Deploying....".WriteLine();
-                        $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
-                        $"    Excluded Files {String.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
-                        $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
-                        $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
-                        $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
-                        $"    Clean Target    {(verbOptions.CleanTarget ? "YES" : "NO")}".WriteLine(ConsoleColor.DarkYellow);
-                        $"    Pre Deployment  {verbOptions.PreCommand}".WriteLine(ConsoleColor.DarkYellow);
-                        $"    Post Deployment {verbOptions.PostCommand}".WriteLine(ConsoleColor.DarkYellow);
-
                         CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
                     }
                 }
