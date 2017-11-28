@@ -80,6 +80,14 @@ namespace Unosquare.Labs.SshDeploy
                     else
                         DeploymentManager.ExecuteMonitorVerb(options.MonitorVerbOptions);
                 }
+                else if (options.PushVerbOptions != null)
+                {
+                    TitleSuffix = $" - Push Mode{TitleSuffix}";
+                    Title = "Push";
+                    DeploymentManager.ExecutePushVerb(options.PushVerbOptions);
+                    Console.ReadKey();
+
+                }
             }
             catch (Exception ex)
             {

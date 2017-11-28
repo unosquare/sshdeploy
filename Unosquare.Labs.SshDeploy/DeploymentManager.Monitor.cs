@@ -99,7 +99,7 @@
         /// </summary>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void RunShellStreamCommand(ShellStream shellStream, MonitorVerbOptions verbOptions)
+        private static void RunShellStreamCommand(ShellStream shellStream, PushVerbOptions verbOptions)
         {
             var commandText = verbOptions.PostCommand;
             if (string.IsNullOrWhiteSpace(commandText)) return;
@@ -115,7 +115,7 @@
         /// </summary>
         /// <param name="sshClient">The SSH client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void RunSshClientCommand(SshClient sshClient, MonitorVerbOptions verbOptions)
+        private static void RunSshClientCommand(SshClient sshClient, PushVerbOptions verbOptions)
         {
             var commandText = verbOptions.PreCommand;
             if (string.IsNullOrWhiteSpace(commandText)) return;
@@ -153,7 +153,7 @@
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
         private static void EnsureMonitorConnection(SshClient sshClient, SftpClient sftpClient,
-            MonitorVerbOptions verbOptions)
+            CliVerbOptionsBase verbOptions)
         {
             if (sshClient.IsConnected == false)
             {
@@ -173,7 +173,7 @@
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void CreateTargetPath(SftpClient sftpClient, MonitorVerbOptions verbOptions)
+        private static void CreateTargetPath(SftpClient sftpClient, PushVerbOptions verbOptions)
         {
             if (sftpClient.Exists(verbOptions.TargetPath)) return;
 
@@ -189,7 +189,7 @@
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void PrepareTargetPath(SftpClient sftpClient, MonitorVerbOptions verbOptions)
+        private static void PrepareTargetPath(SftpClient sftpClient, PushVerbOptions verbOptions)
         {
             if (!verbOptions.CleanTarget) return;
             $"    Cleaning Target Path '{verbOptions.TargetPath}'".WriteLine(ConsoleColor.Green);
@@ -202,7 +202,7 @@
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void UploadFilesToTarget(SftpClient sftpClient, MonitorVerbOptions verbOptions)
+        private static void UploadFilesToTarget(SftpClient sftpClient, PushVerbOptions verbOptions)
         {
             var filesInSource = Directory.GetFiles(verbOptions.SourcePath, FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
@@ -408,7 +408,7 @@
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
         private static void CreateNewDeployment(SshClient sshClient, SftpClient sftpClient, ShellStream shellStream,
-            MonitorVerbOptions verbOptions)
+            PushVerbOptions verbOptions)
         {
             // At this point the change has been detected; Make sure we are not deploying
             string.Empty.WriteLine();
@@ -700,6 +700,44 @@
 
                         // When we quit, we stop the monitor and disconnect the clients
                         StopMonitorMode(sftpClient, sshClient, watcher);
+                    }
+                }
+            }
+        }
+
+        public static void ExecutePushVerb(PushVerbOptions verbOptions)
+        {        
+            // Create connection info
+            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
+                verbOptions.Username, verbOptions.Password);
+          
+            // Validate source path exists
+            if (Directory.Exists(verbOptions.SourcePath) == false)
+                throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
+
+            // Instantiate an SFTP client and an SSH client
+            // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
+            using (var sftpClient = new SftpClient(simpleConnectionInfo))
+            {
+                // SSH will be used to execute commands and to get the output back from the program we are running
+                using (var sshClient = new SshClient(simpleConnectionInfo))
+                {
+                    // Connect SSH and SFTP clients
+                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
+
+                    using (var shellStream = CreateShellStream(sshClient))
+                    {
+                        "Deploying....".WriteLine();
+                        $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
+                        $"    Excluded Files {String.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
+                        $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
+                        $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
+                        $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
+                        $"    Clean Target    {(verbOptions.CleanTarget ? "YES" : "NO")}".WriteLine(ConsoleColor.DarkYellow);
+                        $"    Pre Deployment  {verbOptions.PreCommand}".WriteLine(ConsoleColor.DarkYellow);
+                        $"    Post Deployment {verbOptions.PostCommand}".WriteLine(ConsoleColor.DarkYellow);
+
+                        CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
                     }
                 }
             }
