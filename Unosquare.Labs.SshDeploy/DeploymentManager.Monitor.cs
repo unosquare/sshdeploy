@@ -211,7 +211,30 @@
             DeleteLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
 
         }
+        private static string GetDirectoryPath()
+        {            
+            var recentlyUpdatedDirectory = Directory.Exists(Path.Combine(Program.CurrentDirectory, "bin"))
+                ? new DirectoryInfo(Path.Combine(Program.CurrentDirectory, "bin")).GetDirectories()
+                    .OrderByDescending(d => d.LastWriteTimeUtc).FirstOrDefault()
+                : null;
 
+            if(recentlyUpdatedDirectory == null)
+            {
+                $"There is no directory to deploy".Error();
+                return null;
+            }
+
+            var recentBuildDirectory =  new DirectoryInfo(Path.Combine(Program.CurrentDirectory, "bin", recentlyUpdatedDirectory.ToString())).GetDirectories()
+               .OrderByDescending(d => d.LastWriteTimeUtc).FirstOrDefault() ??  null;
+
+            if (recentBuildDirectory == null)
+            {
+                $"There is no directory to deploy".Error();
+                return null;
+            }
+
+            return Path.Combine(Program.CurrentDirectory, "bin", recentlyUpdatedDirectory.ToString(), recentBuildDirectory.ToString());
+        }
         /// <summary>
         /// Uploads the files in the source Windows path to the target Linux path.
         /// </summary>
@@ -219,13 +242,7 @@
         /// <param name="verbOptions">The verb options.</param>
         private static void UploadFilesToTarget(SftpClient sftpClient, PushVerbOptions verbOptions)
         {
-            var recentlyUpdatedDirectory = new DirectoryInfo(Path.Combine(Program.CurrentDirectory, "bin")).GetDirectories()
-                .OrderByDescending(d => d.LastWriteTimeUtc).FirstOrDefault() ?? throw new ArgumentNullException("bin folder does not exist");
-
-            var recentBuildDirectory = new DirectoryInfo(Path.Combine(Program.CurrentDirectory, "bin",recentlyUpdatedDirectory.ToString())).GetDirectories()
-               .OrderByDescending(d => d.LastWriteTimeUtc).FirstOrDefault() ?? throw new  ArgumentNullException("There is no build folder to deploy");
-
-            var directoryPath = Path.Combine(Program.CurrentDirectory, "bin", recentlyUpdatedDirectory.ToString(), recentBuildDirectory.ToString());
+            var directoryPath = string.IsNullOrEmpty(verbOptions.SourcePath) ? GetDirectoryPath() : verbOptions.SourcePath;
 
             var filesInSource = Directory.GetFiles(directoryPath, FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
@@ -481,15 +498,23 @@
         /// <param name="verbOptions">The verb options.</param>
         private static void NormalizeMonitorVerbOptions(MonitorVerbOptions verbOptions)
         {
-            var sourcePath = Path.GetFullPath(verbOptions.SourcePath.Trim());
+            var sourcePath = string.IsNullOrEmpty(verbOptions.SourcePath) ? GetDirectoryPath() : verbOptions.SourcePath.Trim();
             var targetPath = verbOptions.TargetPath.Trim();
             var monitorFile = Path.IsPathRooted(verbOptions.MonitorFile)
                 ? Path.GetFullPath(verbOptions.MonitorFile)
                 : Path.Combine(sourcePath, verbOptions.MonitorFile);
-
-            verbOptions.SourcePath = sourcePath;
+            
             verbOptions.TargetPath = targetPath;
             verbOptions.MonitorFile = monitorFile;
+            verbOptions.SourcePath = sourcePath;
+        }
+        private static void NormalizePushVerbOptions(PushVerbOptions verbOptions)
+        {
+            var sourcePath = string.IsNullOrEmpty(verbOptions.SourcePath) ? GetDirectoryPath() : verbOptions.SourcePath.Trim();
+            var targetPath = verbOptions.TargetPath.Trim();
+
+            verbOptions.TargetPath = targetPath;
+            verbOptions.SourcePath = sourcePath;
         }
 
         /// <summary>
@@ -691,6 +716,8 @@
                 Filter = Path.GetFileName(verbOptions.MonitorFile)
             };
 
+            if (string.IsNullOrEmpty(verbOptions.SourcePath))
+                throw new DirectoryNotFoundException("Source Path not found");
             // Validate source path exists
             if (Directory.Exists(verbOptions.SourcePath) == false)
                 throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
@@ -730,14 +757,17 @@
 
         public static void ExecutePushVerb(PushVerbOptions verbOptions)
         {
+            NormalizePushVerbOptions(verbOptions);
             PrintPushOptions(verbOptions);
-
+           
             // Create connection info
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
                 verbOptions.Username, verbOptions.Password);
-          
+
+            if (string.IsNullOrEmpty(verbOptions.SourcePath))
+                throw new DirectoryNotFoundException("Source Path not found");
             // Validate source path exists
-            if (Directory.Exists(verbOptions.SourcePath) == false)
+            if ( Directory.Exists(verbOptions.SourcePath) == false)
                 throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
 
             // Instantiate an SFTP client and an SSH client

@@ -5,7 +5,7 @@ namespace Unosquare.Labs.SshDeploy.Options
 {
     public class PushVerbOptions : CliVerbOptionsBase
     {
-        [ArgumentOption('s', "source",HelpText = "The source path for the files to transfer", Required = true)]
+        [ArgumentOption('s', "source", HelpText = "The source path for the files to transfer", Required = false)]
         public string SourcePath { get; set; }
 
         [ArgumentOption('t', "target", HelpText = "The target path of the files to transfer", Required = true)]
