@@ -4,12 +4,12 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/p6c0whp2xfajuu0c?svg=true)](https://ci.appveyor.com/project/geoperez/sshdeploy)
 [![NuGet version](https://badge.fury.io/nu/sshdeploy.svg)](https://badge.fury.io/nu/sshdeploy)
 
-A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
+A `dotnet` CLI extension that enables quick deployments over SSH. This program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
 
 *:star:Please star this project if you find it useful!*
 
 ## Install
- As for now  CLI does not currently allow command line installation so you'll need to modify your csproj manually.
+ As of now  CLI does not allow command line installation so you'll need to modify your csproj manually.
  ```xml
     <ItemGroup>
      <DotNetCliToolReference Include="dotnet-sshdeploy" Version="*" />
@@ -97,7 +97,7 @@ Ground Control to Major Tom: Have a nice trip in space!
 
 Here's a good example of using pre and post commands to acocmplish the above
 
-<code>sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False
+<code>dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False
 </code>
 
 <h2>Monitor Mode Documentation</h2><small>from command line help output</small>
@@ -133,9 +133,11 @@ Here's a good example of using pre and post commands to acocmplish the above
                     be established.
 
   -w, --password    (Default: raspberry) The password for the given username.
+  
+  -l, --legacy      (Default: False) Monitor files using legacy method
 </pre>
 
 <h2>Special Thanks</h2>
 <p>
-This code uses the very cool Renci's <a href="https://github.com/sshnet/SSH.NET" target="_blank">SSH.NET library</a> and the awesome Command Line Parser library available <a href="https://github.com/gsscoder/commandline" target="_blank">here</a>.
+This code uses the very cool Renci's <a href="https://github.com/sshnet/SSH.NET" target="_blank">SSH.NET library</a> and the awesome SWAN library available <a href="https://github.com/unosquare/swan" target="_blank">here</a>.
 </p>
