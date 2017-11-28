@@ -9,7 +9,7 @@ A `dotnet` CLI extension that enables quick deployments over SSH. This program w
 *:star:Please star this project if you find it useful!*
 
 ## Install
- As for now  CLI does not currently allow command line installation so you'll need to modify your csproj manually.
+ As of now  CLI does not currently allow command line installation so you'll need to modify your csproj manually.
  ```xml
     <ItemGroup>
      <DotNetCliToolReference Include="dotnet-sshdeploy" Version="*" />
