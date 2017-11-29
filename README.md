@@ -98,44 +98,27 @@ Ground Control to Major Tom: Have a nice trip in space!
 
 Here's a good example of using pre and post commands to acocmplish the above
 
-`dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False`
+```
+dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False
+```
 
 <h2>Monitor Mode Documentation</h2><small>from command line help output</small>
 
-<pre>
-  -m, --monitor     (Default: sshdeploy.ready) The path to the file used as a
-                    signal that the files are ready to be deployed. Once the
-                    deployemtn is completed, the file is deleted.
-
-  -s, --source      Required. The source path for the files to transfer
-
-  -t, --target      Required. The target path of the files to transfer
-
-  --pre             Command to execute prior file transfer to target
-
-  --post            Command to execute after file transfer to target
-
-  --clean           (Default: True) Deletes all files and folders on the target
-                    before pushing the new files
-
-  --exclude         (Default: .ready|.vshost.exe|.vshost.exe.config) a pipe (|)
-                    separated list of file suffixes to ignore while deploying.
-
-  -v, --verbose     (Default: True) Add this option to print messages to
-                    standard error and standard output streams.
-
-  -h, --host        Required. Hostname or IP Address of the target. -- Must be
-                    running an SSH server.
-
-  -p, --port        (Default: 22) Port on which SSH is running.
-
-  -u, --username    (Default: pi) The username under which the connection will
-                    be established.
-
-  -w, --password    (Default: raspberry) The password for the given username.
-  
-  -l, --legacy      (Default: False) Monitor files using legacy method
-</pre>
+Argument Short Name | Argument long Name | Description
+------------ | ------------- | -------------
+  -m | --monitor |    (Default: sshdeploy.ready) The path to the file used as a signal that the files are ready to be deployed. Once the deploymetn is completed, the file is deleted.
+  -s| --source |     Required. The source path for the files to transfer
+  -t | --target |     Required. The target path of the files to transfer
+none | --pre    | Command to execute prior file transfer to target
+none |--post    | Command to execute after file transfer to target
+none | --clean  | (Default: True) Deletes all files and folders on the target before pushing the new files
+none | --exclude |(Default: .ready|.vshost.exe|.vshost.exe.config) a pipe (|) separated list of file suffixes to ignore while deploying.
+  -v | --verbose |(Default: True) Add this option to print messages to standard error and standard output streams.
+  -h | --host    |Required. Hostname or IP Address of the target. -- Must be running an SSH server.
+  -p | --port    |(Default: 22) Port on which SSH is running.
+  -u |--username |(Default: pi) The username under which the connection will be established.
+  -w | --password|(Default: raspberry) The password for the given username.
+  -l | --legacy  |(Default: False) Monitor files using legacy method
 
 ## Push Mode Documentation
 
@@ -174,7 +157,9 @@ Push is a single use command that does not monitor file changes continuously unl
 
 Here's a simple example:
 
-`dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.194`
+```
+dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.194
+```
 
 ## Special Thanks
 
