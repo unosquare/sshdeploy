@@ -98,7 +98,7 @@ Ground Control to Major Tom: Have a nice trip in space!
 
 Here's a good example of using pre and post commands to acocmplish the above
 
-`dotnet sshdeploy monitor -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False`
+`dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False`
 
 <h2>Monitor Mode Documentation</h2><small>from command line help output</small>
 
@@ -143,9 +143,9 @@ Push is a single use command that does not monitor file changes continuously unl
 
 <pre>
 
- -c --configuration (Default: Debug) Target configuration. 
+ -c, --configuration (Default: Debug) Target configuration. 
 
- -f --framework     Required. The target framework
+ -f, --framework    Required. The target framework
   
   --pre             Command to execute prior file transfer to target
 
@@ -174,7 +174,7 @@ Push is a single use command that does not monitor file changes continuously unl
 
 Here's a simple example:
 
-`dotnet sshdeploy push -t "/home/pi/libfprint-cs" -h 192.168.2.194`
+`dotnet sshdeploy push -f netcoreapp2.0 netcore -t "/home/pi/libfprint-cs" -h 192.168.2.194`
 
 ## Special Thanks
 
