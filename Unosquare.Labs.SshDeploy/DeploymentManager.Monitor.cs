@@ -181,7 +181,6 @@
                 ConsoleColor.Green);
             CreateLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
             $"    Target Path '{verbOptions.TargetPath}' created successfully.".WriteLine(ConsoleColor.Green);
-
         }
 
         /// <summary>

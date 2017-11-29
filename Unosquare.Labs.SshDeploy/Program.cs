@@ -94,7 +94,6 @@ namespace Unosquare.Labs.SshDeploy
                     Title = "Push";
                     DeploymentManager.ExecutePushVerb(options.PushVerbOptions);
                     Console.ReadKey();
-
                 }
             }
             catch (Exception ex)

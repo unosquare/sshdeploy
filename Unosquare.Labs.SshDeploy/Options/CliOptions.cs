@@ -15,6 +15,5 @@ namespace Unosquare.Labs.SshDeploy.Options
 
         [VerbOption("shell", HelpText = "Opens an interactive mode shell")]
         public ShellVerbOptions ShellVerbOptions { get; set; }
-
     }
 }

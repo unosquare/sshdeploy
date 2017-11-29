@@ -1,15 +1,15 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using Renci.SshNet;
-using Unosquare.Labs.SshDeploy.Options;
-using Unosquare.Swan;
-
-namespace Unosquare.Labs.SshDeploy
+﻿namespace Unosquare.Labs.SshDeploy
 {
+    using System;
+    using System.Linq;
+    using System.Text;
+    using Renci.SshNet;
+    using Options;
+    using Swan;
+
     public static partial class DeploymentManager
     {
-
+        private const string TerminalName = "xterm"; // "vanilla" works well; "xterm" is also a good option
         private const string LinuxCurrentDirectory = ".";
         private const string LinuxParentDirectory = "..";
         private const char LinuxDirectorySeparatorChar = '/';
@@ -17,7 +17,6 @@ namespace Unosquare.Labs.SshDeploy
         private const string LinuxDirectorySeparator = "/";
         private const byte Escape = 27; // Escape sequence character
         private static readonly byte[] ControlSequenceInitiators = {(byte) '[', (byte) ']'};
-        private const string TerminalName = "xterm"; // "vanilla" works well; "xterm" is also a good option
 
         public static void ExecuteRunVerb(RunVerbOptions invokedVerbOptions)
         {
@@ -41,7 +40,6 @@ namespace Unosquare.Labs.SshDeploy
         {
             "SSH TX:".WriteLine();
             commandText.WriteLine(ConsoleColor.Green);
-
 
             using (var command = client.CreateCommand(commandText))
             {
