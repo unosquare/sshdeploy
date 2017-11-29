@@ -211,6 +211,11 @@
             DeleteLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
 
         }
+
+        /// <summary>
+        /// Gets the most recently updated build directory if it exists
+        /// </summary>
+        /// <returns> A directory or null</returns>
         private static string GetDirectoryPath()
         {            
             var recentlyUpdatedDirectory = Directory.Exists(Path.Combine(Program.CurrentDirectory, "bin"))
@@ -242,9 +247,7 @@
         /// <param name="verbOptions">The verb options.</param>
         private static void UploadFilesToTarget(SftpClient sftpClient, PushVerbOptions verbOptions)
         {
-            var directoryPath = string.IsNullOrEmpty(verbOptions.SourcePath) ? GetDirectoryPath() : verbOptions.SourcePath;
-
-            var filesInSource = Directory.GetFiles(directoryPath, FileSystemMonitor.AllFilesPattern,
+            var filesInSource = Directory.GetFiles(verbOptions.SourcePath, FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
             var filesToDeploy = filesInSource.Where(file => !verbOptions.ExcludeFileSuffixes.Any(file.EndsWith))
                 .ToList();
