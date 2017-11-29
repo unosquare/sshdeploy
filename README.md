@@ -109,10 +109,10 @@ Argument Short Name | Argument long Name | Description | Default | Required
   -m | --monitor | The path to the file used as a signal that the files are ready to be deployed. Once the deploymetn is completed, the file is deleted. | sshdeploy.ready | YES
   -s| --source   | The source path for the files to transfer | | YES
   -t | --target  | The target path of the files to transfer  | | YES
-- | --pre     | Command to execute prior file transfer to target | | NO
-- |--post     | Command to execute after file transfer to target | | NO
-- | --clean   | Deletes all files and folders on the target before pushing the new files | True |NO
-- | --exclude | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO
+\- | --pre     | Command to execute prior file transfer to target | | NO
+\- |--post     | Command to execute after file transfer to target | | NO
+\- | --clean   | Deletes all files and folders on the target before pushing the new files | True |NO
+\- | --exclude | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO
   -v | --verbose |Add this option to print messages to standard error and standard output streams. | True | NO
   -h | --host    | Hostname or IP Address of the target. -- Must be running an SSH server. | |YES
   -p | --port    | Port on which SSH is running. | 22 | NO
