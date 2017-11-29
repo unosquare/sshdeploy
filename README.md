@@ -174,7 +174,7 @@ Push is a single use command that does not monitor file changes continuously unl
 
 Here's a simple example:
 
-`dotnet sshdeploy push -f netcoreapp2.0 netcore -t "/home/pi/libfprint-cs" -h 192.168.2.194`
+`dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.194`
 
 ## Special Thanks
 
