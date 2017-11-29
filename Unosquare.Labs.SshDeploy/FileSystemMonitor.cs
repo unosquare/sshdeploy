@@ -34,10 +34,9 @@
     public class FileSystemEntry
     {
         /// <summary>
-        /// Initializes a new instance of this class.
-        /// The path needs to point to a file.
+        /// Initializes a new instance of the <see cref="FileSystemEntry"/> class.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">The path.</param>
         public FileSystemEntry(string path)
         {
             var info = new FileInfo(path);
@@ -61,7 +60,7 @@
     public class FileSystemEntryDictionary : Dictionary<string, FileSystemEntry>
     {
         /// <summary>
-        /// Initializes a new instance of this class
+        /// Initializes a new instance of the <see cref="FileSystemEntryDictionary"/> class.
         /// </summary>
         public FileSystemEntryDictionary()
             : base(1024, StringComparer.InvariantCultureIgnoreCase)
@@ -88,10 +87,10 @@
         public event FileSystemEntryChangedHandler FileSystemEntryChanged;
 
         /// <summary>
-        /// Creates a new instanceof the FileSystemMonitor class
+        /// Initializes a new instance of the <see cref="FileSystemMonitor"/> class.
         /// </summary>
-        /// <param name="pollIntervalSeconds"></param>
-        /// <param name="fileSystemPath"></param>
+        /// <param name="pollIntervalSeconds">The poll interval seconds.</param>
+        /// <param name="fileSystemPath">The file system path.</param>
         public FileSystemMonitor(int pollIntervalSeconds, string fileSystemPath)
         {
             PollIntervalSeconds = pollIntervalSeconds;
@@ -116,10 +115,10 @@
         public string FileSystemPath { get; private set; }
 
         /// <summary>
-        /// Raises the FileSystemEntryChanged Event
+        /// Raises the file system entry changed event.
         /// </summary>
-        /// <param name="changeType"></param>
-        /// <param name="path"></param>
+        /// <param name="changeType">Type of the change.</param>
+        /// <param name="path">The path.</param>
         private void RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType changeType, string path)
         {
             FileSystemEntryChanged?.Invoke(this, new FileSystemEntryChangedEventArgs(changeType, path));
@@ -247,9 +246,10 @@
                 try
                 {
                     var entry = new FileSystemEntry(file);
-                    // in the case we already have it in the tracking collection
+
                     if (_entries.ContainsKey(file))
                     {
+                        // in the case we already have it in the tracking collection
                         var existingEntry = _entries[file];
                         if (existingEntry.DateCreatedUtc != entry.DateCreatedUtc ||
                             existingEntry.DateModifiedUtc != entry.DateModifiedUtc ||
@@ -259,9 +259,7 @@
                             _entries[file] = entry;
                             RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType.FileModified, file);
                         }
-
                     }
-                    // in the case we do not have it in the tracking collection
                     else
                     {
                         // add the entry and raise the added event

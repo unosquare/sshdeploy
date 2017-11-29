@@ -109,7 +109,6 @@
                             }
 
                             rxBytePrevious = rxByte;
-
                         }
                     };
 

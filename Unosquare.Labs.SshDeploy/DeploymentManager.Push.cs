@@ -1,14 +1,11 @@
 ﻿namespace Unosquare.Labs.SshDeploy
 {
+    using Renci.SshNet;
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using Renci.SshNet;
-    using Unosquare.Labs.SshDeploy.Options;
-    using Unosquare.Swan;
+    using Options;
+    using Swan;
 
     public partial class DeploymentManager
     {
@@ -23,7 +20,6 @@
             // Create connection info
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
                 verbOptions.Username, verbOptions.Password);
-
 
             // Instantiate an SFTP client and an SSH client
             // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
@@ -57,7 +53,8 @@
             $"    Configuration   {verbOptions.Configuration}".WriteLine(ConsoleColor.DarkYellow);
             $"    Framework       {verbOptions.Framework}".WriteLine(ConsoleColor.DarkYellow);
             $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Excluded Files  {string.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Excluded Files  {string.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(
+                ConsoleColor.DarkYellow);
             $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
             $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
             $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
@@ -66,8 +63,11 @@
             $"    Post Deployment {verbOptions.PostCommand}".WriteLine(ConsoleColor.DarkYellow);
         }
 
-        private static void CreateNewDeployment(SshClient sshClient, SftpClient sftpClient, ShellStream shellStream,
-           PushVerbOptions verbOptions)
+        private static void CreateNewDeployment(
+            SshClient sshClient, 
+            SftpClient sftpClient, 
+            ShellStream shellStream,
+            PushVerbOptions verbOptions)
         {
             // At this point the change has been detected; Make sure we are not deploying
             string.Empty.WriteLine();
@@ -83,7 +83,8 @@
                 RunSshClientCommand(sshClient, verbOptions);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
-                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath, verbOptions.ExcludeFileSuffixes);
+                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,
+                    verbOptions.ExcludeFileSuffixes);
             }
             catch (Exception ex)
             {
