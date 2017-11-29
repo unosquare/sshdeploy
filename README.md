@@ -136,7 +136,7 @@ Here's a good example of using pre and post commands to acocmplish the above
   -l, --legacy      (Default: False) Monitor files using legacy method
 </pre>
 
-<h2>Push Mode Documentation</h2><small>Push is a single use command that does not monitor continuously unlike monitor</small>
+<h2>Push Mode Documentation</h2><small>Push is a single use command that does not monitor file changes continuously unlike <i>monitor</i></small>
 
 <pre>
  -s, --source      ( By default sshdeploy looks for he most recently modified directory). The source path for the files to transfer
