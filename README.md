@@ -33,19 +33,18 @@ The following steps outline a continuous deployment of a Visual Studio solution 
      </li> 
  <li>Open a Command Prompt (Start, Run, cmd, [Enter Key])</li>
  <li>
-     Navigate to  your project folder
+     Navigate to  your project folder where the csproj file resides
      <br />Example:
-     <code>cd "C:\projects\project1\"</code>
+     <code>cd "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\"</code>
  </li>
  <li>
      Run this tool with some arguments. Here is an example so you can get started quickly.
      <br />
-     <code>dotnet sshdeploy monitor -s "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug" -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
+     <code>dotnet sshdeploy monitor -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
      </code>
      <br />
      In the above command,
      <ul>
-     <li><code>-s</code> refers to the full path of the source folder.</li>
      <li><code>-t</code> refers to the full path of the target directory.</li>
      <li><code>-h</code> refers to the host (IP address of the Raspberry Pi).</li>
      <li><code>-u</code> refers to the login.</li>
@@ -97,7 +96,7 @@ Ground Control to Major Tom: Have a nice trip in space!
 
 Here's a good example of using pre and post commands to acocmplish the above
 
-<code>dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False
+<code>dotnet sshdeploy monitor -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False
 </code>
 
 <h2>Monitor Mode Documentation</h2><small>from command line help output</small>
@@ -107,7 +106,7 @@ Here's a good example of using pre and post commands to acocmplish the above
                     signal that the files are ready to be deployed. Once the
                     deployemtn is completed, the file is deleted.
 
-  -s, --source      Required. The source path for the files to transfer
+  -s, --source      ( By default sshdeploy looks for he most recently modified directory). The source path for the files to transfer
 
   -t, --target      Required. The target path of the files to transfer
 
@@ -136,6 +135,40 @@ Here's a good example of using pre and post commands to acocmplish the above
   
   -l, --legacy      (Default: False) Monitor files using legacy method
 </pre>
+
+<h2>Push Mode Documentation</h2><small>Push is a single use command that does not monitor continuously unlike monitor</small>
+
+<pre>
+ -s, --source      ( By default sshdeploy looks for he most recently modified directory). The source path for the files to transfer
+
+  -t, --target      Required. The target path of the files to transfer
+
+  --pre             Command to execute prior file transfer to target
+
+  --post            Command to execute after file transfer to target
+
+  --clean           (Default: True) Deletes all files and folders on the target
+                    before pushing the new files
+
+  --exclude         (Default: .ready|.vshost.exe|.vshost.exe.config) a pipe (|)
+                    separated list of file suffixes to ignore while deploying.
+
+  -v, --verbose     (Default: True) Add this option to print messages to
+                    standard error and standard output streams.
+
+  -h, --host        Required. Hostname or IP Address of the target. -- Must be
+                    running an SSH server.
+
+  -p, --port        (Default: 22) Port on which SSH is running.
+
+  -u, --username    (Default: pi) The username under which the connection will
+                    be established.
+
+  -w, --password    (Default: raspberry) The password for the given username.
+  
+</pre>
+Here's a simple example:
+<code>dotnet sshdeploy push -t "/home/pi/libfprint-cs" -h 192.168.2.194 </code>
 
 <h2>Special Thanks</h2>
 <p>
