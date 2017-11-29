@@ -41,11 +41,12 @@ The following steps outline a continuous deployment of a Visual Studio solution 
  <li>
      Run this tool with some arguments. Here is an example so you can get started quickly.
      <br />
-     <code>dotnet sshdeploy monitor -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
+     <code>dotnet sshdeploy monitor -s "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug" -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
      </code>
      <br />
      In the above command,
      <ul>
+	 <li><code>-s</code> refers to the sorce path of the files to transfer.</li>
      <li><code>-t</code> refers to the full path of the target directory.</li>
      <li><code>-h</code> refers to the host (IP address of the Raspberry Pi).</li>
      <li><code>-u</code> refers to the login.</li>
@@ -106,7 +107,7 @@ Here's a good example of using pre and post commands to acocmplish the above
                     signal that the files are ready to be deployed. Once the
                     deployemtn is completed, the file is deleted.
 
-  -s, --source      ( By default sshdeploy looks for he most recently modified directory). The source path for the files to transfer
+  -s, --source      Required. The source path for the files to transfer
 
   -t, --target      Required. The target path of the files to transfer
 
@@ -141,10 +142,11 @@ Here's a good example of using pre and post commands to acocmplish the above
 Push is a single use command that does not monitor file changes continuously unlike <i>monitor</i>
 
 <pre>
- -s, --source      ( By default sshdeploy looks for he most recently modified directory). The source path for the files to transfer
 
-  -t, --target      Required. The target path of the files to transfer
+ -c --configuration (Default: Debug) Target configuration. 
 
+ -f --framework     Required. The target framework
+  
   --pre             Command to execute prior file transfer to target
 
   --post            Command to execute after file transfer to target
