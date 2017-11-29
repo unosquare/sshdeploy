@@ -25,5 +25,9 @@
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="echo &quot;%TIME%&quot; &gt;&gt; &quot;$(TargetDir)sshdeploy.ready&quot;" />
+  </Target>
 
 </Project>

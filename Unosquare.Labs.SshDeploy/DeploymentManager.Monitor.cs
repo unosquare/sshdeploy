@@ -99,7 +99,7 @@
         /// </summary>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void RunShellStreamCommand(ShellStream shellStream, PushVerbOptions verbOptions)
+        private static void RunShellStreamCommand(ShellStream shellStream, CliExecuteOptionsBase verbOptions)
         {
             var commandText = verbOptions.PostCommand;
             if (string.IsNullOrWhiteSpace(commandText)) return;
@@ -115,7 +115,7 @@
         /// </summary>
         /// <param name="sshClient">The SSH client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void RunSshClientCommand(SshClient sshClient, PushVerbOptions verbOptions)
+        private static void RunSshClientCommand(SshClient sshClient, CliExecuteOptionsBase verbOptions)
         {
             var commandText = verbOptions.PreCommand;
             if (string.IsNullOrWhiteSpace(commandText)) return;
@@ -137,28 +137,13 @@
             "Monitor parameters follow: ".WriteLine();
             $"    Monitor File    {verbOptions.MonitorFile}".WriteLine(ConsoleColor.DarkYellow);
             $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Excluded Files {String.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Excluded Files  {string.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
             $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
             $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
             $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
             $"    Clean Target    {(verbOptions.CleanTarget ? "YES" : "NO")}".WriteLine(ConsoleColor.DarkYellow);
             $"    Pre Deployment  {verbOptions.PreCommand}".WriteLine(ConsoleColor.DarkYellow);
             $"    Post Deployment {verbOptions.PostCommand}".WriteLine(ConsoleColor.DarkYellow);
-        }
-
-        private static void PrintPushOptions ( PushVerbOptions verbOptions)
-        {
-            string.Empty.WriteLine();
-            "Deploying....".WriteLine();
-            $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Excluded Files {String.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Clean Target    {(verbOptions.CleanTarget ? "YES" : "NO")}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Pre Deployment  {verbOptions.PreCommand}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Post Deployment {verbOptions.PostCommand}".WriteLine(ConsoleColor.DarkYellow);
-
         }
 
         /// <summary>
@@ -188,7 +173,7 @@
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void CreateTargetPath(SftpClient sftpClient, PushVerbOptions verbOptions)
+        private static void CreateTargetPath(SftpClient sftpClient, CliExecuteOptionsBase verbOptions)
         {
             if (sftpClient.Exists(verbOptions.TargetPath)) return;
 
@@ -204,52 +189,23 @@
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void PrepareTargetPath(SftpClient sftpClient, PushVerbOptions verbOptions)
+        private static void PrepareTargetPath(SftpClient sftpClient, CliExecuteOptionsBase verbOptions)
         {
             if (!verbOptions.CleanTarget) return;
             $"    Cleaning Target Path '{verbOptions.TargetPath}'".WriteLine(ConsoleColor.Green);
             DeleteLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
-
         }
 
-        /// <summary>
-        /// Gets the most recently updated build directory if it exists
-        /// </summary>
-        /// <returns> A directory or null</returns>
-        private static string GetDirectoryPath()
-        {            
-            var recentlyUpdatedDirectory = Directory.Exists(Path.Combine(Program.CurrentDirectory, "bin"))
-                ? new DirectoryInfo(Path.Combine(Program.CurrentDirectory, "bin")).GetDirectories()
-                    .OrderByDescending(d => d.LastWriteTimeUtc).FirstOrDefault()
-                : null;
-
-            if(recentlyUpdatedDirectory == null)
-            {
-                $"There is no directory to deploy".Error();
-                return null;
-            }
-
-            var recentBuildDirectory =  new DirectoryInfo(Path.Combine(Program.CurrentDirectory, "bin", recentlyUpdatedDirectory.ToString())).GetDirectories()
-               .OrderByDescending(d => d.LastWriteTimeUtc).FirstOrDefault() ??  null;
-
-            if (recentBuildDirectory == null)
-            {
-                $"There is no directory to deploy".Error();
-                return null;
-            }
-
-            return Path.Combine(Program.CurrentDirectory, "bin", recentlyUpdatedDirectory.ToString(), recentBuildDirectory.ToString());
-        }
         /// <summary>
         /// Uploads the files in the source Windows path to the target Linux path.
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void UploadFilesToTarget(SftpClient sftpClient, PushVerbOptions verbOptions)
+        private static void UploadFilesToTarget(SftpClient sftpClient, string SourcePath, string TargetPath, string[] ExcludeFileSuffixes)
         {
-            var filesInSource = Directory.GetFiles(verbOptions.SourcePath, FileSystemMonitor.AllFilesPattern,
+            var filesInSource = Directory.GetFiles(SourcePath, FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
-            var filesToDeploy = filesInSource.Where(file => !verbOptions.ExcludeFileSuffixes.Any(file.EndsWith))
+            var filesToDeploy = filesInSource.Where(file => !ExcludeFileSuffixes.Any(file.EndsWith))
                 .ToList();
 
             $"    Deploying {filesToDeploy.Count} files.".WriteLine(ConsoleColor.Green);
@@ -257,7 +213,7 @@
             foreach (var file in filesToDeploy)
             {
                 var relativePath = Path.GetFileName(file);
-                var fileTargetPath = Path.Combine(verbOptions.TargetPath, relativePath)
+                var fileTargetPath = Path.Combine(TargetPath, relativePath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
                 var targetDirectory = Path.GetDirectoryName(fileTargetPath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
@@ -451,7 +407,7 @@
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
         private static void CreateNewDeployment(SshClient sshClient, SftpClient sftpClient, ShellStream shellStream,
-            PushVerbOptions verbOptions)
+            MonitorVerbOptions verbOptions)
         {
             // At this point the change has been detected; Make sure we are not deploying
             string.Empty.WriteLine();
@@ -475,7 +431,7 @@
                 RunSshClientCommand(sshClient, verbOptions);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
-                UploadFilesToTarget(sftpClient, verbOptions);
+                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath, verbOptions.ExcludeFileSuffixes);
             }
             catch (Exception ex)
             {
@@ -501,22 +457,14 @@
         /// <param name="verbOptions">The verb options.</param>
         private static void NormalizeMonitorVerbOptions(MonitorVerbOptions verbOptions)
         {
-            var sourcePath = string.IsNullOrEmpty(verbOptions.SourcePath) ? GetDirectoryPath() : verbOptions.SourcePath.Trim();
+            var sourcePath = verbOptions.SourcePath.Trim();
             var targetPath = verbOptions.TargetPath.Trim();
             var monitorFile = Path.IsPathRooted(verbOptions.MonitorFile)
                 ? Path.GetFullPath(verbOptions.MonitorFile)
                 : Path.Combine(sourcePath, verbOptions.MonitorFile);
-            
-            verbOptions.TargetPath = targetPath;
-            verbOptions.MonitorFile = monitorFile;
-            verbOptions.SourcePath = sourcePath;
-        }
-        private static void NormalizePushVerbOptions(PushVerbOptions verbOptions)
-        {
-            var sourcePath = string.IsNullOrEmpty(verbOptions.SourcePath) ? GetDirectoryPath() : verbOptions.SourcePath.Trim();
-            var targetPath = verbOptions.TargetPath.Trim();
 
             verbOptions.TargetPath = targetPath;
+            verbOptions.MonitorFile = monitorFile;
             verbOptions.SourcePath = sourcePath;
         }
 
@@ -711,6 +659,7 @@
             // Create connection info
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
                 verbOptions.Username, verbOptions.Password);
+
             // Create a file watcher
             var watcher = new FileSystemWatcher
             {
@@ -719,8 +668,6 @@
                 Filter = Path.GetFileName(verbOptions.MonitorFile)
             };
 
-            if (string.IsNullOrEmpty(verbOptions.SourcePath))
-                throw new DirectoryNotFoundException("Source Path not found");
             // Validate source path exists
             if (Directory.Exists(verbOptions.SourcePath) == false)
                 throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
@@ -757,40 +704,6 @@
                 }
             }
         }
-
-        public static void ExecutePushVerb(PushVerbOptions verbOptions)
-        {
-            NormalizePushVerbOptions(verbOptions);
-            PrintPushOptions(verbOptions);
-           
-            // Create connection info
-            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
-                verbOptions.Username, verbOptions.Password);
-
-            if (string.IsNullOrEmpty(verbOptions.SourcePath))
-                throw new DirectoryNotFoundException("Source Path not found");
-            // Validate source path exists
-            if ( Directory.Exists(verbOptions.SourcePath) == false)
-                throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
-
-            // Instantiate an SFTP client and an SSH client
-            // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
-            using (var sftpClient = new SftpClient(simpleConnectionInfo))
-            {
-                // SSH will be used to execute commands and to get the output back from the program we are running
-                using (var sshClient = new SshClient(simpleConnectionInfo))
-                {
-                    // Connect SSH and SFTP clients
-                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
-
-                    using (var shellStream = CreateShellStream(sshClient))
-                    {
-                        CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
-                    }
-                }
-            }
-        }
-
         #endregion
     }
 }

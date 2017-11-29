@@ -16,6 +16,7 @@ namespace Unosquare.Labs.SshDeploy
             get => Console.Title;
             set => Console.Title = value + TitleSuffix;
         }
+
         public static string CurrentDirectory { get; } = Directory.GetCurrentDirectory();
 
         public static string TitleSuffix { get; set; } = " - SSH Deploy";
@@ -40,7 +41,7 @@ namespace Unosquare.Labs.SshDeploy
             $"SSH Deployment Tool [Version {typeof(Program).Assembly.GetName().Version}]".WriteLine();
             "(c)2015 - 2017 Unosquare SA de CV. All Rights Reserved.".WriteLine();
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
-            
+
             var options = new CliOptions();
 
             if (!(args.Length > 0))
@@ -49,8 +50,8 @@ namespace Unosquare.Labs.SshDeploy
                 Console.ReadKey();
                 return;
             }
-            var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);
 
+            var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);
 
             if (parseResult == false)
             {
@@ -79,9 +80,13 @@ namespace Unosquare.Labs.SshDeploy
                     Title = "Monitor";
 
                     if (options.MonitorVerbOptions.Legacy)
+                    {
                         DeploymentManager.ExecuteMonitorVerbLegacy(options.MonitorVerbOptions);
+                    }
                     else
+                    {
                         DeploymentManager.ExecuteMonitorVerb(options.MonitorVerbOptions);
+                    }
                 }
                 else if (options.PushVerbOptions != null)
                 {
@@ -101,9 +106,13 @@ namespace Unosquare.Labs.SshDeploy
             }
 
             if (Environment.ExitCode != 0)
+            {
                 $"Completed with errors. Exit Code {Environment.ExitCode}".Error();
+            }
             else
+            {
                 "Completed.".WriteLine();
+            }
         }
     }
 }
