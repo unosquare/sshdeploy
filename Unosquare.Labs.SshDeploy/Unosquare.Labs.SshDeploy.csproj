@@ -8,17 +8,22 @@
     <PackageId>dotnet-sshdeploy</PackageId>
     <PackageVersion>1.0.6</PackageVersion>
     <Authors>Unosquare</Authors>
-    <Description>A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian.
-</Description>
+    <Description>A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian.</Description>
 
+    <CodeAnalysisRuleSet>..\StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
+    
     <PackageType>DotnetCliTool</PackageType>
     <PackageTags>dotnet cli tool</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
     <PackageReference Include="System.IO.FileSystem.Watcher" Version="4.3.0" />
     <PackageReference Include="Unosquare.Swan" Version="0.21.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

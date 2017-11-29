@@ -25,6 +25,5 @@ namespace Unosquare.Labs.SshDeploy.Options
 
         [ArgumentOption('f', "framework", HelpText = "The target framework has to be specified in the project file.", Required = true)]
         public string Framework { get; set; }
-
     }
 }
