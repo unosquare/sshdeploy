@@ -6,17 +6,18 @@
 
 A `dotnet` CLI extension that enables quick deployments over SSH. This program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
 
-*:star:Please star this project if you find it useful!*
+:star: *Please star this project if you find it useful!*
 
 ## Install
- As of now  CLI does not allow command line installation so you'll need to modify your csproj manually.
+As of now  CLI does not allow command line installation so you'll need to modify your csproj manually.
+
  ```xml
     <ItemGroup>
      <DotNetCliToolReference Include="dotnet-sshdeploy" Version="*" />
     </ItemGroup>
  ```
  
-<h2>Usage Example</h2>
+## Usage Example
 
 The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
 
@@ -96,8 +97,7 @@ Ground Control to Major Tom: Have a nice trip in space!
 
 Here's a good example of using pre and post commands to acocmplish the above
 
-<code>dotnet sshdeploy monitor -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False
-</code>
+`dotnet sshdeploy monitor -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False`
 
 <h2>Monitor Mode Documentation</h2><small>from command line help output</small>
 
@@ -136,7 +136,9 @@ Here's a good example of using pre and post commands to acocmplish the above
   -l, --legacy      (Default: False) Monitor files using legacy method
 </pre>
 
-<h2>Push Mode Documentation</h2><small>Push is a single use command that does not monitor file changes continuously unlike <i>monitor</i></small>
+## Push Mode Documentation
+
+Push is a single use command that does not monitor file changes continuously unlike <i>monitor</i>
 
 <pre>
  -s, --source      ( By default sshdeploy looks for he most recently modified directory). The source path for the files to transfer
@@ -167,10 +169,11 @@ Here's a good example of using pre and post commands to acocmplish the above
   -w, --password    (Default: raspberry) The password for the given username.
   
 </pre>
-Here's a simple example:
-<code>dotnet sshdeploy push -t "/home/pi/libfprint-cs" -h 192.168.2.194 </code>
 
-<h2>Special Thanks</h2>
-<p>
-This code uses the very cool Renci's <a href="https://github.com/sshnet/SSH.NET" target="_blank">SSH.NET library</a> and the awesome SWAN library available <a href="https://github.com/unosquare/swan" target="_blank">here</a>.
-</p>
+Here's a simple example:
+
+`dotnet sshdeploy push -t "/home/pi/libfprint-cs" -h 192.168.2.194`
+
+## Special Thanks
+
+This code uses the very cool Renci's <a href="https://github.com/sshnet/SSH.NET" target="_blank">SSH.NET library</a> and our awesome SWAN library available <a href="https://github.com/unosquare/swan" target="_blank">here</a>.

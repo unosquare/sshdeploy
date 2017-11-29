@@ -4,6 +4,9 @@ namespace Unosquare.Labs.SshDeploy.Options
 {
     public class MonitorVerbOptions : PushVerbOptions
     {
+        [ArgumentOption('s', "source", HelpText = "The source path for the files to transfer", Required = false)]
+        public string SourcePath { get; set; }
+
         [ArgumentOption('m', "monitor", DefaultValue = "sshdeploy.ready", HelpText = "The command to run on the target machine", Required = false)]       
         public string MonitorFile { get; set; }
 
