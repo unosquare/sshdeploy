@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Unosquare.Swan.Attributes;
-
-namespace Unosquare.Labs.SshDeploy.Options
+﻿namespace Unosquare.Labs.SshDeploy.Options
 {
+    using Swan.Attributes;
+
     public class CliExecuteOptionsBase : CliVerbOptionsBase
     {
         [ArgumentOption('t', "target", HelpText = "The target path of the files to transfer", Required = true)]

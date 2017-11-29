@@ -70,6 +70,7 @@
                 if (info.IsDirectory)
                     return;
             }
+
             var pathParts = path.Split(new[] {LinuxDirectorySeparatorChar}, StringSplitOptions.RemoveEmptyEntries);
 
             pathParts = pathParts.Skip(0).Take(pathParts.Length - 1).ToArray();
@@ -82,19 +83,6 @@
         }
 
         /// <summary>
-        /// Makes the given path relative to an absolute path.
-        /// </summary>
-        /// <param name="filePath">The file path.</param>
-        /// <param name="referencePath">The reference path.</param>
-        /// <returns></returns>
-        private static string MakeRelativePath(string filePath, string referencePath)
-        {
-            var fileUri = new Uri(filePath);
-            var referenceUri = new Uri(referencePath);
-            return referenceUri.MakeRelativeUri(fileUri).ToString();
-        }
-
-        /// <summary>
         /// Runs pre and post deployment commands over the SSH client
         /// </summary>
         /// <param name="shellStream">The shell stream.</param>
@@ -104,7 +92,7 @@
             var commandText = verbOptions.PostCommand;
             if (string.IsNullOrWhiteSpace(commandText)) return;
 
-            $"    Executing shell command.".WriteLine(ConsoleColor.Green);
+            "    Executing shell command.".WriteLine(ConsoleColor.Green);
             shellStream.Write($"{commandText}\r\n");
             shellStream.Flush();
             $"    TX: {commandText}".WriteLine(ConsoleColor.DarkYellow);
@@ -137,7 +125,8 @@
             "Monitor parameters follow: ".WriteLine();
             $"    Monitor File    {verbOptions.MonitorFile}".WriteLine(ConsoleColor.DarkYellow);
             $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Excluded Files  {string.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(ConsoleColor.DarkYellow);
+            $"    Excluded Files  {string.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(
+                ConsoleColor.DarkYellow);
             $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
             $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
             $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
@@ -199,12 +188,15 @@
         /// Uploads the files in the source Windows path to the target Linux path.
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
-        /// <param name="verbOptions">The verb options.</param>
-        private static void UploadFilesToTarget(SftpClient sftpClient, string SourcePath, string TargetPath, string[] ExcludeFileSuffixes)
+        /// <param name="sourcePath">The source path.</param>
+        /// <param name="targetPath">The target path.</param>
+        /// <param name="excludeFileSuffixes">The exclude file suffixes.</param>
+        private static void UploadFilesToTarget(SftpClient sftpClient, string sourcePath, string targetPath,
+            string[] excludeFileSuffixes)
         {
-            var filesInSource = Directory.GetFiles(SourcePath, FileSystemMonitor.AllFilesPattern,
+            var filesInSource = Directory.GetFiles(sourcePath, FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
-            var filesToDeploy = filesInSource.Where(file => !ExcludeFileSuffixes.Any(file.EndsWith))
+            var filesToDeploy = filesInSource.Where(file => !excludeFileSuffixes.Any(file.EndsWith))
                 .ToList();
 
             $"    Deploying {filesToDeploy.Count} files.".WriteLine(ConsoleColor.Green);
@@ -212,7 +204,7 @@
             foreach (var file in filesToDeploy)
             {
                 var relativePath = Path.GetFileName(file);
-                var fileTargetPath = Path.Combine(TargetPath, relativePath)
+                var fileTargetPath = Path.Combine(targetPath, relativePath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
                 var targetDirectory = Path.GetDirectoryName(fileTargetPath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
@@ -286,11 +278,6 @@
                 .WriteLine(ConsoleColor.Green);
         }
 
-        /// <summary>
-        /// Creates the shell stream for interactive mode.
-        /// </summary>
-        /// <param name="sshClient">The SSH client.</param>
-        /// <returns></returns>
         private static ShellStream CreateShellStream(SshClient sshClient)
         {
             var terminalModes = new Dictionary<TerminalModes, uint> {{TerminalModes.ECHO, 1}, {TerminalModes.IGNCR, 1}};
@@ -364,6 +351,7 @@
                                 escapeSequenceType = rxByte;
                                 continue;
                             }
+
                             escapeSequenceType = 0;
                         }
 
@@ -405,7 +393,10 @@
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void CreateNewDeployment(SshClient sshClient, SftpClient sftpClient, ShellStream shellStream,
+        private static void CreateNewDeployment(
+            SshClient sshClient,
+            SftpClient sftpClient,
+            ShellStream shellStream,
             MonitorVerbOptions verbOptions)
         {
             // At this point the change has been detected; Make sure we are not deploying
@@ -430,7 +421,8 @@
                 RunSshClientCommand(sshClient, verbOptions);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
-                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath, verbOptions.ExcludeFileSuffixes);
+                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,
+                    verbOptions.ExcludeFileSuffixes);
             }
             catch (Exception ex)
             {
@@ -703,6 +695,7 @@
                 }
             }
         }
+
         #endregion
     }
 }
