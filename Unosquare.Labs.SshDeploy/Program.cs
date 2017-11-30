@@ -2,9 +2,12 @@
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using Options;
     using Swan;
+    using Unosquare.Labs.SshDeploy.Attributes;
+    using Unosquare.Labs.SshDeploy.util;
 
     public static class Program
     {
@@ -43,7 +46,22 @@
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
 
             var options = new CliOptions();
-            
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var projectFile = Directory.EnumerateFiles(currentDirectory, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            projectFile.ToString().WriteLine();
+            using (var stream = File.Open(projectFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (var csproj = new CsProjFile(stream, leaveOpen: true))
+            {
+                if (args.Contains("push"))
+                {
+                    csproj.NuGetMetadata.ParseCsProjTags(ref args, typeof(PushVerbOptions));
+                }
+                else
+                {
+                    csproj.NuGetMetadata.ParseCsProjTags(ref args, typeof(MonitorAttribute));
+                }
+            }
+
             var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);
 
             if (parseResult == false)
