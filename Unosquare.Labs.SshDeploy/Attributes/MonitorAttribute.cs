@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Unosquare.Labs.SshDeploy.Attributes
 {
-    class MonitorAttribute : VerbAttribute
+    class MonitorAttribute : PushAttribute
     {
     }
 }

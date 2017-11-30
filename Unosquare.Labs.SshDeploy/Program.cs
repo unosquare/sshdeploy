@@ -46,19 +46,23 @@
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
 
             var options = new CliOptions();
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var projectFile = Directory.EnumerateFiles(currentDirectory, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            projectFile.ToString().WriteLine();
-            using (var stream = File.Open(projectFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            using (var csproj = new CsProjFile(stream, leaveOpen: true))
+            if (args.Contains("push") | args.Contains("monitor"))
             {
-                if (args.Contains("push"))
+                var projectFile = Directory.EnumerateFiles(Program.CurrentDirectory, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (projectFile != null)
                 {
-                    csproj.NuGetMetadata.ParseCsProjTags(ref args, typeof(PushVerbOptions));
-                }
-                else
-                {
-                    csproj.NuGetMetadata.ParseCsProjTags(ref args, typeof(MonitorAttribute));
+                    using (var stream = File.Open(projectFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                    using (var csproj = new CsProjFile(stream, leaveOpen: true))
+                    {
+                        if (args.Contains("push"))
+                        {
+                            csproj.NuGetMetadata.ParseCsProjTags(ref args, typeof(PushVerbOptions));
+                        }
+                        else
+                        {
+                            csproj.NuGetMetadata.ParseCsProjTags(ref args, typeof(MonitorAttribute));
+                        }
+                    }
                 }
             }
 
