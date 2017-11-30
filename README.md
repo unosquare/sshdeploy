@@ -104,57 +104,40 @@ dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFp
 
 <h2>Monitor Mode Documentation</h2><small>from command line help output</small>
 
-Argument Short Name | Argument long Name | Description | Default | Required
-------------------- | ------------- | ------------- | -------------| -------------
-  -m | --monitor | The path to the file used as a signal that the files are ready to be deployed. Once the deploymetn is completed, the file is deleted. | sshdeploy.ready | YES
-  -s| --source   | The source path for the files to transfer | | YES
-  -t | --target  | The target path of the files to transfer  | | YES
-| | --pre     | Command to execute prior file transfer to target | | NO
-| |--post     | Command to execute after file transfer to target | | NO
-| | --clean   | Deletes all files and folders on the target before pushing the new files | True |NO
-| | --exclude | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO
-  -v | --verbose |Add this option to print messages to standard error and standard output streams. | True | NO
-  -h | --host    | Hostname or IP Address of the target. -- Must be running an SSH server. | |YES
-  -p | --port    | Port on which SSH is running. | 22 | NO
-  -u |--username | The username under which the connection will be established. |pi|NO
-  -w | --password|The password for the given username. | raspberry | NO
-  -l | --legacy  | Monitor files using legacy method | False |NO
+|Short Argument | Long Argument |               Description                              | Default      | Required|
+|:-----:        | :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
+|  -m           | --monitor     | The path to the file used as a signal that the files are ready to be deployed. Once the deploymetn is completed,the file is deleted. | sshdeploy.ready | YES|
+|  -s           | --source      | The source path for the files to transfer              |              | YES          |
+|  -t           | --target      | The target path of the files to transfer               |              | YES          |
+|               | --pre         | Command to execute prior file transfer to target       |              | NO           |
+|               |--post         | Command to execute after file transfer to target | | NO
+|               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |NO |
+|               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO|
+|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | NO|
+|  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | |  YES     |
+| -p            | --port        | Port on which SSH is running.                          | 22            | NO          |
+|  -u           |--username     | The username under which the connection will be established. |pi       |  NO         |
+|  -w           | --password    |The password for the given username.                    | raspberry     | NO          |
+|  -l           | --legacy      | Monitor files using legacy method                      | False         |NO           |
 
 ## Push Mode Documentation
 
 Push is a single use command that does not monitor file changes continuously unlike <i>monitor</i>
 
-<pre>
-
- -c, --configuration (Default: Debug) Target configuration. 
-
- -f, --framework    Required. The target framework
+|Short Argument | Long Argument |               Description                              | Default      | Required     |
+|:-------------:| :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
+| -c            |--configuration|  Target configuration.                                 | Debug        | NO           | 
+| -f            |--framework    |The target framework                                    |              | YES          |  
+|               | --pre         | Command to execute prior file transfer to target       |              | NO           |
+|               |--post         | Command to execute after file transfer to target | | NO
+|               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |NO |
+|               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO|
+|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | NO|
+|  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | |  YES     |
+| -p            | --port        | Port on which SSH is running.                          | 22            | NO          |
+|  -u           |--username     | The username under which the connection will be established. |pi       |  NO         |
+|  -w           | --password    |The password for the given username.                    | raspberry     | NO          |
   
-  --pre             Command to execute prior file transfer to target
-
-  --post            Command to execute after file transfer to target
-
-  --clean           (Default: True) Deletes all files and folders on the target
-                    before pushing the new files
-
-  --exclude         (Default: .ready|.vshost.exe|.vshost.exe.config) a pipe (|)
-                    separated list of file suffixes to ignore while deploying.
-
-  -v, --verbose     (Default: True) Add this option to print messages to
-                    standard error and standard output streams.
-
-  -h, --host        Required. Hostname or IP Address of the target. -- Must be
-                    running an SSH server.
-
-  -p, --port        (Default: 22) Port on which SSH is running.
-
-  -u, --username    (Default: pi) The username under which the connection will
-                    be established.
-
-  -w, --password    (Default: raspberry) The password for the given username.
-  
-</pre>
-
 Here's a simple example:
 
 ```
