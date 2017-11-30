@@ -166,11 +166,11 @@ namespace Unosquare.Labs.SshDeploy.util
         }
 
         [Monitor(ShortName = "-t", LongName = "--target")]
-        public string Target
+        public string SSHTargetPath
         {
             get
             {
-                var element = FindElement(nameof(Target));
+                var element = FindElement(nameof(SSHTargetPath));
                 return element?.Value;
             }
         }
