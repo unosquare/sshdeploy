@@ -82,10 +82,6 @@
         private readonly FileSystemEntryDictionary _entries = new FileSystemEntryDictionary();
         private readonly BackgroundWorker _worker;
 
-        public delegate void FileSystemEntryChangedHandler(object sender, FileSystemEntryChangedEventArgs e);
-
-        public event FileSystemEntryChangedHandler FileSystemEntryChanged;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="FileSystemMonitor"/> class.
         /// </summary>
@@ -103,6 +99,10 @@
 
             _worker.DoWork += DoWork;
         }
+
+        public delegate void FileSystemEntryChangedHandler(object sender, FileSystemEntryChangedEventArgs e);
+
+        public event FileSystemEntryChangedHandler FileSystemEntryChanged;
 
         /// <summary>
         /// The polling interval in seconds at which the file system is monitored for changes
@@ -251,6 +251,7 @@
                     {
                         // in the case we already have it in the tracking collection
                         var existingEntry = _entries[file];
+
                         if (existingEntry.DateCreatedUtc != entry.DateCreatedUtc ||
                             existingEntry.DateModifiedUtc != entry.DateModifiedUtc ||
                             existingEntry.Size != entry.Size)

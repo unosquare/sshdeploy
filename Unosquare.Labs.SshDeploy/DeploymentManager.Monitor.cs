@@ -1,14 +1,14 @@
 ﻿namespace Unosquare.Labs.SshDeploy
 {
+    using Options;
+    using Renci.SshNet;
+    using Renci.SshNet.Common;
+    using Swan;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using Renci.SshNet;
-    using Renci.SshNet.Common;
-    using Options;
-    using Swan;
 
     partial class DeploymentManager
     {
@@ -280,110 +280,97 @@
 
         private static ShellStream CreateShellStream(SshClient sshClient)
         {
-            var terminalModes = new Dictionary<TerminalModes, uint> {{TerminalModes.ECHO, 1}, {TerminalModes.IGNCR, 1}};
+            var shell = CreateBaseShellStream(sshClient);
 
-            var bufferWidth = (uint) Console.BufferWidth;
-            var bufferHeight = (uint) Console.BufferHeight;
-            var windowWidth = (uint) Console.WindowWidth;
-            var windowHeight = (uint) Console.WindowHeight;
-            var bufferSize = Console.BufferWidth * Console.BufferHeight;
-
-            var shell = sshClient.CreateShellStream(TerminalName, bufferWidth, bufferHeight, windowWidth, windowHeight,
-                bufferSize, terminalModes);
-
-            var escapeSequenceBytes = new List<byte>(128);
-            var isInEscapeSequence = false;
-            byte rxBytePrevious = 0;
-            byte rxByte = 0;
-            byte escapeSequenceType = 0;
-
-            shell.DataReceived += (s, e) =>
-            {
-                var rxBuffer = e.Data;
-                for (var i = 0; i < rxBuffer.Length; i++)
-                {
-                    rxByte = rxBuffer[i];
-
-                    // We've found the beginning of an escapr sequence
-                    if (isInEscapeSequence == false && rxByte == Escape)
-                    {
-                        isInEscapeSequence = true;
-                        escapeSequenceBytes.Clear();
-                        rxBytePrevious = rxByte;
-                        continue;
-                    }
-
-                    // Print out the character if we are not in an escape sequence and it is a printable character
-                    if (isInEscapeSequence == false)
-                    {
-                        if (rxByte >= 32 || (rxByte >= 8 && rxByte <= 13))
-                        {
-                            if (_forwardShellStreamOutput)
-                                Console.Write((char) rxByte);
-                        }
-                        else if (rxByte == 7)
-                        {
-                            if (_forwardShellStreamOutput)
-                                Console.Beep();
-                        }
-                        else
-                        {
-                            if (_forwardShellStreamOutput)
-                                $"[NPC {rxByte}]".WriteLine(ConsoleColor.DarkYellow);
-                        }
-
-                        rxBytePrevious = rxByte;
-                        continue;
-                    }
-
-                    // If we are already inside an escape sequence . . .
-                    if (isInEscapeSequence)
-                    {
-                        // Add the byte to the escape sequence
-                        escapeSequenceBytes.Add(rxByte);
-
-                        // Ignore the second escape byte 91 '[' or ']'
-                        if (rxBytePrevious == Escape)
-                        {
-                            rxBytePrevious = rxByte;
-                            if (ControlSequenceInitiators.Contains(rxByte))
-                            {
-                                escapeSequenceType = rxByte;
-                                continue;
-                            }
-
-                            escapeSequenceType = 0;
-                        }
-
-                        // Detect if it's the last byte of the escape sequence (64 to 126)
-                        // This last character determines the command to execute
-                        var endOfSequenceType91 = escapeSequenceType == (byte) '[' && (rxByte >= 64 && rxByte <= 126);
-                        var endOfSequenceType93 = escapeSequenceType == (byte) ']' && (rxByte == 7);
-                        if (endOfSequenceType91 || endOfSequenceType93)
-                        {
-                            try
-                            {
-                                // Execute the command of the given escape sequence
-                                HandleShellEscapeSequence(escapeSequenceBytes.ToArray());
-                            }
-                            finally
-                            {
-                                isInEscapeSequence = false;
-                                escapeSequenceBytes.Clear();
-                                rxBytePrevious = rxByte;
-                            }
-
-                            continue;
-                        }
-                    }
-
-                    rxBytePrevious = rxByte;
-                }
-            };
+            shell.DataReceived += OnShellDataRx;
 
             shell.ErrorOccurred += (s, e) => PrintException(e.Exception);
 
             return shell;
+        }
+
+        private static void OnShellDataRx(object sender, ShellDataEventArgs e)
+        {
+            var escapeSequenceBytes = new List<byte>(128);
+            var isInEscapeSequence = false;
+            byte rxBytePrevious = 0;
+            byte escapeSequenceType = 0;
+            var rxBuffer = e.Data;
+
+            foreach (var rxByte in rxBuffer)
+            {
+                // We've found the beginning of an escapr sequence
+                if (isInEscapeSequence == false && rxByte == Escape)
+                {
+                    isInEscapeSequence = true;
+                    escapeSequenceBytes.Clear();
+                    rxBytePrevious = rxByte;
+                    continue;
+                }
+
+                // Print out the character if we are not in an escape sequence and it is a printable character
+                if (isInEscapeSequence == false)
+                {
+                    if (rxByte >= 32 || (rxByte >= 8 && rxByte <= 13))
+                    {
+                        if (_forwardShellStreamOutput)
+                            Console.Write((char) rxByte);
+                    }
+                    else if (rxByte == 7)
+                    {
+                        if (_forwardShellStreamOutput)
+                            Console.Beep();
+                    }
+                    else
+                    {
+                        if (_forwardShellStreamOutput)
+                            $"[NPC {rxByte}]".WriteLine(ConsoleColor.DarkYellow);
+                    }
+
+                    rxBytePrevious = rxByte;
+                    continue;
+                }
+
+                // If we are already inside an escape sequence . . .
+                // Add the byte to the escape sequence
+                escapeSequenceBytes.Add(rxByte);
+
+                // Ignore the second escape byte 91 '[' or ']'
+                if (rxBytePrevious == Escape)
+                {
+                    rxBytePrevious = rxByte;
+                    if (ControlSequenceInitiators.Contains(rxByte))
+                    {
+                        escapeSequenceType = rxByte;
+                        continue;
+                    }
+
+                    escapeSequenceType = 0;
+                }
+
+                // Detect if it's the last byte of the escape sequence (64 to 126)
+                // This last character determines the command to execute
+                var endOfSequenceType91 = escapeSequenceType == (byte) '[' && (rxByte >= 64 && rxByte <= 126);
+                var endOfSequenceType93 = escapeSequenceType == (byte) ']' && (rxByte == 7);
+                if (endOfSequenceType91 || endOfSequenceType93)
+                {
+                    try
+                    {
+                        // Execute the command of the given escape sequence
+                        HandleShellEscapeSequence(escapeSequenceBytes.ToArray());
+                    }
+                    finally
+                    {
+                        isInEscapeSequence = false;
+                        escapeSequenceBytes.Clear();
+                        rxBytePrevious = rxByte;
+                    }
+
+                    continue;
+                }
+
+                rxBytePrevious = rxByte;
+            }
         }
 
         /// <summary>
@@ -467,8 +454,12 @@
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void StartMonitorMode(FileSystemMonitor fsMonitor, SshClient sshClient, SftpClient sftpClient,
-            ShellStream shellStream, MonitorVerbOptions verbOptions)
+        private static void StartMonitorMode(
+            FileSystemMonitor fsMonitor, 
+            SshClient sshClient, 
+            SftpClient sftpClient,
+            ShellStream shellStream, 
+            MonitorVerbOptions verbOptions)
         {
             fsMonitor.FileSystemEntryChanged += (s, e) =>
             {
@@ -498,7 +489,10 @@
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void StartUserInteraction(SshClient sshClient, SftpClient sftpClient, ShellStream shellStream,
+        private static void StartUserInteraction(
+            SshClient sshClient,
+            SftpClient sftpClient,
+            ShellStream shellStream,
             MonitorVerbOptions verbOptions)
         {
             _forwardShellStreamInput = false;
@@ -587,7 +581,7 @@
         /// </summary>
         /// <param name="verbOptions">The verb options.</param>
         /// <exception cref="DirectoryNotFoundException">Source Path ' + sourcePath + ' was not found.</exception>
-        public static void ExecuteMonitorVerbLegacy(MonitorVerbOptions verbOptions)
+        internal static void ExecuteMonitorVerbLegacy(MonitorVerbOptions verbOptions)
         {
             // Initialize Variables
             _isDeploying = false;
@@ -637,7 +631,7 @@
         /// </summary>
         /// <param name="verbOptions">The verb options.</param>
         /// <exception cref="DirectoryNotFoundException">Source Path ' + sourcePath + ' was not found.</exception>
-        public static void ExecuteMonitorVerb(MonitorVerbOptions verbOptions)
+        internal static void ExecuteMonitorVerb(MonitorVerbOptions verbOptions)
         {
             // Initialize Variables
             _isDeploying = false;

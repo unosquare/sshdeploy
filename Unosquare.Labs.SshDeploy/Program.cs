@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using Unosquare.Labs.SshDeploy.Options;
-using Unosquare.Swan;
-
-namespace Unosquare.Labs.SshDeploy
+﻿namespace Unosquare.Labs.SshDeploy
 {
+    using System;
+    using System.IO;
+    using System.Threading;
+    using Options;
+    using Swan;
+
     public static class Program
     {
         private static readonly string MutexName = string.Format("Global\\{0}", typeof(Program).Namespace);

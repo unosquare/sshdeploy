@@ -1,5 +1,7 @@
 ﻿namespace Unosquare.Labs.SshDeploy
 {
+    using System.Collections.Generic;
+    using Renci.SshNet.Common;
     using System;
     using System.Linq;
     using System.Text;
@@ -27,6 +29,20 @@
                 Environment.ExitCode = command.ExitStatus;
                 client.Disconnect();
             }
+        }
+
+        private static ShellStream CreateBaseShellStream(SshClient sshClient)
+        {
+            var bufferSize = Console.BufferWidth * Console.BufferHeight;
+
+            return sshClient.CreateShellStream(
+                TerminalName,
+                (uint) Console.BufferWidth,
+                (uint) Console.BufferHeight,
+                (uint) Console.WindowWidth,
+                (uint) Console.WindowHeight,
+                bufferSize,
+                new Dictionary<TerminalModes, uint> {{TerminalModes.ECHO, 0}, {TerminalModes.IGNCR, 1}});
         }
 
         private static SshClient CreateClient(CliVerbOptionsBase options)
