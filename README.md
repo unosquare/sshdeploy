@@ -112,9 +112,9 @@ Ground Control to Major Tom: Have a nice trip in space!
 |  -t           | --target      | The target path of the files to transfer               |              |:heavy_check_mark:|
 |               | --pre         | Command to execute prior file transfer to target       |              | :x:          |
 |               |--post         | Command to execute after file transfer to target | | NO
-|               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |NO |
+|               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |:x: |
 |               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO|
-|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | NO|
+|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | :x:|
 |  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | |:heavy_check_mark:|
 | -p            | --port        | Port on which SSH is running.                          | 22            | :x:          |
 |  -u           |--username     | The username under which the connection will be established. |pi       | :x:          |
@@ -131,9 +131,9 @@ Ground Control to Major Tom: Have a nice trip in space!
 | -f            |--framework    |The source framework                                    |              |:heavy_check_mark:|  
 |               | --pre         | Command to execute prior file transfer to target       |              | :x:           |
 |               |--post         | Command to execute after file transfer to target | | NO
-|               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |NO |
+|               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |:x: |
 |               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO|
-|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | NO|
+|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | :x:|
 |  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | |:heavy_check_mark:|
 | -p            | --port        | Port on which SSH is running.                          | 22            | :x:          |
 |  -u           |--username     | The username under which the connection will be established. |pi       |  :x:         |
