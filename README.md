@@ -26,6 +26,19 @@ As of now  CLI does not allow command line installation so you'll need to modify
 
 The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
 
+### Push
+1. Navigate to  your project folder where the csproj file resides. Example:
+```
+cd "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\
+```
+2. Execute this command with some arguments. Here's a simple example:
+```
+dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.194
+```
+* In the command shown above :
+	* `-f` refers to the source framework
+	* `-t` refers to the target path 
+	* `-h` refers to the host (IP address of the Raspberry Pi)
 ### Monitor
 <ol>
      <li>Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
@@ -133,7 +146,7 @@ dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFp
 |Short Argument | Long Argument |               Description                              | Default      | Required     |
 |:-------------:| :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
 | -c            |--configuration|  Target configuration.                                 | Debug        | NO           | 
-| -f            |--framework    |The target framework                                    |              | YES          |  
+| -f            |--framework    |The source framework                                    |              | YES          |  
 |               | --pre         | Command to execute prior file transfer to target       |              | NO           |
 |               |--post         | Command to execute after file transfer to target | | NO
 |               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |NO |
@@ -144,11 +157,6 @@ dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFp
 |  -u           |--username     | The username under which the connection will be established. |pi       |  NO         |
 |  -w           | --password    |The password for the given username.                    | raspberry     | NO          |
   
-Here's a simple example:
-
-```
-dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.194
-```
 
 ## Special Thanks
 
