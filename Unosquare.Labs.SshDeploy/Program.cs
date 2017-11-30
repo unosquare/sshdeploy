@@ -43,14 +43,7 @@
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
 
             var options = new CliOptions();
-
-            if (!(args.Length > 0))
-            {
-                Environment.ExitCode = 1;
-                Console.ReadKey();
-                return;
-            }
-
+            
             var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);
 
             if (parseResult == false)

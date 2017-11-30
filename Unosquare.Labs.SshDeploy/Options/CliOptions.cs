@@ -1,7 +1,7 @@
-﻿using Unosquare.Swan.Attributes;
-
-namespace Unosquare.Labs.SshDeploy.Options
+﻿namespace Unosquare.Labs.SshDeploy.Options
 {
+    using Swan.Attributes;
+
     public class CliOptions
     {
         [VerbOption("push", HelpText = "Transfers the files and folders from a source path in the local machine to a target path in the remote machine")]
