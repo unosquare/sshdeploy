@@ -39,7 +39,7 @@ dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.1
 	* `-f` refers to the source framework
 	* `-t` refers to the target path 
 	* `-h` refers to the host (IP address of the Raspberry Pi)
-For a detailed list of all the arguments available please see [below](###Push-Mode) or execute `dotnet sshdeploy push`
+For a detailed list of all the arguments available please see [below](#References) or execute `dotnet sshdeploy push`
 ### Monitor
 <ol>
      <li>Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
