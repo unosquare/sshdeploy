@@ -110,16 +110,16 @@ Ground Control to Major Tom: Have a nice trip in space!
 |  -m           | --monitor     | The path to the file used as a signal that the files are ready to be deployed. Once the deploymetn is completed,the file is deleted. | sshdeploy.ready | :heavy_check_mark:|
 |  -s           | --source      | The source path for the files to transfer              |              |:heavy_check_mark:|
 |  -t           | --target      | The target path of the files to transfer               |              |:heavy_check_mark:|
-|               | --pre         | Command to execute prior file transfer to target       |              | NO           |
+|               | --pre         | Command to execute prior file transfer to target       |              | :x:          |
 |               |--post         | Command to execute after file transfer to target | | NO
 |               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |NO |
 |               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO|
 |  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | NO|
 |  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | |:heavy_check_mark:|
-| -p            | --port        | Port on which SSH is running.                          | 22            | NO          |
-|  -u           |--username     | The username under which the connection will be established. |pi       |  NO         |
-|  -w           | --password    |The password for the given username.                    | raspberry     | NO          |
-|  -l           | --legacy      | Monitor files using legacy method                      | False         |NO           |
+| -p            | --port        | Port on which SSH is running.                          | 22            | :x:          |
+|  -u           |--username     | The username under which the connection will be established. |pi       | :x:          |
+|  -w           | --password    |The password for the given username.                    | raspberry     | :x:          |
+|  -l           | --legacy      | Monitor files using legacy method                      | False         | :x:          |
 
 ### Push Mode
 
@@ -127,17 +127,17 @@ Ground Control to Major Tom: Have a nice trip in space!
 
 |Short Argument | Long Argument |               Description                              | Default      | Required     |
 |:-------------:| :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
-| -c            |--configuration|  Target configuration.                                 | Debug        | NO           | 
+| -c            |--configuration|  Target configuration.                                 | Debug        | :x:           | 
 | -f            |--framework    |The source framework                                    |              |:heavy_check_mark:|  
-|               | --pre         | Command to execute prior file transfer to target       |              | NO           |
+|               | --pre         | Command to execute prior file transfer to target       |              | :x:           |
 |               |--post         | Command to execute after file transfer to target | | NO
 |               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |NO |
 |               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |NO|
 |  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | NO|
 |  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | |:heavy_check_mark:|
-| -p            | --port        | Port on which SSH is running.                          | 22            | NO          |
-|  -u           |--username     | The username under which the connection will be established. |pi       |  NO         |
-|  -w           | --password    |The password for the given username.                    | raspberry     | NO          |
+| -p            | --port        | Port on which SSH is running.                          | 22            | :x:          |
+|  -u           |--username     | The username under which the connection will be established. |pi       |  :x:         |
+|  -w           | --password    |The password for the given username.                    | raspberry     | :x:          |
   
 
 ## Special Thanks
