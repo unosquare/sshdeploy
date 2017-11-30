@@ -4,11 +4,16 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/p6c0whp2xfajuu0c?svg=true)](https://ci.appveyor.com/project/geoperez/sshdeploy)
 [![NuGet version](https://badge.fury.io/nu/sshdeploy.svg)](https://badge.fury.io/nu/sshdeploy)
 
-A `dotnet` CLI extension that enables quick deployments over SSH. This program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
-
 :star: *Please star this project if you find it useful!*
 
-## Install
+A `dotnet` CLI extension that enables quick deployments over SSH. This program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
+
+ The following commands are currently available:
+ * `dotnet monitor` - Watches changes on a single file, if this event is raised then it proceeeds to send the specified source path files over SSH
+ * `dotnet push` - Single use command that trasfers files over SSH
+
+
+## Installation
 As of now  CLI does not allow command line installation so you'll need to modify your csproj manually.
 
  ```xml
@@ -17,10 +22,11 @@ As of now  CLI does not allow command line installation so you'll need to modify
     </ItemGroup>
  ```
  
-## Usage Example
+## Usage
 
 The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
 
+### Monitor
 <ol>
      <li>Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
      </li>
@@ -101,8 +107,8 @@ Here's a good example of using pre and post commands to acocmplish the above
 ```
 dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False
 ```
-
-<h2>Monitor Mode Documentation</h2><small>from command line help output</small>
+## References
+### Monitor Mode
 
 |Short Argument | Long Argument |               Description                              | Default      | Required|
 |:-----:        | :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
@@ -120,9 +126,9 @@ dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFp
 |  -w           | --password    |The password for the given username.                    | raspberry     | NO          |
 |  -l           | --legacy      | Monitor files using legacy method                      | False         |NO           |
 
-## Push Mode Documentation
+### Push Mode
 
-Push is a single use command that does not monitor file changes continuously unlike <i>monitor</i>
+
 
 |Short Argument | Long Argument |               Description                              | Default      | Required     |
 |:-------------:| :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
