@@ -68,7 +68,7 @@ dotnet sshdeploy monitor
 This will get you all the options you can use.
 
 * If all goes well you will see output similar to this:
-`
+```
 SSH Deployment Tool [Version 1.0.0.0]
 (c) 2015 Unosquare SA de CV. All Rights Reserved.
 
@@ -88,7 +88,7 @@ File System Monitor is now running.
 Writing a new monitor file will trigger a new deployment.
 Remember: Press Q to quit.
 Ground Control to Major Tom: Have a nice trip in space!
-`
+```
 7. Now go back to your Visual Studio Solution, right click on the project, a select "Rebuild". You should see output in the command line similar to the following:
 ```
      Starting deployment ID 1 - Sunday, June 14, 2015 10:16:20 PM
