@@ -7,7 +7,7 @@
     using Options;
     using Swan;
     using Unosquare.Labs.SshDeploy.Attributes;
-    using Unosquare.Labs.SshDeploy.util;
+    using Unosquare.Labs.SshDeploy.Utils;
 
     public static class Program
     {
@@ -54,14 +54,7 @@
                     using (var stream = File.Open(projectFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                     using (var csproj = new CsProjFile(stream, leaveOpen: true))
                     {
-                        if (args.Contains("push"))
-                        {
-                            csproj.NuGetMetadata.ParseCsProjTags(ref args, typeof(PushVerbOptions));
-                        }
-                        else
-                        {
-                            csproj.NuGetMetadata.ParseCsProjTags(ref args, typeof(MonitorAttribute));
-                        }
+                        csproj.NuGetMetadata.ParseCsProjTags(ref args);
                     }
                 }
             }

@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Xml.Linq;
-using Unosquare.Labs.SshDeploy.Attributes;
-
-namespace Unosquare.Labs.SshDeploy.util
+﻿namespace Unosquare.Labs.SshDeploy.Utils
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using System.Text;
+    using System.Xml.Linq;
+    using Unosquare.Labs.SshDeploy.Attributes;
+
     public class CsProjNuGetMetadata
     {
         private readonly XDocument _xmlDocument;
@@ -175,18 +175,16 @@ namespace Unosquare.Labs.SshDeploy.util
             }
         }
 
-        public void ParseCsProjTags(ref string[] args, Type t)
+        public void ParseCsProjTags(ref string[] args)
         {
             var argsList = args.ToList();
-
-            var type = (t.GetType() == typeof(PushAttribute)) ? typeof(PushAttribute) : typeof(MonitorAttribute);
+            var type = args.Contains("push") ? typeof(PushAttribute) : typeof(MonitorAttribute);
             var props = this.GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, type));
-
             foreach (PropertyInfo propertyInfo in props)
             {
                 if (propertyInfo.GetValue(this) != null)
                 {
-                    var attribute = (type == typeof(PushAttribute)) ? propertyInfo.GetCustomAttribute<PushAttribute>() : propertyInfo.GetCustomAttribute<MonitorAttribute>();
+                    var attribute = (VerbAttributeBase) propertyInfo.GetCustomAttribute(type);
                     if (!args.Contains(attribute.LongName) & !args.Contains(attribute.ShortName))
                     {
                         if (!(propertyInfo.GetValue(this).GetType() == typeof(bool)))

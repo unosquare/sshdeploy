@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace Unosquare.Labs.SshDeploy.util
+namespace Unosquare.Labs.SshDeploy.Utils
 {
 
     public class CsProjFile
