@@ -166,11 +166,12 @@
         }
 
         [Monitor(ShortName = "-t", LongName = "--target")]
-        public string SSHTargetPath
+        [Push(ShortName = "-t", LongName = "--target")]
+        public string RemoteTargetPath
         {
             get
             {
-                var element = FindElement(nameof(SSHTargetPath));
+                var element = FindElement(nameof(RemoteTargetPath));
                 return element?.Value;
             }
         }
@@ -184,7 +185,7 @@
             {
                 if (propertyInfo.GetValue(this) != null)
                 {
-                    var attribute = (VerbAttributeBase) propertyInfo.GetCustomAttribute(type);
+                    var attribute = (VerbAttributeBase)propertyInfo.GetCustomAttribute(type);
                     if (!args.Contains(attribute.LongName) & !args.Contains(attribute.ShortName))
                     {
                         if (!(propertyInfo.GetValue(this).GetType() == typeof(bool)))
