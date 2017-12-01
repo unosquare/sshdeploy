@@ -59,8 +59,8 @@ As of now  CLI does not allow command line installation so you'll need to modify
  ```
  
  **FYI: Arguments passed using the csproj file will not override the ones provided using the cli**
- 
- Heres a complete list of arguments with their matching XML tag
+ ### XML Tags
+ Heres a complete list of arguments with their corresponding XML tag.
 ### Old school way
 #### Push
 1. Navigate to  your project folder where the csproj file resides. Example:
