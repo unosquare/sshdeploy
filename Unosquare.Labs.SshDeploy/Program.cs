@@ -8,6 +8,7 @@
     using Swan;
     using Unosquare.Labs.SshDeploy.Attributes;
     using Unosquare.Labs.SshDeploy.Utils;
+    using Unosquare.Swan.Components;
 
     public static class Program
     {
@@ -52,9 +53,9 @@
                 if (projectFile != null)
                 {
                     using (var stream = File.Open(projectFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                    using (var csproj = new CsProjFile(stream))
+                    using (var csproj = new CsProjFile<CsProjNuGetMetadata>(stream))
                     {
-                        csproj.NuGetMetadata.ParseCsProjTags(ref args);
+                        csproj.Metadata.ParseCsProjTags(ref args);
                     }
                 }
             }

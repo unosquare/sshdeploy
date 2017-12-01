@@ -7,25 +7,10 @@
     using System.Text;
     using System.Xml.Linq;
     using Unosquare.Labs.SshDeploy.Attributes;
+    using Unosquare.Swan.Components;
 
-    public class CsProjNuGetMetadata
+    public class CsProjNuGetMetadata : CsProjMetadataBase
     {
-        private readonly XDocument _xmlDocument;
-
-        public CsProjNuGetMetadata(XDocument xmlDocument)
-        {
-            _xmlDocument = xmlDocument;
-        }
-
-        public string PackageId
-        {
-            get
-            {
-                var element = FindElement(nameof(PackageId));
-                return element?.Value;
-            }
-        }
-
         [Push(ShortName = "-f", LongName = "--framework")]
         public string TargetFramework
         {
@@ -156,11 +141,11 @@
         }
 
         [Monitor(ShortName ="-s", LongName ="--source")]
-        public string Source
+        public string SourcePath
         {
             get
             {
-                var element = FindElement(nameof(Source));
+                var element = FindElement(nameof(SourcePath));
                 return element?.Value;
             }
         }
@@ -176,7 +161,8 @@
             }
         }
 
-        public void ParseCsProjTags(ref string[] args)
+        
+        public override void ParseCsProjTags(ref string[] args)
         {
             var argsList = args.ToList();
             var type = args.Contains("push") ? typeof(PushAttribute) : typeof(MonitorAttribute);
@@ -202,11 +188,6 @@
             }
 
             args = argsList.ToArray();
-        }
-
-        private XElement FindElement(string elementName)
-        {
-            return _xmlDocument.Descendants(elementName).FirstOrDefault();
         }
     }
 }
