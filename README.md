@@ -25,10 +25,44 @@ As of now  CLI does not allow command line installation so you'll need to modify
  ```
  
 ## Usage
-
-The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
-
-### Push
+ **There are two ways of passing arguments: the old school way using the cli and our approach using the csproj file.**
+### Using the csproj file
+#### Push
+1. Edit your csproj file and add:
+```xml
+    <Host>192.168.2.194</Host>
+    <Clean />
+    <RemoteTargetPath>/home/pi/libfprint-cs</RemoteTargetPath>
+    <Username>pi</Username>
+    <Password>raspberry</Password>
+ ```
+ 2. Execute 
+ ```
+ dotnet sshdeploy push
+ ```
+ *Voilà! sshdeploy automatically finds the necessary arguments provided using proper xml tags*
+ 
+ **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
+ #### Monitor
+ Same thing again.
+ 1. Edit your csproj file and add:
+```xml
+    <Host>192.168.2.194</Host>
+    <SourcePath>C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug</SourcePath>
+    <RemoteTargetPath>/home/pi/libfprint-cs</RemoteTargetPath>
+    <Username>pi</Username>
+    <Password>raspberry</Password>
+ ```
+ 2. Execute 
+ ```
+ dotnet sshdeploy monitor
+ ```
+ 
+ **FYI: Arguments passed using the csproj file will not override the ones provided using the cli**
+ ### XML Tags
+ Heres a complete list of arguments with their corresponding XML tag.
+### Old school way
+#### Push
 1. Navigate to  your project folder where the csproj file resides. Example:
 ```
 cd C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\
@@ -43,8 +77,9 @@ dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.1
 	* `-h` refers to the host (IP address of the Raspberry Pi)
 * For a detailed list of all the arguments available please see [below](#push-mode) or execute `dotnet sshdeploy push`
 
-### Monitor
+#### Monitor
 
+The following steps outline a continuous deployment of a Visual Studio solution to a Raspberry Pi running the default Raspbian SSH daemon.
 1. Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
 2. Right click on the project and click on the menu item "Properties"
 3. Go to the "Build Events" tab, and under Post-build events, enter the following: 
