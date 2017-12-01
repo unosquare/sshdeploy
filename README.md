@@ -72,11 +72,11 @@ As of now  CLI does not allow command line installation so you'll need to modify
 |    --clean       | `</Clean>`          |:x:                |
 |    --exclude     | `<Exclude>`         |:x:                |
 |  -v,--verbose    | `</Verbose>`        |             :x:   |
-|  -h,--host       |  `<Host>`           |                   |
-| -p,--port        |   `<Port>`          |                   |
-|  -u,--username   |       `<Username>`  |      :x:          |
-|  -w,--password   |    `<Password>`     | :x:               |
-|  -l,--legacy     |     `</legacy>`     | :x:               |
+|  -h,--host       |  `<RemoteHost>`     |                   |
+| -p,--port        |   `<RemotePort>`    |                   |
+|  -u,--username   |  `<RemoteUsername>` |      :x:          |
+|  -w,--password   |  `<RemotePassword>` | :x:               |
+|  -l,--legacy     |     `</Legacy>`     | :x:               |
 
 ### Old school way
 #### Push
