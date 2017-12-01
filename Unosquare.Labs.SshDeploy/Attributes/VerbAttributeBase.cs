@@ -5,7 +5,7 @@ using System.Text;
 namespace Unosquare.Labs.SshDeploy.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    class VerbAttributeBase : Attribute
+    internal class VerbAttributeBase : Attribute
     {
         private string _shortName;
 
