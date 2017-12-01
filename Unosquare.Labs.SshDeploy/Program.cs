@@ -52,7 +52,7 @@
                 if (projectFile != null)
                 {
                     using (var stream = File.Open(projectFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                    using (var csproj = new CsProjFile(stream, leaveOpen: true))
+                    using (var csproj = new CsProjFile(stream))
                     {
                         csproj.NuGetMetadata.ParseCsProjTags(ref args);
                     }
