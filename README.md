@@ -8,6 +8,8 @@
 
 A `dotnet` CLI extension that enables quick deployments over SSH. This program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian. 
 
+**If you came here looking for our old version of SSHDeploy please click [here](https://www.nuget.org/packages/SSHDeploy/), otherwise you are in the right place**
+
  The following commands are currently available:
  * `dotnet monitor` - Watches changes on a single file, if this event is raised then it proceeeds to send the specified source path files over SSH
  * `dotnet push` - Single use command that trasfers files over SSH
@@ -39,7 +41,7 @@ dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.1
 	* `-f` refers to the source framework
 	* `-t` refers to the target path 
 	* `-h` refers to the host (IP address of the Raspberry Pi)
-* For a detailed list of all the arguments available please see [below](#References) or execute `dotnet sshdeploy push`
+* For a detailed list of all the arguments available please see [below](#push-mode) or execute `dotnet sshdeploy push`
 
 ### Monitor
 
