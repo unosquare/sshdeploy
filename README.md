@@ -28,6 +28,39 @@ As of now  CLI does not allow command line installation so you'll need to modify
  **There are two ways of passing arguments: the old school way using the cli and our approach using the csproj file.**
 ### Using the csproj file
 #### Push
+1. Edit your csproj file and add:
+```xml
+    <Host>192.168.2.194</Host>
+    <Clean />
+    <RemoteTargetPath>/home/pi/libfprint-cs</RemoteTargetPath>
+    <Username>pi</Username>
+    <Password>raspberry</Password>
+ ```
+ 2. Execute 
+ ```
+ dotnet sshdeploy push
+ ```
+ *Voilà! sshdeploy automatically finds the necessary arguments provided using proper xml tags*
+ 
+ **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
+ #### Monitor
+ Same thing again.
+ 1. Edit your csproj file and add:
+```xml
+    <Host>192.168.2.194</Host>
+    <SourcePath>C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug</SourcePath>
+    <RemoteTargetPath>/home/pi/libfprint-cs</RemoteTargetPath>
+    <Username>pi</Username>
+    <Password>raspberry</Password>
+ ```
+ 2. Execute 
+ ```
+ dotnet sshdeploy monitor
+ ```
+ 
+ **FYI: Arguments passed using the csproj file will not override the ones provided using the cli**
+ 
+ Heres a complete list of arguments with their matching XML tag
 ### Old school way
 #### Push
 1. Navigate to  your project folder where the csproj file resides. Example:
