@@ -108,11 +108,11 @@
 
         [Push(ShortName = "-h", LongName = "--host")]
         [Monitor(ShortName = "-h", LongName = "--host")]
-        public string Host
+        public string RemoteHost
         {
             get
             {
-                var element = FindElement(nameof(Host));
+                var element = FindElement(nameof(RemoteHost));
                 return element?.Value;
             }
         }
@@ -130,22 +130,22 @@
 
         [Push( ShortName ="-u", LongName ="--username")]
         [Monitor(ShortName = "-u", LongName = "--username")]
-        public string Username
+        public string RemoteUsername
         {
             get
             {
-                var element = FindElement(nameof(Username));
+                var element = FindElement(nameof(RemoteUsername));
                 return element?.Value;
             }
         }
 
         [Push(ShortName ="-w", LongName = "--password")]
         [Monitor(ShortName = "-w", LongName = "--password")]
-        public string Password
+        public string RemotePassword
         {
             get
             {
-                var element = FindElement(nameof(Password));
+                var element = FindElement(nameof(RemotePassword));
                 return element?.Value;
             }
         }
@@ -171,7 +171,6 @@
             }
         }
 
-        
         public override void ParseCsProjTags(ref string[] args)
         {
             var argsList = args.ToList();
