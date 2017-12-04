@@ -548,7 +548,7 @@
                 switch (readKey.Key)
                 {
                     case ConsoleKey.Q:
-                        break;
+                        return;
                     case ConsoleKey.C:
                         Console.Clear();
                         break;
