@@ -61,6 +61,23 @@ As of now  CLI does not allow command line installation so you'll need to modify
  **FYI: Arguments passed using the csproj file will not override the ones provided using the cli**
  ### XML Tags
  Heres a complete list of arguments with their corresponding XML tag.
+ 
+|      Args        |        XML Tag      |      Example      |
+| :--------------: | :------------------:| :----------------:|
+| -m,--monitor     | `<Monitor>   `      | sshdeploy.ready   |
+|  -s, --source    | `<RemoteSourcePath>`|:heavy_check_mark: |
+|  -t,--target     |  `<TargetPath>`     |:heavy_check_mark: |
+|  --pre           |  `<PreCommand>`     | :x:               |
+| --post           | `<PostCommand>`     | :x:               |
+|    --clean       | `</Clean>`          |:x:                |
+|    --exclude     | `<Exclude>`         |:x:                |
+|  -v,--verbose    | `</Verbose>`        |             :x:   |
+|  -h,--host       |  `<RemoteHost>`     |                   |
+| -p,--port        |   `<RemotePort>`    |                   |
+|  -u,--username   |  `<RemoteUsername>` |      :x:          |
+|  -w,--password   |  `<RemotePassword>` | :x:               |
+|  -l,--legacy     |     `</Legacy>`     | :x:               |
+
 ### Old school way
 #### Push
 1. Navigate to  your project folder where the csproj file resides. Example:
@@ -141,6 +158,7 @@ Ground Control to Major Tom: Have a nice trip in space!
  ```dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False```
 ## References
 ### Monitor Mode
+
 
 |Short Argument | Long Argument |               Description                              | Default      | Required|
 |:-----:        | :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
