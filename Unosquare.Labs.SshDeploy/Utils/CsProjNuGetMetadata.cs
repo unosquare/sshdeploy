@@ -31,6 +31,16 @@
             }
         }
 
+        [Monitor(ShortName = "-m", LongName = "--monitor")]
+        public string MonitorFile
+        {
+            get
+            {
+                var element = FindElement(nameof(MonitorFile));
+                return element?.Value;
+            }
+        }
+
         [Push(ShortName = "-c", LongName = "--configuration")]
         public string Configuration
         {
