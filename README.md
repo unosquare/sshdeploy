@@ -65,8 +65,8 @@ As of now  CLI does not allow command line installation so you'll need to modify
 |      Args        |        XML Tag      | 
 | :--------------: | :------------------:| 
 | -m,--monitor     | `<MonitorFile>`     |
-|  -s, --source    | `<RemoteSourcePath>`|
-|  -t,--target     |  `<TargetPath>`     |
+|  -s, --source    | `<SourcePath>`      |
+|  -t,--target     |`<RemoteTargetPath>` |
 |  --pre           |  `<PreCommand>`     | 
 | --post           | `<PostCommand>`     | 
 |    --clean       | `</Clean>`          |
