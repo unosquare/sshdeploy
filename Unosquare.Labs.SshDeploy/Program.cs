@@ -43,7 +43,6 @@
             if (parseResult == false)
             {
                 Environment.ExitCode = 1;
-                Console.ReadKey();
                 return;
             }
 
@@ -80,7 +79,6 @@
                     TitleSuffix = $" - Push Mode{TitleSuffix}";
                     Title = "Push";
                     DeploymentManager.ExecutePushVerb(options.PushVerbOptions);
-                    Console.ReadKey();
                 }
             }
             catch (Exception ex)
