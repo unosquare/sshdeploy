@@ -44,8 +44,12 @@ As of now  CLI does not allow command line installation so you'll need to modify
  
  **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
  #### Monitor
- Same thing again.
- 1. Edit your csproj file and add:
+1. Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
+2. Right click on the project and click on the menu item "Properties"
+3. Go to the "Build Events" tab, and under Post-build events, enter the following: 
+* `echo %DATE% %TIME% >> "$(TargetDir)sshdeploy.ready"`
+	*This simply writes the date and time to the `sshdeploy.ready` file. Whenever this file CHANGES, the deployment tool will perform a deployment.
+ 4. Edit your csproj file and add:
 ```xml
     <RemoteHost>192.168.2.194</RemoteHost>
     <SourcePath>C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug</SourcePath>
@@ -53,7 +57,7 @@ As of now  CLI does not allow command line installation so you'll need to modify
     <RemoteUsername>pi</RemoteUsername>
     <RemotePassword>raspberry</RemotePassword>
  ```
- 2. Execute 
+ 5. Execute 
  ```
  dotnet sshdeploy monitor
  ```
