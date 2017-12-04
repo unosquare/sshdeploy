@@ -62,21 +62,21 @@ As of now  CLI does not allow command line installation so you'll need to modify
  ### XML Tags
  Heres a complete list of arguments with their corresponding XML tag.
  
-|      Args        |        XML Tag      |      Example      |
-| :--------------: | :------------------:| :----------------:|
-| -m,--monitor     | `<Monitor>   `      | sshdeploy.ready   |
-|  -s, --source    | `<RemoteSourcePath>`|:heavy_check_mark: |
-|  -t,--target     |  `<TargetPath>`     |:heavy_check_mark: |
-|  --pre           |  `<PreCommand>`     | :x:               |
-| --post           | `<PostCommand>`     | :x:               |
-|    --clean       | `</Clean>`          |:x:                |
-|    --exclude     | `<Exclude>`         |:x:                |
-|  -v,--verbose    | `</Verbose>`        |             :x:   |
-|  -h,--host       |  `<RemoteHost>`     |                   |
-| -p,--port        |   `<RemotePort>`    |                   |
-|  -u,--username   |  `<RemoteUsername>` |      :x:          |
-|  -w,--password   |  `<RemotePassword>` | :x:               |
-|  -l,--legacy     |     `</Legacy>`     | :x:               |
+|      Args        |        XML Tag      | 
+| :--------------: | :------------------:| 
+| -m,--monitor     | `<MonitorFile>`     |
+|  -s, --source    | `<RemoteSourcePath>`|
+|  -t,--target     |  `<TargetPath>`     |
+|  --pre           |  `<PreCommand>`     | 
+| --post           | `<PostCommand>`     | 
+|    --clean       | `</Clean>`          |
+|    --exclude     | `<Exclude>`         |
+|  -v,--verbose    | `</Verbose>`        | 
+|  -h,--host       |  `<RemoteHost>`     |
+| -p,--port        |   `<RemotePort>`    | 
+|  -u,--username   |  `<RemoteUsername>` | 
+|  -w,--password   |  `<RemotePassword>` |
+|  -l,--legacy     |     `</Legacy>`     |
 
 ### Old school way
 #### Push
