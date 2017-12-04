@@ -30,11 +30,11 @@ As of now  CLI does not allow command line installation so you'll need to modify
 #### Push
 1. Edit your csproj file and add:
 ```xml
-    <Host>192.168.2.194</Host>
+    <RemoteHost>192.168.2.194</RemoteHost>
     <Clean />
     <RemoteTargetPath>/home/pi/libfprint-cs</RemoteTargetPath>
-    <Username>pi</Username>
-    <Password>raspberry</Password>
+    <RemoteUsername>pi</RemoteUsername>
+    <RemotePassword>raspberry</RemotePassword>
  ```
  2. Execute 
  ```
@@ -47,11 +47,11 @@ As of now  CLI does not allow command line installation so you'll need to modify
  Same thing again.
  1. Edit your csproj file and add:
 ```xml
-    <Host>192.168.2.194</Host>
+    <RemoteHost>192.168.2.194</RemoteHost>
     <SourcePath>C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug</SourcePath>
     <RemoteTargetPath>/home/pi/libfprint-cs</RemoteTargetPath>
-    <Username>pi</Username>
-    <Password>raspberry</Password>
+    <RemoteUsername>pi</RemoteUsername>
+    <RemotePassword>raspberry</RemotePassword>
  ```
  2. Execute 
  ```
