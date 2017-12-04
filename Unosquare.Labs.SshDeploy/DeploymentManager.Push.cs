@@ -9,7 +9,7 @@
 
     public partial class DeploymentManager
     {
-        public static void ExecutePushVerb(PushVerbOptions verbOptions)
+        internal static void ExecutePushVerb(PushVerbOptions verbOptions)
         {
             NormalizePushVerbOptions(verbOptions);
             PrintPushOptions(verbOptions);
@@ -80,7 +80,7 @@
             try
             {
                 _forwardShellStreamOutput = false;
-                RunSshClientCommand(sshClient, verbOptions);
+                RunCommand(sshClient, "client", verbOptions.PreCommand);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
                 UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,
@@ -98,9 +98,7 @@
                 stopwatch.Stop();
                 $"    Finished deployment in {Math.Round(stopwatch.Elapsed.TotalSeconds, 2)} seconds."
                     .WriteLine(ConsoleColor.Green);
-
-                _forwardShellStreamOutput = true;
-                RunShellStreamCommand(shellStream, verbOptions);
+                RunCommand(sshClient, "shell", verbOptions.PostCommand);
             }
         }
     }

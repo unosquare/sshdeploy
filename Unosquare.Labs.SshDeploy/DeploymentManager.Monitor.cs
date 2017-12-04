@@ -114,6 +114,17 @@
             $"    SSH RX: [{result.ExitStatus}] {result.Result}".WriteLine(ConsoleColor.DarkYellow);
         }
 
+        private static void RunCommand(SshClient sshClient, string type, string command)
+        {
+            if (string.IsNullOrWhiteSpace(command)) return;
+
+            $"    Executing SSH {type} command.".WriteLine(ConsoleColor.Green);
+
+            var result = sshClient.RunCommand(command);
+            $"    SSH TX: {command}".WriteLine(ConsoleColor.DarkYellow);
+            $"    SSH RX: [{result.ExitStatus}] {result.Result}".WriteLine(ConsoleColor.DarkYellow);
+        }
+
         /// <summary>
         /// Prints the currently supplied monitor mode options.
         /// </summary>

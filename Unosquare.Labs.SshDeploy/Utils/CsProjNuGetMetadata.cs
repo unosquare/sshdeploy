@@ -12,7 +12,7 @@
     public class CsProjNuGetMetadata : CsProjMetadataBase
     {
         [Push(ShortName = "-f", LongName = "--framework")]
-        public string TargetFramework
+        public new string TargetFramework
         {
             get
             {
