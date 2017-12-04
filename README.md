@@ -69,14 +69,14 @@ As of now  CLI does not allow command line installation so you'll need to modify
 |  -t,--target     |`<RemoteTargetPath>` |
 |  --pre           |  `<PreCommand>`     | 
 | --post           | `<PostCommand>`     | 
-|    --clean       | `</Clean>`          |
+|    --clean       | `<Clean/>`          |
 |    --exclude     | `<Exclude>`         |
-|  -v,--verbose    | `</Verbose>`        | 
+|  -v,--verbose    | `<Verbose/>`        | 
 |  -h,--host       |  `<RemoteHost>`     |
 | -p,--port        |   `<RemotePort>`    | 
 |  -u,--username   |  `<RemoteUsername>` | 
 |  -w,--password   |  `<RemotePassword>` |
-|  -l,--legacy     |     `</Legacy>`     |
+|  -l,--legacy     |     `<Legacy/>`     |
 
 ### Old school way
 #### Push
