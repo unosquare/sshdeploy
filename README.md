@@ -36,11 +36,14 @@ As of now  CLI does not allow command line installation so you'll need to modify
     <RemoteUsername>pi</RemoteUsername>
     <RemotePassword>raspberry</RemotePassword>
  ```
- 2. Execute 
+ 
+2. Right click on the project and click on the menu item "Properties"
+3. Go to the "Build Events" tab, and under Post-build events, enter the following: 
  ```
- dotnet sshdeploy push
+cd $(ProjectDir) 
+dotnet sshdeploy push
  ```
- *Voilà! sshdeploy automatically finds the necessary arguments provided using proper xml tags*
+ *Voilà! sshdeploy  finds the necessary arguments provided using proper xml tags and deploys after a successful build*
  
  **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
  #### Monitor
