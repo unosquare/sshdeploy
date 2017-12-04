@@ -47,6 +47,7 @@ As of now  CLI does not allow command line installation so you'll need to modify
 1. Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
 2. Right click on the project and click on the menu item "Properties"
 3. Go to the "Build Events" tab, and under Post-build events, enter the following: 
+* ~~`dotnet sshdeploy`~~
 * `echo %DATE% %TIME% >> "$(TargetDir)sshdeploy.ready"`
 	*This simply writes the date and time to the `sshdeploy.ready` file. Whenever this file CHANGES, the deployment tool will perform a deployment.
  4. Edit your csproj file and add:
@@ -58,6 +59,7 @@ As of now  CLI does not allow command line installation so you'll need to modify
     <RemotePassword>raspberry</RemotePassword>
  ```
  5. Execute 
+ ~~``` dotnet build  ```~~
  ```
  dotnet sshdeploy monitor
  ```
