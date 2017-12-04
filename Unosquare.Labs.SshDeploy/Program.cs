@@ -1,20 +1,15 @@
 ﻿namespace Unosquare.Labs.SshDeploy
 {
+    using Options;
+    using Swan;
     using System;
     using System.IO;
     using System.Linq;
-    using System.Threading;
-    using Options;
-    using Swan;
-    using Unosquare.Labs.SshDeploy.Attributes;
-    using Unosquare.Labs.SshDeploy.Utils;
-    using Unosquare.Swan.Components;
+    using Utils;
+    using Swan.Components;
 
     public static class Program
     {
-        private static readonly string MutexName = string.Format("Global\\{0}", typeof(Program).Namespace);
-        private static Mutex _appMutex;
-
         public static string Title
         {
             get => Console.Title;
@@ -28,35 +23,18 @@
         private static void Main(string[] args)
         {
             Title = "Unosquare";
-
-            #region Handle Single Instance Application
-
-            _appMutex = new Mutex(true, MutexName, out var isNewMutex);
-
-            if (isNewMutex == false)
-            {
-                _appMutex = null;
-                Environment.ExitCode = 1;
-                return;
-            }
-
-            #endregion
-
+            
             $"SSH Deployment Tool [Version {typeof(Program).Assembly.GetName().Version}]".WriteLine();
             "(c)2015 - 2017 Unosquare SA de CV. All Rights Reserved.".WriteLine();
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
 
             var options = new CliOptions();
+
             if (args.Contains("push") | args.Contains("monitor"))
             {
-                var projectFile = Directory.EnumerateFiles(Program.CurrentDirectory, "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
-                if (projectFile != null)
+                using (var csproj = new CsProjFile<CsProjNuGetMetadata>())
                 {
-                    using (var stream = File.Open(projectFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-                    using (var csproj = new CsProjFile<CsProjNuGetMetadata>(stream))
-                    {
-                        csproj.Metadata.ParseCsProjTags(ref args);
-                    }
+                    csproj.Metadata.ParseCsProjTags(ref args);
                 }
             }
 
