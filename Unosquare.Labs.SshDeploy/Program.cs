@@ -7,6 +7,7 @@
     using System.Linq;
     using Utils;
     using Swan.Components;
+    using System.Threading.Tasks;
 
     public static class Program
     {
@@ -42,6 +43,7 @@
             if (parseResult == false)
             {
                 Environment.ExitCode = 1;
+                Task.Delay(200);
                 return;
             }
 
@@ -96,6 +98,8 @@
             {
                 "Completed.".WriteLine();
             }
+
+            Task.Delay(200);
         }
     }
 }
