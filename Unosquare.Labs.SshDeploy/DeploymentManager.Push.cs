@@ -30,11 +30,7 @@
                 {
                     // Connect SSH and SFTP clients
                     EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
-
-                    using (var shellStream = CreateShellStream(sshClient))
-                    {
-                        CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
-                    }
+                    CreateNewDeployment(sshClient, sftpClient, verbOptions);
                 }
             }
         }
@@ -66,7 +62,6 @@
         private static void CreateNewDeployment(
             SshClient sshClient, 
             SftpClient sftpClient, 
-            ShellStream shellStream,
             PushVerbOptions verbOptions)
         {
             // At this point the change has been detected; Make sure we are not deploying
