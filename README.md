@@ -35,12 +35,15 @@ As of now  CLI does not allow command line installation so you'll need to modify
     <RemoteTargetPath>/home/pi/libfprint-cs</RemoteTargetPath>
     <RemoteUsername>pi</RemoteUsername>
     <RemotePassword>raspberry</RemotePassword>
+ ``` 
+2. We need a post build event as well:
+ ```xml
+<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="cd $(ProjectDir) &amp;&amp; dotnet sshdeploy push" />
+</Target>
  ```
- 2. Execute 
- ```
- dotnet sshdeploy push
- ```
- *Voilà! sshdeploy automatically finds the necessary arguments provided using proper xml tags*
+ *Voilà! sshdeploy  finds the necessary arguments provided using proper xml tags and deploys after a successful build*
  
  **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
  #### Monitor
