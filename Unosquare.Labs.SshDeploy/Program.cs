@@ -30,12 +30,9 @@
 
             var options = new CliOptions();
 
-            if (args.Contains("push") | args.Contains("monitor"))
+            using (var csproj = new CsProjFile<CsProjNuGetMetadata>())
             {
-                using (var csproj = new CsProjFile<CsProjNuGetMetadata>())
-                {
-                    csproj.Metadata.ParseCsProjTags(ref args);
-                }
+                csproj.Metadata.ParseCsProjTags(ref args);
             }
 
             var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);

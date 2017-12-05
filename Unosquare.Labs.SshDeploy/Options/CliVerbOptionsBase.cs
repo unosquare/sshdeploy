@@ -10,7 +10,7 @@ namespace Unosquare.Labs.SshDeploy.Options
             Required = false)]
         public bool Verbose { get; set; }
 
-        [ArgumentOption('h', "host", DefaultValue = 1,
+        [ArgumentOption('h', "host",
             HelpText = "Hostname or IP Address of the target. -- Must be running an SSH server.", Required = true)]
         public string Host { get; set; }
 

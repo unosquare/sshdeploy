@@ -27,7 +27,7 @@
             get
             {
                 var element = FindElement(nameof(Legacy));
-                return (element != null) ? true : false;
+                return element != null;
             }
         }
 
@@ -47,6 +47,16 @@
             get
             {
                 var element = FindElement(nameof(Configuration));
+                return element?.Value;
+            }
+        }
+
+        [Run(ShortName ="-c",LongName = "--command")]
+        public string Command
+        {
+            get
+            {
+                var element = FindElement(nameof(Command));
                 return element?.Value;
             }
         }
@@ -80,7 +90,7 @@
             get
             {
                 var element = FindElement(nameof(Clean));
-                return (element != null) ? true : false;
+                return element != null;
             }
         }
 
@@ -97,28 +107,34 @@
 
         [Push(ShortName = "-v", LongName = "--verbose")]
         [Monitor(ShortName = "-v", LongName = "--verbose")]
+        [Shell(ShortName = "-v", LongName = "--verbose")]
+        [Run(ShortName = "-v", LongName = "--verbose")]
         public bool Verbose
         {
             get
             {
                 var element = FindElement(nameof(Verbose));
-                return (element != null) ? true : false;
+                return element != null;
             }
         }
 
         [Push(ShortName = "-h", LongName = "--host")]
         [Monitor(ShortName = "-h", LongName = "--host")]
-        public string RemoteHost
+        [Shell(ShortName = "-h", LongName = "--host")]
+        [Run(ShortName = "-h", LongName = "--host")]
+        public string SshHost
         {
             get
             {
-                var element = FindElement(nameof(RemoteHost));
+                var element = FindElement(nameof(SshHost));
                 return element?.Value;
             }
         }
 
         [Push(ShortName ="-p", LongName = "--port")]
         [Monitor(ShortName = "-p", LongName = "--port")]
+        [Shell(ShortName = "-p", LongName = "--port")]
+        [Run(ShortName = "-p", LongName = "--port")]
         public string Port
         {
             get
@@ -128,24 +144,28 @@
             }
         }
 
-        [Push( ShortName ="-u", LongName ="--username")]
+        [Push(ShortName ="-u", LongName ="--username")]
         [Monitor(ShortName = "-u", LongName = "--username")]
-        public string RemoteUsername
+        [Shell(ShortName = "-u", LongName = "--username")]
+        [Run(ShortName = "-u", LongName = "--username")]
+        public string SshUsername
         {
             get
             {
-                var element = FindElement(nameof(RemoteUsername));
+                var element = FindElement(nameof(SshUsername));
                 return element?.Value;
             }
         }
 
         [Push(ShortName ="-w", LongName = "--password")]
         [Monitor(ShortName = "-w", LongName = "--password")]
-        public string RemotePassword
+        [Shell(ShortName = "-w", LongName = "--password")]
+        [Run(ShortName = "-w", LongName = "--password")]
+        public string SshPassword
         {
             get
             {
-                var element = FindElement(nameof(RemotePassword));
+                var element = FindElement(nameof(SshPassword));
                 return element?.Value;
             }
         }
@@ -162,19 +182,30 @@
 
         [Monitor(ShortName = "-t", LongName = "--target")]
         [Push(ShortName = "-t", LongName = "--target")]
-        public string RemoteTargetPath
+        public string SshTargetPath
         {
             get
             {
-                var element = FindElement(nameof(RemoteTargetPath));
+                var element = FindElement(nameof(SshTargetPath));
                 return element?.Value;
             }
         }
 
+        private static Type GetAttributeType(string[] args)
+        {
+            if (args.Contains("push"))
+                return typeof(PushAttribute);
+            else if (args.Contains("monitor"))
+                return typeof(PushAttribute);
+            else if (args.Contains("run"))
+                return typeof(RunAttribute);
+            else return typeof(ShellAttribute);
+        } 
+
         public override void ParseCsProjTags(ref string[] args)
         {
             var argsList = args.ToList();
-            var type = args.Contains("push") ? typeof(PushAttribute) : typeof(MonitorAttribute);
+            var type = GetAttributeType(args);
             var props = this.GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, type));
             foreach (PropertyInfo propertyInfo in props)
             {
@@ -183,7 +214,7 @@
                     var attribute = (VerbAttributeBase)propertyInfo.GetCustomAttribute(type);
                     if (!args.Contains(attribute.LongName) & !args.Contains(attribute.ShortName))
                     {
-                        if (!(propertyInfo.GetValue(this).GetType() == typeof(bool)))
+                        if (!(propertyInfo.GetValue(this) is bool))
                         {
                             argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
                             argsList.Add(propertyInfo.GetValue(this).ToString());
