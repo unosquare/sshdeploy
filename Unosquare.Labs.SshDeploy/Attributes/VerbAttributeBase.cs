@@ -1,26 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Unosquare.Labs.SshDeploy.Attributes
+﻿namespace Unosquare.Labs.SshDeploy.Attributes
 {
+    using System;
+
     [AttributeUsage(AttributeTargets.Property)]
     internal class VerbAttributeBase : Attribute
     {
-        private string _shortName;
+        public string ShortName { get; set; }
 
-        public string ShortName
-        {
-            get { return _shortName; }
-            set { _shortName = value; }
-        }
-
-        private string _longName;
-
-        public string LongName
-        {
-            get { return _longName; }
-            set { _longName = value; }
-        }
+        public string LongName { get; set; }
     }
 }
