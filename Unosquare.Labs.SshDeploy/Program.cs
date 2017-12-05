@@ -27,6 +27,9 @@
             $"SSH Deployment Tool [Version {typeof(Program).Assembly.GetName().Version}]".WriteLine();
             "(c)2015 - 2017 Unosquare SA de CV. All Rights Reserved.".WriteLine();
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
+            
+            if (Console.IsOutputRedirected)
+            Terminal.Settings.OverrideIsConsolePresent = true;
 
             var options = new CliOptions();
 

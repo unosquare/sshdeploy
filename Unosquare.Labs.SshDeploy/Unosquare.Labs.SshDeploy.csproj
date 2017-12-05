@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>dotnet-sshdeploy</AssemblyName>
-
     <PackageId>dotnet-sshdeploy</PackageId>
     <Version>0.1.0-r5</Version>
     <PackageVersion>0.1.0-r5</PackageVersion>
@@ -21,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
     <PackageReference Include="System.IO.FileSystem.Watcher" Version="4.3.0" />
-    <PackageReference Include="Unosquare.Swan" Version="0.22.0" />
+    <PackageReference Include="Unosquare.Swan" Version="0.23.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
