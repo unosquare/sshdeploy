@@ -21,154 +21,63 @@
         public string SshDeployMonitorFile => FindElement(nameof(SshDeployMonitorFile))?.Value;
 
         [Push(ShortName = "-c", LongName = "--configuration")]
-        public string Configuration
-        {
-            get
-            {
-                var element = FindElement(nameof(Configuration));
-                return element?.Value;
-            }
-        }
+        public string SshDeployConfiguration => FindElement(nameof(SshDeployConfiguration))?.Value;
 
         [Run(ShortName ="-c",LongName = "--command")]
-        public string Command
-        {
-            get
-            {
-                var element = FindElement(nameof(Command));
-                return element?.Value;
-            }
-        }
+        public string SshDeployCommand => FindElement(nameof(SshDeployCommand))?.Value;
 
         [Push(LongName = "--pre")]
         [Monitor(LongName = "--pre")]
-        public string PreCommand
-        {
-            get
-            {
-                var element = FindElement(nameof(PreCommand));
-                return element?.Value;
-            }
-        }
+        public string SshDeployPreCommand => FindElement(nameof(SshDeployPreCommand))?.Value;
 
         [Push(LongName = "--post")]
         [Monitor(LongName = "--post")]
-        public string PostCommand
-        {
-            get
-            {
-                var element = FindElement(nameof(PostCommand));
-                return element?.Value;
-            }
-        }
+        public string SshDeployPostCommand => FindElement(nameof(SshDeployPostCommand))?.Value;
 
         [Push(LongName = "--clean")]
         [Monitor(LongName = "--clean")]
-        public bool Clean
-        {
-            get
-            {
-                var element = FindElement(nameof(Clean));
-                return element != null;
-            }
-        }
+        public bool SshDeployClean => FindElement(nameof(SshDeployClean)) != null;
 
         [Push(LongName = "--exclude")]
         [Monitor(LongName = "--exclude")]
-        public string Exclude
-        {
-            get
-            {
-                var element = FindElement(nameof(Exclude));
-                return element?.Value;
-            }
-        }
+        public string SshDeployExclude => FindElement(nameof(SshDeployExclude))?.Value;        
 
         [Push(ShortName = "-v", LongName = "--verbose")]
         [Monitor(ShortName = "-v", LongName = "--verbose")]
         [Shell(ShortName = "-v", LongName = "--verbose")]
         [Run(ShortName = "-v", LongName = "--verbose")]
-        public bool Verbose
-        {
-            get
-            {
-                var element = FindElement(nameof(Verbose));
-                return element != null;
-            }
-        }
+        public bool SshDeployVerbose => FindElement(nameof(SshDeployVerbose)) != null;
 
         [Push(ShortName = "-h", LongName = "--host")]
         [Monitor(ShortName = "-h", LongName = "--host")]
         [Shell(ShortName = "-h", LongName = "--host")]
         [Run(ShortName = "-h", LongName = "--host")]
-        public string SshHost
-        {
-            get
-            {
-                var element = FindElement(nameof(SshHost));
-                return element?.Value;
-            }
-        }
+        public string SshDeployHost => FindElement(nameof(SshDeployHost))?.Value;
 
         [Push(ShortName ="-p", LongName = "--port")]
         [Monitor(ShortName = "-p", LongName = "--port")]
         [Shell(ShortName = "-p", LongName = "--port")]
         [Run(ShortName = "-p", LongName = "--port")]
-        public string Port
-        {
-            get
-            {
-                var element = FindElement(nameof(Port));
-                return element?.Value;
-            }
-        }
+        public string SshDeployPort => FindElement(nameof(SshDeployPort))?.Value;
 
-        [Push(ShortName ="-u", LongName ="--username")]
+        [Push(ShortName = "-u", LongName = "--username")]
         [Monitor(ShortName = "-u", LongName = "--username")]
         [Shell(ShortName = "-u", LongName = "--username")]
         [Run(ShortName = "-u", LongName = "--username")]
-        public string SshUsername
-        {
-            get
-            {
-                var element = FindElement(nameof(SshUsername));
-                return element?.Value;
-            }
-        }
+        public string SshDeployUsername => FindElement(nameof(SshDeployUsername))?.Value;
 
-        [Push(ShortName ="-w", LongName = "--password")]
+        [Push(ShortName = "-w", LongName = "--password")]
         [Monitor(ShortName = "-w", LongName = "--password")]
         [Shell(ShortName = "-w", LongName = "--password")]
         [Run(ShortName = "-w", LongName = "--password")]
-        public string SshPassword
-        {
-            get
-            {
-                var element = FindElement(nameof(SshPassword));
-                return element?.Value;
-            }
-        }
+        public string SshDeployPassword => FindElement(nameof(SshDeployPassword))?.Value;
 
         [Monitor(ShortName ="-s", LongName ="--source")]
-        public string SourcePath
-        {
-            get
-            {
-                var element = FindElement(nameof(SourcePath));
-                return element?.Value;
-            }
-        }
+        public string SshDeploySourcePath => FindElement(nameof(SshDeploySourcePath))?.Value;
 
         [Monitor(ShortName = "-t", LongName = "--target")]
         [Push(ShortName = "-t", LongName = "--target")]
-        public string SshTargetPath
-        {
-            get
-            {
-                var element = FindElement(nameof(SshTargetPath));
-                return element?.Value;
-            }
-        }
+        public string SshDeployTargetPath => FindElement(nameof(SshDeployTargetPath))?.Value;
 
         private static Type GetAttributeType(string[] args)
         {
