@@ -12,34 +12,13 @@
     public class CsProjNuGetMetadata : CsProjMetadataBase
     {
         [Push(ShortName = "-f", LongName = "--framework")]
-        public new string TargetFramework
-        {
-            get
-            {
-                var element = FindElement(nameof(TargetFramework));
-                return element?.Value;
-            }
-        }
+        public new string TargetFramework => FindElement(nameof(TargetFramework))?.Value;
 
         [Monitor(ShortName = "-l", LongName = "--legacy")]
-        public bool Legacy
-        {
-            get
-            {
-                var element = FindElement(nameof(Legacy));
-                return element != null;
-            }
-        }
+        public bool SshDeployLegacy => FindElement(nameof(SshDeployLegacy)) != null;
 
         [Monitor(ShortName = "-m", LongName = "--monitor")]
-        public string MonitorFile
-        {
-            get
-            {
-                var element = FindElement(nameof(MonitorFile));
-                return element?.Value;
-            }
-        }
+        public string SshDeployMonitorFile => FindElement(nameof(SshDeployMonitorFile))?.Value;
 
         [Push(ShortName = "-c", LongName = "--configuration")]
         public string Configuration
