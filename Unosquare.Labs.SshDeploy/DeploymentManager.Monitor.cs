@@ -307,7 +307,6 @@
             byte rxBytePrevious = 0;
             byte escapeSequenceType = 0;
             var rxBuffer = e.Data;
-            _forwardShellStreamOutput = true;
             foreach (var rxByte in rxBuffer)
             {
                 // We've found the beginning of an escapr sequence
