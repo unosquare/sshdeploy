@@ -43,7 +43,7 @@
             if (parseResult == false)
             {
                 Environment.ExitCode = 1;
-                Task.Delay(400);
+                Task.Delay(400).Wait();
                 return;
             }
 
@@ -99,7 +99,7 @@
                 "Completed.".WriteLine();
             }
 
-            Task.Delay(200);
+            Task.Delay(200).Wait();
         }
     }
 }

@@ -13,7 +13,7 @@
         [ArgumentOption("post", HelpText = "Command to execute after file transfer to target", Required = false)]
         public string PostCommand { get; set; }
 
-        [ArgumentOption("clean", DefaultValue = false, HelpText = "Deletes all files and folders on the target before pushing the new files.  0 to disable, any other number to enable.", Required = false)]
+        [ArgumentOption("clean", DefaultValue = false, HelpText = "Deletes all files and folders on the target before pushing the new files.", Required = false)]
         public bool CleanTarget { get; set; }
 
         [ArgumentOption("exclude", Separator = '|', DefaultValue = ".ready|.vshost.exe|.vshost.exe.config", HelpText = "a pipe (|) separated list of file suffixes to ignore while deploying.", Required = false)]

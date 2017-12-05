@@ -6,7 +6,7 @@ namespace Unosquare.Labs.SshDeploy.Options
     {
         [ArgumentOption('v', "verbose", DefaultValue = true,
             HelpText =
-                "Add this option to print messages to standard error and standard output streams. 0 to disable, any other number to enable.",
+                "Add this option to print messages to standard error and standard output streams.",
             Required = false)]
         public bool Verbose { get; set; }
 
@@ -14,7 +14,7 @@ namespace Unosquare.Labs.SshDeploy.Options
             HelpText = "Hostname or IP Address of the target. -- Must be running an SSH server.", Required = true)]
         public string Host { get; set; }
 
-        [ArgumentOption('p', "port", DefaultValue = 22, HelpText = "Port on which SSH is running..")]
+        [ArgumentOption('p', "port", DefaultValue = 22, HelpText = "Port on which SSH is running.")]
         public int Port { get; set; }
 
         [ArgumentOption('u', "username", DefaultValue = "pi",
