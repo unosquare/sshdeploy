@@ -87,7 +87,7 @@
                 .TrimEnd(command)
                 .Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries);
 
-            if (command == 'm')
+            if (command == 'm' | command == '\a')
             {
                 var background = "40";
                 var foreground = "37";
