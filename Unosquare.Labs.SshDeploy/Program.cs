@@ -42,16 +42,19 @@
 
         private static List<string> GetDependencies(string path)
         {
+            var dependencylist = new List<string>();
             NuGetHelper.GetGlobalPackagesFolder().Warn();
             var filename = Directory
                   .EnumerateFiles(path, "*.deps.json")
                   .FirstOrDefault();
 
+            if (String.IsNullOrEmpty(filename))
+                return dependencylist;
+
             var json = Json.Deserialize(File.ReadAllText(filename));
             var projectVersion = LoopJsonObj(json, "targets").First(x => x.Key.Contains("linux-arm"));
             var res = ((Dictionary<string, object>)projectVersion.Value).First();
             var dependencies = ((Dictionary<string, object>)res.Value).First(x => x.Key.Equals("dependencies"));
-            var dependencylist = new List<string>();
 
             foreach (var item in (Dictionary<string, object>)dependencies.Value)
             {
