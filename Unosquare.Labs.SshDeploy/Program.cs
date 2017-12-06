@@ -7,6 +7,9 @@
     using Utils;
     using Swan.Components;
     using System.Threading.Tasks;
+    using System.Linq;
+    using Unosquare.Swan.Formatters;
+    using System.Collections.Generic;
 
     public static class Program
     {
@@ -19,6 +22,46 @@
         public static string CurrentDirectory { get; } = Directory.GetCurrentDirectory();
 
         public static string TitleSuffix { get; set; } = " - SSH Deploy";
+        private static Dictionary<string, object> loop(object dic, params string[] search)
+        {
+            var obj = (Dictionary<string, object>)dic;
+            foreach (var item in search)
+            {
+                if (obj.ContainsKey(item))
+                {
+                    obj = (Dictionary<string, object>)obj.First(x => x.Key.Equals(item)).Value;                    
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            return obj;
+        }
+
+        private static List<string> GetDependencies(string path)
+        {
+            NuGetHelper.GetGlobalPackagesFolder().Warn();
+            var filename = Directory
+                  .EnumerateFiles(path, "*.deps.json")
+                  .FirstOrDefault();
+
+            var json = Json.Deserialize(File.ReadAllText(filename));
+            var projectVersion = loop(json, "targets").First(x => x.Key.Contains("linux-arm"));
+            var res = ((Dictionary<string, object>)projectVersion.Value).First();
+            var dependencies = ((Dictionary<string, object>)res.Value).First(x => x.Key.Equals("dependencies"));
+            var dependencylist = new List<string>();
+
+            foreach (var item in (Dictionary<string, object>)dependencies.Value)
+            {
+                var dep = loop(projectVersion.Value, item.Key + "/" + item.Value, "runtime");
+                if (dep != null)
+                    dependencylist.Add(dep.First().Key);
+            }
+
+            return dependencylist;
+        }
 
         private static void Main(string[] args)
         {
@@ -31,7 +74,7 @@
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
 
             var options = new CliOptions();
-
+           
             using (var csproj = new CsProjFile<CsProjNuGetMetadata>())
             {
                 csproj.Metadata.ParseCsProjTags(ref args);
