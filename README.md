@@ -30,17 +30,20 @@ As of now  CLI does not allow command line installation so you'll need to modify
 #### Push
 1. Edit your csproj file and add:
 ```xml
-    <RemoteHost>192.168.2.194</RemoteHost>
-    <Clean />
-    <RemoteTargetPath>/home/pi/libfprint-cs</RemoteTargetPath>
-    <RemoteUsername>pi</RemoteUsername>
-    <RemotePassword>raspberry</RemotePassword>
+<PropertyGroup>
+    <SshDeployHost>192.168.2.194</SshDeployHost>
+    <SshDeployClean />
+    <SshDeployTargetPath>/home/pi/libfprint-cs</SshDeployTargetPath>
+    <SshDeployUsername>pi</SshDeployUsername>
+    <SshDeployPassword>raspberry</SshDeployPassword>
+</PropertyGroup>
  ``` 
 2. We need a post build event as well:
  ```xml
 <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
 <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cd $(ProjectDir) &amp;&amp; dotnet sshdeploy push" />
+    <Exec Command="cd $(ProjectDir)" />
+    <Exec Command="dotnet sshdeploy push" />
 </Target>
  ```
  *Voilà! sshdeploy  finds the necessary arguments provided using proper xml tags and deploys after a successful build*
@@ -50,7 +53,6 @@ As of now  CLI does not allow command line installation so you'll need to modify
 1. Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
 2. Right click on the project and click on the menu item "Properties"
 3. Go to the "Build Events" tab, and under Post-build events, enter the following: 
-* ~~`dotnet sshdeploy`~~
 * `echo %DATE% %TIME% >> "$(TargetDir)sshdeploy.ready"`
 	*This simply writes the date and time to the `sshdeploy.ready` file. Whenever this file CHANGES, the deployment tool will perform a deployment.
  4. Edit your csproj file and add:
@@ -62,8 +64,7 @@ As of now  CLI does not allow command line installation so you'll need to modify
     <RemotePassword>raspberry</RemotePassword>
  ```
  5. Execute 
- ~~``` dotnet build  ```~~
- ```
+  ```
  dotnet sshdeploy monitor
  ```
  
@@ -73,19 +74,19 @@ As of now  CLI does not allow command line installation so you'll need to modify
  
 |      Args        |        XML Tag      | 
 | :--------------: | :------------------:| 
-| -m,--monitor     | `<MonitorFile>`     |
-|  -s, --source    | `<SourcePath>`      |
-|  -t,--target     |`<RemoteTargetPath>` |
-|  --pre           |  `<PreCommand>`     | 
-| --post           | `<PostCommand>`     | 
-|    --clean       | `<Clean/>`          |
-|    --exclude     | `<Exclude>`         |
-|  -v,--verbose    | `<Verbose/>`        | 
-|  -h,--host       |  `<RemoteHost>`     |
-| -p,--port        |   `<RemotePort>`    | 
-|  -u,--username   |  `<RemoteUsername>` | 
-|  -w,--password   |  `<RemotePassword>` |
-|  -l,--legacy     |     `<Legacy/>`     |
+| -m,--monitor     | `<SshDeployMonitorFile>`     |
+|  -s, --source    | `<SshDeploySourcePath>`      |
+|  -t,--target     |`<SshDeployTargetPath>`       |
+|  --pre           |  `<SshDeployPreCommand>`     | 
+| --post           | `<SshDeployPostCommand>`     | 
+|    --clean       | `<SshDeployClean/>`          |
+|    --exclude     | `<SshDeployExclude>`         |
+|  -v,--verbose    | `<SshDeployVerbose/>`        | 
+|  -h,--host       |  `<SshDeployHost>`           |
+| -p,--port        |   `<SshDeployPort>`          | 
+|  -u,--username   |  `<SshDeployUsername>`       | 
+|  -w,--password   |  `<SshDeployPassword>`       |
+|  -l,--legacy     |     `<SshDeployLegacy/>`     |
 
 ### Old school way
 #### Push

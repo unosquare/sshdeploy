@@ -21,6 +21,8 @@
 
                     shell.ErrorOccurred += (s, e) => e.Exception.Message.Debug();
 
+                    DeploymentManager._forwardShellStreamOutput = true;
+
                     while (true)
                     {
                         var line = Console.ReadLine();
