@@ -81,7 +81,7 @@
             if (args.Contains("push"))
                 return typeof(PushAttribute);
             if (args.Contains("monitor"))
-                return typeof(PushAttribute);
+                return typeof(MonitorAttribute);
             if (args.Contains("run"))
                 return typeof(RunAttribute);
 
