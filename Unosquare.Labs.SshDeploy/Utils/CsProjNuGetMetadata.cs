@@ -1,13 +1,10 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Utils
 {
+    using Attributes;
+    using Swan.Components;
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
-    using System.Xml.Linq;
-    using Unosquare.Labs.SshDeploy.Attributes;
-    using Unosquare.Swan.Components;
 
     public class CsProjNuGetMetadata : CsProjMetadataBase
     {
@@ -83,34 +80,36 @@
         {
             if (args.Contains("push"))
                 return typeof(PushAttribute);
-            else if (args.Contains("monitor"))
+            if (args.Contains("monitor"))
                 return typeof(PushAttribute);
-            else if (args.Contains("run"))
+            if (args.Contains("run"))
                 return typeof(RunAttribute);
-            else return typeof(ShellAttribute);
+
+            return typeof(ShellAttribute);
         } 
 
         public override void ParseCsProjTags(ref string[] args)
         {
             var argsList = args.ToList();
             var type = GetAttributeType(args);
-            var props = this.GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, type));
-            foreach (PropertyInfo propertyInfo in props)
+            var props = GetType().GetProperties().Where(prop => Attribute.IsDefined(prop, type));
+
+            foreach (var propertyInfo in props)
             {
-                if (propertyInfo.GetValue(this) != null)
+                if (propertyInfo.GetValue(this) == null) continue;
+
+                var attribute = (VerbAttributeBase)propertyInfo.GetCustomAttribute(type);
+
+                if (!args.Contains(attribute.LongName) & !args.Contains(attribute.ShortName))
                 {
-                    var attribute = (VerbAttributeBase)propertyInfo.GetCustomAttribute(type);
-                    if (!args.Contains(attribute.LongName) & !args.Contains(attribute.ShortName))
+                    if (!(propertyInfo.GetValue(this) is bool))
                     {
-                        if (!(propertyInfo.GetValue(this) is bool))
-                        {
-                            argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
-                            argsList.Add(propertyInfo.GetValue(this).ToString());
-                        }
-                        else if (bool.Parse(propertyInfo.GetValue(this).ToString()))
-                        {
-                            argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
-                        }
+                        argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
+                        argsList.Add(propertyInfo.GetValue(this).ToString());
+                    }
+                    else if (bool.Parse(propertyInfo.GetValue(this).ToString()))
+                    {
+                        argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
                     }
                 }
             }
