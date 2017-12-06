@@ -22,7 +22,7 @@
         public static string CurrentDirectory { get; } = Directory.GetCurrentDirectory();
 
         public static string TitleSuffix { get; set; } = " - SSH Deploy";
-        private static Dictionary<string, object> loop(object dic, params string[] search)
+        private static Dictionary<string, object> LoopJsonObj(object dic, params string[] search)
         {
             var obj = (Dictionary<string, object>)dic;
             foreach (var item in search)
@@ -48,14 +48,14 @@
                   .FirstOrDefault();
 
             var json = Json.Deserialize(File.ReadAllText(filename));
-            var projectVersion = loop(json, "targets").First(x => x.Key.Contains("linux-arm"));
+            var projectVersion = LoopJsonObj(json, "targets").First(x => x.Key.Contains("linux-arm"));
             var res = ((Dictionary<string, object>)projectVersion.Value).First();
             var dependencies = ((Dictionary<string, object>)res.Value).First(x => x.Key.Equals("dependencies"));
             var dependencylist = new List<string>();
 
             foreach (var item in (Dictionary<string, object>)dependencies.Value)
             {
-                var dep = loop(projectVersion.Value, item.Key + "/" + item.Value, "runtime");
+                var dep = LoopJsonObj(projectVersion.Value, item.Key + "/" + item.Value, "runtime");
                 if (dep != null)
                     dependencylist.Add(dep.First().Key);
             }
