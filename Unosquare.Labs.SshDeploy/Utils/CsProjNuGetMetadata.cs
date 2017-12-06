@@ -38,13 +38,7 @@
         [Push(LongName = "--exclude")]
         [Monitor(LongName = "--exclude")]
         public string SshDeployExclude => FindElement(nameof(SshDeployExclude))?.Value;        
-
-        [Push(ShortName = "-v", LongName = "--verbose")]
-        [Monitor(ShortName = "-v", LongName = "--verbose")]
-        [Shell(ShortName = "-v", LongName = "--verbose")]
-        [Run(ShortName = "-v", LongName = "--verbose")]
-        public bool SshDeployVerbose => FindElement(nameof(SshDeployVerbose)) != null;
-
+        
         [Push(ShortName = "-h", LongName = "--host")]
         [Monitor(ShortName = "-h", LongName = "--host")]
         [Shell(ShortName = "-h", LongName = "--host")]
