@@ -15,6 +15,6 @@
             Required = true)]
         public string Framework { get; set; }
 
-        public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework);
+        public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework,"linux-arm");
     }
 }

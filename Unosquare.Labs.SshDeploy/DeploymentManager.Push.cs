@@ -6,6 +6,10 @@
     using System.IO;
     using Options;
     using Swan;
+    using System.Linq;
+    using System.Collections.Generic;
+    using Unosquare.Swan.Formatters;
+    using Unosquare.Labs.SshDeploy.Utils;
 
     public partial class DeploymentManager
     {
@@ -35,11 +39,66 @@
             }
         }
 
+        private static Dictionary<string, object> LoopJsonObj(object dic, params string[] search)
+        {
+            var obj = (Dictionary<string, object>)dic;
+            foreach (var item in search)
+            {
+                if (obj.ContainsKey(item))
+                {
+                    obj = (Dictionary<string, object>)obj.First(x => x.Key.Equals(item)).Value;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            return obj;
+        }
+
+        private static List<Dependency> GetDependencies(string path)
+        {
+            var dependencylist = new List<Dependency>();
+            var filename = Directory
+                  .EnumerateFiles(path, "*.deps.json")
+                  .FirstOrDefault();
+
+            if (String.IsNullOrEmpty(filename))
+                return dependencylist;
+
+            var json = Json.Deserialize(File.ReadAllText(filename));
+            var projectVersion = LoopJsonObj(json, "targets").FirstOrDefault(x => x.Key.Contains("linux-arm"));
+            var res = ((Dictionary<string, object>)projectVersion.Value).First();
+            var dependencies = ((Dictionary<string, object>)res.Value).First(x => x.Key.Equals("dependencies"));
+
+            foreach (var item in (Dictionary<string, object>)dependencies.Value)
+            {
+                var dep = LoopJsonObj(projectVersion.Value, item.Key + "/" + item.Value, "runtime");
+                if (dep != null)
+                    dependencylist.Add(new Dependency() { Name = item.Key, Version =item.Value.ToString(), Path = dep.First().Key});
+            }
+
+            return dependencylist;
+        }
+
         private static void NormalizePushVerbOptions(PushVerbOptions verbOptions)
         {
             var targetPath = verbOptions.TargetPath.Trim();
 
             verbOptions.TargetPath = targetPath;
+        }
+
+        private static void UploadDependencies(SftpClient sftpClient, string targetPath, List<Dependency> dependencies)
+        {
+            var nugetPath = NuGetHelper.DefaultGlobalPackagesFolderPath;
+            foreach (var item in dependencies)
+            {
+                using (var fileStream = File.OpenRead(Path.Combine(nugetPath,"packages",item.Name,item.Version,item.Path)))
+                {
+                    sftpClient.UploadFile(fileStream, targetPath);
+                }
+            }
         }
 
         private static void PrintPushOptions(PushVerbOptions verbOptions)

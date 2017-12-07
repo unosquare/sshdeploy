@@ -7,9 +7,6 @@
     using Utils;
     using Swan.Components;
     using System.Threading.Tasks;
-    using System.Linq;
-    using Unosquare.Swan.Formatters;
-    using System.Collections.Generic;
 
     public static class Program
     {
@@ -22,49 +19,6 @@
         public static string CurrentDirectory { get; } = Directory.GetCurrentDirectory();
 
         public static string TitleSuffix { get; set; } = " - SSH Deploy";
-        private static Dictionary<string, object> LoopJsonObj(object dic, params string[] search)
-        {
-            var obj = (Dictionary<string, object>)dic;
-            foreach (var item in search)
-            {
-                if (obj.ContainsKey(item))
-                {
-                    obj = (Dictionary<string, object>)obj.First(x => x.Key.Equals(item)).Value;                    
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
-            return obj;
-        }
-
-        private static List<string> GetDependencies(string path)
-        {
-            var dependencylist = new List<string>();
-            NuGetHelper.GetGlobalPackagesFolder().Warn();
-            var filename = Directory
-                  .EnumerateFiles(path, "*.deps.json")
-                  .FirstOrDefault();
-
-            if (String.IsNullOrEmpty(filename))
-                return dependencylist;
-
-            var json = Json.Deserialize(File.ReadAllText(filename));
-            var projectVersion = LoopJsonObj(json, "targets").First(x => x.Key.Contains("linux-arm"));
-            var res = ((Dictionary<string, object>)projectVersion.Value).First();
-            var dependencies = ((Dictionary<string, object>)res.Value).First(x => x.Key.Equals("dependencies"));
-
-            foreach (var item in (Dictionary<string, object>)dependencies.Value)
-            {
-                var dep = LoopJsonObj(projectVersion.Value, item.Key + "/" + item.Value, "runtime");
-                if (dep != null)
-                    dependencylist.Add(dep.First().Key);
-            }
-
-            return dependencylist;
-        }
 
         private static void Main(string[] args)
         {
