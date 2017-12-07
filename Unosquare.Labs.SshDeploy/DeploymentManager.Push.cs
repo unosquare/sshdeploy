@@ -91,12 +91,24 @@
 
         private static void UploadDependencies(SftpClient sftpClient, string targetPath, List<Dependency> dependencies)
         {
-            var nugetPath = NuGetHelper.DefaultGlobalPackagesFolderPath;
-            foreach (var item in dependencies)
+            $"    Deploying {dependencies.Count} dependencies.".WriteLine(ConsoleColor.Green);
+            var nugetPath = NuGetHelper.GetGlobalPackagesFolder();
+            foreach (var file in dependencies)
             {
-                using (var fileStream = File.OpenRead(Path.Combine(nugetPath,"packages",item.Name,item.Version,item.Path)))
+                var relativePath = Path.GetFileName(file.Path);
+
+                var fileTargetPath = Path.Combine(targetPath, relativePath)
+                    .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
+
+                var targetDirectory = Path.GetDirectoryName(fileTargetPath)
+                    .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
+
+                CreateLinuxDirectoryRecursive(sftpClient, targetDirectory);
+
+                using (var fileStream = File.OpenRead(Path.Combine(nugetPath, file.Name, file.Version, file.Path)))
                 {
-                    sftpClient.UploadFile(fileStream, targetPath);
+                    sftpClient.UploadFile(fileStream, fileTargetPath);
+                    $"    {file.Name}".WriteLine(ConsoleColor.Green);
                 }
             }
         }
@@ -137,8 +149,9 @@
                 RunCommand(sshClient, "client", verbOptions.PreCommand);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
+                UploadDependencies(sftpClient, verbOptions.TargetPath, GetDependencies(verbOptions.SourcePath));
                 UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,
-                    verbOptions.ExcludeFileSuffixes);
+                    verbOptions.ExcludeFileSuffixes);                
             }
             catch (Exception ex)
             {
