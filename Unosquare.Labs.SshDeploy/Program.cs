@@ -32,9 +32,20 @@
 
             var options = new CliOptions();
            
-            using (var csproj = new CsProjFile<CsProjNuGetMetadata>())
+            try
             {
-                csproj.Metadata.ParseCsProjTags(ref args);
+                using (var csproj = new CsProjFile<CsProjNuGetMetadata>())
+                {
+                    csproj.Metadata.ParseCsProjTags(ref args);
+                }
+            }
+            catch (UnauthorizedAccessException e)
+            {
+               $"Access to csproj file denied".WriteLine(ConsoleColor.Red);
+            }
+            catch (ArgumentNullException e)
+            {
+                $"No csproj file was found".WriteLine(ConsoleColor.DarkRed);
             }
 
             var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);
