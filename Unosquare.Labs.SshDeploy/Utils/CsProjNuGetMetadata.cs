@@ -70,6 +70,9 @@
         [Push(ShortName = "-t", LongName = "--target")]
         public string SshDeployTargetPath => FindElement(nameof(SshDeployTargetPath))?.Value;
 
+        [Push(ShortName = "-r", LongName = "--runtime")]
+        public string RuntimeIdentifier => FindElement(nameof(RuntimeIdentifier))?.Value;
+
         private static Type GetAttributeType(string[] args)
         {
             if (args.Contains("push"))

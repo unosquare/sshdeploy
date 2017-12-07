@@ -15,6 +15,10 @@
             Required = true)]
         public string Framework { get; set; }
 
-        public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework,"linux-arm");
+        [ArgumentOption('r', "runtime", HelpText = "The given runtime used for creating a self-contained deployment",
+            Required = true)]
+        public string Runtime { get; set; }
+
+        public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework, Runtime);
     }
 }

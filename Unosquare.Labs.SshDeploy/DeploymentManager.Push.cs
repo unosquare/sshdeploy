@@ -57,7 +57,7 @@
             return obj;
         }
 
-        private static List<Dependency> GetDependencies(string path)
+        private static List<Dependency> GetDependencies(string path, string runtime)
         {
             var dependencylist = new List<Dependency>();
             var filename = Directory
@@ -68,7 +68,7 @@
                 return dependencylist;
 
             var json = Json.Deserialize(File.ReadAllText(filename));
-            var projectVersion = LoopJsonObj(json, "targets").FirstOrDefault(x => x.Key.Contains("linux-arm"));
+            var projectVersion = LoopJsonObj(json, "targets").FirstOrDefault(x => x.Key.Contains(runtime));
             var res = ((Dictionary<string, object>)projectVersion.Value).First();
             var dependencies = ((Dictionary<string, object>)res.Value).First(x => x.Key.Equals("dependencies"));
 
@@ -149,7 +149,7 @@
                 RunCommand(sshClient, "client", verbOptions.PreCommand);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
-                UploadDependencies(sftpClient, verbOptions.TargetPath, GetDependencies(verbOptions.SourcePath));
+                UploadDependencies(sftpClient, verbOptions.TargetPath, GetDependencies(verbOptions.SourcePath, verbOptions.Runtime));
                 UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,
                     verbOptions.ExcludeFileSuffixes);                
             }
