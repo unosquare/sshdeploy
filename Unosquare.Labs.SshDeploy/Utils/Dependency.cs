@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Unosquare.Labs.SshDeploy.Utils
+﻿namespace Unosquare.Labs.SshDeploy.Utils
 {
-    class Dependency
+    internal class Dependency
     {
         public string Name { get; set; }
         public string Version { get; set; }
