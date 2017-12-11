@@ -10,9 +10,11 @@
     using System.Collections.Generic;
     using Unosquare.Swan.Formatters;
     using Unosquare.Labs.SshDeploy.Utils;
+    using System.Text.RegularExpressions;
 
     public partial class DeploymentManager
     {
+        private static string DependencyRegex => @"runtimes*[\/]+.*\.(dll|a|so|txt)";
         internal static void ExecutePushVerb(PushVerbOptions verbOptions)
         {
             NormalizePushVerbOptions(verbOptions);
@@ -57,9 +59,9 @@
             return obj;
         }
 
-        private static List<Dependency> GetDependencies(string path, string runtime)
+        private static List<string> GetDependencies(string path, string runtime)
         {
-            var dependencylist = new List<Dependency>();
+            var dependencylist = new List<string>();
             var filename = Directory
                   .EnumerateFiles(path, "*.deps.json")
                   .FirstOrDefault();
@@ -67,16 +69,40 @@
             if (String.IsNullOrEmpty(filename))
                 return dependencylist;
 
-            var json = Json.Deserialize(File.ReadAllText(filename));
+            string data = File.ReadAllText(filename);
+           
+            var json = Json.Deserialize(data);
             var projectVersion = LoopJsonObj(json, "targets").FirstOrDefault(x => x.Key.Contains(runtime));
+
+            if (projectVersion.Value == null)
+            {
+                $"No dependencies found ".Warn();
+                return dependencylist;
+            }
+
             var res = ((Dictionary<string, object>)projectVersion.Value).First();
             var dependencies = ((Dictionary<string, object>)res.Value).First(x => x.Key.Equals("dependencies"));
+            var osrun = ((Dictionary<string, object>)projectVersion.Value).FirstOrDefault(x => x.Key.Contains("runtime." + runtime));
+            var runtimelibs = ((Dictionary<string, object>)osrun.Value).FirstOrDefault(x => x.Key.Equals("runtime"));
+
+            dependencylist = Regex.Matches(data,DependencyRegex).Cast<Match>().Select(x => Path.Combine(osrun.Key, x.Value)).ToList();
 
             foreach (var item in (Dictionary<string, object>)dependencies.Value)
             {
-                var dep = LoopJsonObj(projectVersion.Value, item.Key + "/" + item.Value, "runtime");
-                if (dep != null)
-                    dependencylist.Add(new Dependency() { Name = item.Key, Version =item.Value.ToString(), Path = dep.First().Key});
+                var deps = LoopJsonObj(projectVersion.Value, item.Key + "/" + item.Value, "runtime");
+                if (deps != null)
+                {
+                    dependencylist.Add(Path.Combine(item.Key, item.Value.ToString(), deps.First().Key));
+                    var childDeps = LoopJsonObj(projectVersion.Value, item.Key + "/" + item.Value, "dependencies");
+                    foreach (var child in childDeps)
+                    {
+                        var childSearch = LoopJsonObj(projectVersion.Value, child.Key + "/" + child.Value, "runtime");
+                        if (childSearch != null)
+                        {
+                            dependencylist.Add(Path.Combine(child.Key, child.Value.ToString(), childSearch.First().Key));
+                        }
+                    }
+                }
             }
 
             return dependencylist;
@@ -89,13 +115,13 @@
             verbOptions.TargetPath = targetPath;
         }
 
-        private static void UploadDependencies(SftpClient sftpClient, string targetPath, List<Dependency> dependencies)
+        private static void UploadDependencies(SftpClient sftpClient, string targetPath, List<string> dependencies)
         {
             $"    Deploying {dependencies.Count} dependencies.".WriteLine(ConsoleColor.Green);
             var nugetPath = NuGetHelper.GetGlobalPackagesFolder();
             foreach (var file in dependencies)
             {
-                var relativePath = Path.GetFileName(file.Path);
+                var relativePath = Path.GetFileName(file);
 
                 var fileTargetPath = Path.Combine(targetPath, relativePath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
@@ -103,12 +129,17 @@
                 var targetDirectory = Path.GetDirectoryName(fileTargetPath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
 
-                CreateLinuxDirectoryRecursive(sftpClient, targetDirectory);
-
-                using (var fileStream = File.OpenRead(Path.Combine(nugetPath, file.Name, file.Version, file.Path)))
+                try
                 {
-                    sftpClient.UploadFile(fileStream, fileTargetPath);
-                    $"    {file.Name}".WriteLine(ConsoleColor.Green);
+                    using (var fileStream = File.OpenRead(Path.Combine(nugetPath, file)))
+                    {
+                        sftpClient.UploadFile(fileStream, fileTargetPath);
+                        $"    {file}".WriteLine(ConsoleColor.Green);
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.Message.Error();
                 }
             }
         }
