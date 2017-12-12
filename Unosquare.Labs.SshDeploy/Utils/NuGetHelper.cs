@@ -67,23 +67,8 @@
                     return Path.Combine(GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory), "Config");
                 case NuGetFolderPath.UserSettingsDirectory:
                     return Path.Combine(GetFolderPath(SpecialFolder.ApplicationData), "NuGet");
-                case NuGetFolderPath.HttpCacheDirectory:
-                    return Path.Combine(GetFolderPath(SpecialFolder.LocalApplicationData), "NuGet", "v3-cache");
                 case NuGetFolderPath.NuGetHome:
                     return Path.Combine(GetFolderPath(SpecialFolder.UserProfile), ".nuget");
-                case NuGetFolderPath.DefaultMsBuildPath:
-                {
-                    var folderPath2 = GetFolderPath(SpecialFolder.ProgramFilesX86);
-                    if (string.IsNullOrEmpty(folderPath2))
-                    {
-                        folderPath2 = GetFolderPath(SpecialFolder.ProgramFiles);
-                    }
-
-                    return Path.Combine(folderPath2, "MSBuild", "14.0", "Bin", "MSBuild.exe");
-                }
-
-                case NuGetFolderPath.Temp:
-                    return Path.Combine(Path.GetTempPath(), "NuGetScratch");
                 default:
                     return null;
             }
@@ -172,9 +157,6 @@
                     break;
                 case SpecialFolder.ApplicationData:
                     folder2 = Environment.SpecialFolder.ApplicationData;
-                    break;
-                case SpecialFolder.LocalApplicationData:
-                    folder2 = Environment.SpecialFolder.LocalApplicationData;
                     break;
                 default:
                     return null;
@@ -1064,10 +1046,7 @@
         MachineWideSettingsBaseDirectory,
         MachineWideConfigDirectory,
         UserSettingsDirectory,
-        HttpCacheDirectory,
-        NuGetHome,
-        DefaultMsBuildPath,
-        Temp
+        NuGetHome
     }
 
     internal enum SpecialFolder
@@ -1076,7 +1055,6 @@
         ProgramFiles,
         UserProfile,
         CommonApplicationData,
-        ApplicationData,
-        LocalApplicationData
+        ApplicationData
     }
 }
