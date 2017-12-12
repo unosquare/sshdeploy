@@ -22,6 +22,19 @@
 
             if (Directory.Exists(verbOptions.SourcePath) == false)
                 throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
+            var psi = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $" msbuild /t:Publish  /p:Configuration={verbOptions.Configuration};TargetFramework={verbOptions.Framework};RuntimeIdentifier={verbOptions.Runtime}"
+            };
+            var process = Process.Start(psi);
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                Console.Error.WriteLine("Invoking MSBuild target failed");
+                Environment.ExitCode = 0;
+                return;
+            }
 
             // Create connection info
             var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
@@ -128,9 +141,6 @@
                 var fileTargetPath = Path.Combine(targetPath, relativePath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
 
-                var targetDirectory = Path.GetDirectoryName(fileTargetPath)
-                    .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
-
                 try
                 {
                     var dependencyFile = Path.Combine(nugetPath, file);
@@ -186,10 +196,10 @@
                 _forwardShellStreamOutput = false;
                 RunCommand(sshClient, "client", verbOptions.PreCommand);
                 CreateTargetPath(sftpClient, verbOptions);
-                PrepareTargetPath(sftpClient, verbOptions);
-                UploadDependencies(sftpClient, verbOptions.TargetPath, GetDependencies(verbOptions.SourcePath, verbOptions.Runtime));
+                PrepareTargetPath(sftpClient, verbOptions);                
                 UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,
-                    verbOptions.ExcludeFileSuffixes);                
+                    verbOptions.ExcludeFileSuffixes);
+                //UploadDependencies(sftpClient, verbOptions.TargetPath, GetDependencies(verbOptions.SourcePath, verbOptions.Runtime));
             }
             catch (Exception ex)
             {

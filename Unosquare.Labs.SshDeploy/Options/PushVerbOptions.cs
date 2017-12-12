@@ -6,6 +6,7 @@
     public class PushVerbOptions : CliExecuteOptionsBase
     {
         private const string BinFolder = "bin";
+        private const string PublishFolder = "bin";
 
         [ArgumentOption('c', "configuration", DefaultValue = "Debug",
             HelpText = "Target configuration. The default for most projects is 'Debug'.", Required = false)]
@@ -19,6 +20,6 @@
             Required = true)]
         public string Runtime { get; set; }
 
-        public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework, Runtime);
+        public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework, Runtime, PublishFolder);
     }
 }

@@ -7,6 +7,7 @@
     using Utils;
     using Swan.Components;
     using System.Threading.Tasks;
+    using System.Diagnostics;
 
     public static class Program
     {
@@ -29,8 +30,8 @@
             $"SSH Deployment Tool [Version {typeof(Program).Assembly.GetName().Version}]".WriteLine();
             "(c)2015 - 2017 Unosquare SA de CV. All Rights Reserved.".WriteLine();
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
-
-            var options = new CliOptions();
+           
+                var options = new CliOptions();
            
             try
             {
