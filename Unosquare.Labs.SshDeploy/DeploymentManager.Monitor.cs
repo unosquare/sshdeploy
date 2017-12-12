@@ -10,7 +10,7 @@
     using System.IO;
     using System.Linq;
 
-    partial class DeploymentManager
+    public partial class DeploymentManager
     {
         #region State Variables
 
@@ -18,6 +18,127 @@
         private static bool _forwardShellStreamInput;
         private static bool _isDeploying;
         private static int _deploymentNumber;
+
+        #endregion
+
+        #region Main Verb Methods
+
+        /// <summary>
+        /// Executes the monitor verb. Using a legacy method.
+        /// </summary>
+        /// <param name="verbOptions">The verb options.</param>
+        /// <exception cref="DirectoryNotFoundException">Source Path ' + sourcePath + ' was not found.</exception>
+        internal static void ExecuteMonitorVerbLegacy(MonitorVerbOptions verbOptions)
+        {
+            // Initialize Variables
+            _isDeploying = false;
+            _deploymentNumber = 1;
+
+            // Normalize and show the options to the user so he knows what he's doing
+            NormalizeMonitorVerbOptions(verbOptions);
+            PrintMonitorOptions(verbOptions);
+
+            // Create the FS Monitor and connection info
+            var fsMonitor = new FileSystemMonitor(1, verbOptions.SourcePath);
+            var simpleConnectionInfo = new PasswordConnectionInfo(
+                verbOptions.Host,
+                verbOptions.Port,
+                verbOptions.Username,
+                verbOptions.Password);
+
+            // Validate source path exists
+            if (Directory.Exists(verbOptions.SourcePath) == false)
+                throw new DirectoryNotFoundException("Source Path '" + verbOptions.SourcePath + "' was not found.");
+
+            // Instantiate an SFTP client and an SSH client
+            // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
+            using (var sftpClient = new SftpClient(simpleConnectionInfo))
+            {
+                // SSH will be used to execute commands and to get the output back from the program we are running
+                using (var sshClient = new SshClient(simpleConnectionInfo))
+                {
+                    // Connect SSH and SFTP clients
+                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
+
+                    // Create the shell stream so we can get debugging info from the post-deployment command
+                    using (var shellStream = CreateShellStream(sshClient))
+                    {
+                        // Starts the FS Monitor and binds the event handler
+                        StartMonitorMode(fsMonitor, sshClient, sftpClient, shellStream, verbOptions);
+
+                        // Allows user interaction with the shell
+                        StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
+
+                        // When we quit, we stop the monitor and disconnect the clients
+                        StopMonitorMode(sftpClient, sshClient, fsMonitor);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes the monitor verb. This is the main method.
+        /// </summary>
+        /// <param name="verbOptions">The verb options.</param>
+        /// <exception cref="DirectoryNotFoundException">Source Path ' + sourcePath + ' was not found.</exception>
+        internal static void ExecuteMonitorVerb(MonitorVerbOptions verbOptions)
+        {
+            // Initialize Variables
+            _isDeploying = false;
+            _deploymentNumber = 1;
+
+            // Normalize and show the options to the user so he knows what he's doing
+            NormalizeMonitorVerbOptions(verbOptions);
+            PrintMonitorOptions(verbOptions);
+
+            // Create connection info
+            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
+                verbOptions.Username, verbOptions.Password);
+
+            // Create a file watcher
+            var watcher = new FileSystemWatcher
+            {
+                Path = verbOptions.SourcePath,
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
+                Filter = Path.GetFileName(verbOptions.MonitorFile)
+            };
+
+            // Validate source path exists
+            if (Directory.Exists(verbOptions.SourcePath) == false)
+                throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
+
+            // Instantiate an SFTP client and an SSH client
+            // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
+            using (var sftpClient = new SftpClient(simpleConnectionInfo))
+            {
+                // SSH will be used to execute commands and to get the output back from the program we are running
+                using (var sshClient = new SshClient(simpleConnectionInfo))
+                {
+                    // Connect SSH and SFTP clients
+                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
+
+                    // Create the shell stream so we can get debugging info from the post-deployment command
+                    using (var shellStream = CreateShellStream(sshClient))
+                    {
+                        // Adds an onChange event and enables it
+                        watcher.Changed += (s, e) =>
+                            CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
+                        watcher.EnableRaisingEvents = true;
+
+                        "File System Monitor is now running.".WriteLine();
+                        "Writing a new monitor file will trigger a new deployment.".WriteLine();
+                        "Press H for help!".WriteLine();
+                        "Ground Control to Major Tom: Have a nice trip in space!.".WriteLine(ConsoleColor.DarkCyan);
+
+                        // Allows user interaction with the shell
+                        StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
+
+                        // When we quit, we stop the monitor and disconnect the clients
+                        StopMonitorMode(sftpClient, sshClient, watcher);
+                    }
+                }
+            }
+        }
 
         #endregion
 
@@ -71,7 +192,7 @@
                     return;
             }
 
-            var pathParts = path.Split(new[] {LinuxDirectorySeparatorChar}, StringSplitOptions.RemoveEmptyEntries);
+            var pathParts = path.Split(new[] { LinuxDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
             pathParts = pathParts.Skip(0).Take(pathParts.Length - 1).ToArray();
             var priorPath = LinuxDirectorySeparator + string.Join(LinuxDirectorySeparator, pathParts);
@@ -202,10 +323,15 @@
         /// <param name="sourcePath">The source path.</param>
         /// <param name="targetPath">The target path.</param>
         /// <param name="excludeFileSuffixes">The exclude file suffixes.</param>
-        private static void UploadFilesToTarget(SftpClient sftpClient, string sourcePath, string targetPath,
+        private static void UploadFilesToTarget(
+            SftpClient sftpClient, 
+            string sourcePath, 
+            string targetPath,
             string[] excludeFileSuffixes)
         {
-            var filesInSource = Directory.GetFiles(sourcePath, FileSystemMonitor.AllFilesPattern,
+            var filesInSource = Directory.GetFiles(
+                sourcePath, 
+                FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
             var filesToDeploy = filesInSource.Where(file => !excludeFileSuffixes.Any(file.EndsWith))
                 .ToList();
@@ -307,6 +433,7 @@
             byte rxBytePrevious = 0;
             byte escapeSequenceType = 0;
             var rxBuffer = e.Data;
+
             foreach (var rxByte in rxBuffer)
             {
                 // We've found the beginning of an escapr sequence
@@ -360,8 +487,8 @@
 
                 // Detect if it's the last byte of the escape sequence (64 to 126)
                 // This last character determines the command to execute
-                var endOfSequenceType91 = escapeSequenceType == (byte) '[' && (rxByte >= 64 && rxByte <= 126);
-                var endOfSequenceType93 = escapeSequenceType == (byte) ']' && (rxByte == 7);
+                var endOfSequenceType91 = escapeSequenceType == (byte)'[' && (rxByte >= 64 && rxByte <= 126);
+                var endOfSequenceType93 = escapeSequenceType == (byte)']' && (rxByte == 7);
                 if (endOfSequenceType91 || endOfSequenceType93)
                 {
                     try
@@ -465,10 +592,10 @@
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
         private static void StartMonitorMode(
-            FileSystemMonitor fsMonitor, 
-            SshClient sshClient, 
+            FileSystemMonitor fsMonitor,
+            SshClient sshClient,
             SftpClient sftpClient,
-            ShellStream shellStream, 
+            ShellStream shellStream,
             MonitorVerbOptions verbOptions)
         {
             fsMonitor.FileSystemEntryChanged += (s, e) =>
@@ -537,7 +664,7 @@
                     }
                     else
                     {
-                        shellStream.WriteByte((byte) readKey.KeyChar);
+                        shellStream.WriteByte((byte)readKey.KeyChar);
                     }
 
                     shellStream.Flush();
@@ -578,124 +705,6 @@
                         $"Unrecognized command '{readKey.KeyChar}' -- Press 'H' to get a list of available commands."
                             .WriteLine(ConsoleColor.Red);
                         break;
-                }
-            }
-        }
-
-        #endregion
-
-        #region Main Verb Methods
-
-        /// <summary>
-        /// Executes the monitor verb. Using a legacy method.
-        /// </summary>
-        /// <param name="verbOptions">The verb options.</param>
-        /// <exception cref="DirectoryNotFoundException">Source Path ' + sourcePath + ' was not found.</exception>
-        internal static void ExecuteMonitorVerbLegacy(MonitorVerbOptions verbOptions)
-        {
-            // Initialize Variables
-            _isDeploying = false;
-            _deploymentNumber = 1;
-
-            // Normalize and show the options to the user so he knows what he's doing
-            NormalizeMonitorVerbOptions(verbOptions);
-            PrintMonitorOptions(verbOptions);
-
-            // Create the FS Monitor and connection info
-            var fsMonitor = new FileSystemMonitor(1, verbOptions.SourcePath);
-            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
-                verbOptions.Username, verbOptions.Password);
-
-            // Validate source path exists
-            if (Directory.Exists(verbOptions.SourcePath) == false)
-                throw new DirectoryNotFoundException("Source Path '" + verbOptions.SourcePath + "' was not found.");
-
-            // Instantiate an SFTP client and an SSH client
-            // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
-            using (var sftpClient = new SftpClient(simpleConnectionInfo))
-            {
-                // SSH will be used to execute commands and to get the output back from the program we are running
-                using (var sshClient = new SshClient(simpleConnectionInfo))
-                {
-                    // Connect SSH and SFTP clients
-                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
-
-                    // Create the shell stream so we can get debugging info from the post-deployment command
-                    using (var shellStream = CreateShellStream(sshClient))
-                    {
-                        // Starts the FS Monitor and binds the event handler
-                        StartMonitorMode(fsMonitor, sshClient, sftpClient, shellStream, verbOptions);
-
-                        // Allows user interaction with the shell
-                        StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
-
-                        // When we quit, we stop the monitor and disconnect the clients
-                        StopMonitorMode(sftpClient, sshClient, fsMonitor);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Executes the monitor verb. This is the main method.
-        /// </summary>
-        /// <param name="verbOptions">The verb options.</param>
-        /// <exception cref="DirectoryNotFoundException">Source Path ' + sourcePath + ' was not found.</exception>
-        internal static void ExecuteMonitorVerb(MonitorVerbOptions verbOptions)
-        {
-            // Initialize Variables
-            _isDeploying = false;
-            _deploymentNumber = 1;
-
-            // Normalize and show the options to the user so he knows what he's doing
-            NormalizeMonitorVerbOptions(verbOptions);
-            PrintMonitorOptions(verbOptions);
-
-            // Create connection info
-            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
-                verbOptions.Username, verbOptions.Password);
-
-            // Create a file watcher
-            var watcher = new FileSystemWatcher
-            {
-                Path = verbOptions.SourcePath,
-                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
-                Filter = Path.GetFileName(verbOptions.MonitorFile)
-            };
-
-            // Validate source path exists
-            if (Directory.Exists(verbOptions.SourcePath) == false)
-                throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
-
-            // Instantiate an SFTP client and an SSH client
-            // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
-            using (var sftpClient = new SftpClient(simpleConnectionInfo))
-            {
-                // SSH will be used to execute commands and to get the output back from the program we are running
-                using (var sshClient = new SshClient(simpleConnectionInfo))
-                {
-                    // Connect SSH and SFTP clients
-                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
-
-                    // Create the shell stream so we can get debugging info from the post-deployment command
-                    using (var shellStream = CreateShellStream(sshClient))
-                    {
-                        // Adds an onChange event and enables it
-                        watcher.Changed += (s, e) =>
-                            CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
-                        watcher.EnableRaisingEvents = true;
-
-                        "File System Monitor is now running.".WriteLine();
-                        "Writing a new monitor file will trigger a new deployment.".WriteLine();
-                        "Press H for help!".WriteLine();
-                        "Ground Control to Major Tom: Have a nice trip in space!.".WriteLine(ConsoleColor.DarkCyan);
-
-                        // Allows user interaction with the shell
-                        StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
-
-                        // When we quit, we stop the monitor and disconnect the clients
-                        StopMonitorMode(sftpClient, sshClient, watcher);
-                    }
                 }
             }
         }

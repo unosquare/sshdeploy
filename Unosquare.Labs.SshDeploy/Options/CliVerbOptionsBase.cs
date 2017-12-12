@@ -1,12 +1,11 @@
-﻿using Unosquare.Swan.Attributes;
-
-namespace Unosquare.Labs.SshDeploy.Options
+﻿namespace Unosquare.Labs.SshDeploy.Options
 {
+    using Swan.Attributes;
+
     public abstract class CliVerbOptionsBase
     {
         [ArgumentOption('v', "verbose", DefaultValue = true,
-            HelpText =
-                "Add this option to print messages to standard error and standard output streams.",
+            HelpText = "Add this option to print messages to standard error and output streams.",
             Required = false)]
         public bool Verbose { get; set; }
 

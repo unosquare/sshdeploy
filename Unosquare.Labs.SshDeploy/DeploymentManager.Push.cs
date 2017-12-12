@@ -17,7 +17,7 @@
             var psi = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $" msbuild /t:Publish " +
+                Arguments = " msbuild /t:Publish " +
                 $" /p:Configuration={verbOptions.Configuration};" +
                 $"TargetFramework={verbOptions.Framework};RuntimeIdentifier={verbOptions.Runtime}"
             };

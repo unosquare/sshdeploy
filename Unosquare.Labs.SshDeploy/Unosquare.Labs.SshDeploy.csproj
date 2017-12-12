@@ -5,8 +5,8 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>dotnet-sshdeploy</AssemblyName>
     <PackageId>dotnet-sshdeploy</PackageId>
-    <Version>0.1.2</Version>
-    <PackageVersion>0.1.2-r1</PackageVersion>
+    <Version>0.1.4</Version>
+    <PackageVersion>0.1.4-r1</PackageVersion>
     <Authors>Unosquare</Authors>
     <Description>A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian.</Description>
 
@@ -25,9 +25,4 @@
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="echo &quot;%TIME%&quot; &gt;&gt; &quot;$(TargetDir)sshdeploy.ready&quot;" />
-  </Target>
-
 </Project>

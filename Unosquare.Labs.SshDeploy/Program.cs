@@ -7,8 +7,7 @@
     using Utils;
     using Swan.Components;
     using System.Threading.Tasks;
-    using System.Diagnostics;
-
+    
     public static class Program
     {
         public static string Title
@@ -40,13 +39,13 @@
                     csproj.Metadata.ParseCsProjTags(ref args);
                 }
             }
-            catch (UnauthorizedAccessException e)
+            catch (UnauthorizedAccessException)
             {
-               $"Access to csproj file denied".WriteLine(ConsoleColor.Red);
+               "Access to csproj file denied".WriteLine(ConsoleColor.Red);
             }
-            catch (ArgumentNullException e)
+            catch (ArgumentNullException)
             {
-                $"No csproj file was found".WriteLine(ConsoleColor.DarkRed);
+                "No csproj file was found".WriteLine(ConsoleColor.DarkRed);
             }
 
             var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);

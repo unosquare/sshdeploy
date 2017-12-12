@@ -5,7 +5,7 @@
     using System;
     using System.Text;
 
-    partial class DeploymentManager
+    public partial class DeploymentManager
     {
         public static void ExecuteShellVerb(ShellVerbOptions invokedVerbOptions)
         {
@@ -21,7 +21,7 @@
 
                     shell.ErrorOccurred += (s, e) => e.Exception.Message.Debug();
 
-                    DeploymentManager._forwardShellStreamOutput = true;
+                    _forwardShellStreamOutput = true;
 
                     while (true)
                     {
