@@ -19,7 +19,8 @@
                 FileName = "dotnet",
                 Arguments = " msbuild /t:Publish " +
                 $" /p:Configuration={verbOptions.Configuration};" +
-                $"TargetFramework={verbOptions.Framework};RuntimeIdentifier={verbOptions.Runtime}"
+                $"TargetFramework={verbOptions.Framework};RuntimeIdentifier={verbOptions.Runtime};" +
+                $"PreBuildEvent=\"\";PostBuildEvent=\"\""
             };
             var process = Process.Start(psi);
             process.WaitForExit();
