@@ -12,23 +12,10 @@
     {
         internal static readonly string ConfigSection = "config";
         internal static readonly string DefaultGlobalPackagesFolderPath = "packages" + Path.DirectorySeparatorChar;
-
+        
         internal static string GetGlobalPackagesFolder(string filename = null)
         {
-            if (filename == null)
-            {
-                filename = Directory
-                    .EnumerateFiles(Directory.GetCurrentDirectory(), "*.csproj", SearchOption.TopDirectoryOnly)
-                    .FirstOrDefault();
-            }
-
-            if (string.IsNullOrWhiteSpace(filename))
-                throw new ArgumentNullException(nameof(filename));
-
-            var settings = NuGetSettings.LoadDefaultSettings(Path.GetDirectoryName(filename));
-
-            if (settings == null)
-                throw new ArgumentNullException(nameof(settings));
+            var settings = GetSettingsFromFile(filename);
 
             var text = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
 
@@ -46,6 +33,13 @@
                 : Path.GetFullPath(text.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
         }
 
+        internal static string GetFallbackPackageFolder(string filename = null)
+        {
+            var settings = GetSettingsFromFile(filename);
+
+            return GetFallbackPackageFolders(settings).FirstOrDefault();
+        }
+        
         internal static string GetFolderPath(NuGetFolderPath folder)
         {
             switch (folder)
@@ -93,6 +87,57 @@
                 default:
                     return null;
             }
+        }
+
+        private static IReadOnlyList<string> GetFallbackPackageFolders(NuGetSettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var list = new List<string>();
+            var environmentVariable = Environment.GetEnvironmentVariable("NUGET_FALLBACK_PACKAGES");
+            if (string.IsNullOrEmpty(environmentVariable))
+            {
+                list.AddRange(settings.GetSettingValues("fallbackPackageFolders", true).Select(x => x.Value));
+            }
+            else
+            {
+                list.AddRange(environmentVariable.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
+                foreach (var current in list)
+                {
+                    VerifyPathIsRooted("NUGET_FALLBACK_PACKAGES", current);
+                }
+            }
+
+            for (var i = 0; i < list.Count; i++)
+            {
+                list[i] = list[i].Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+                list[i] = Path.GetFullPath(list[i]);
+            }
+
+            return list;
+        }
+
+        private static NuGetSettings GetSettingsFromFile(string filename = null)
+        {
+            if (filename == null)
+            {
+                filename = Directory
+                    .EnumerateFiles(Directory.GetCurrentDirectory(), "*.csproj", SearchOption.TopDirectoryOnly)
+                    .FirstOrDefault();
+            }
+
+            if (string.IsNullOrWhiteSpace(filename))
+                throw new ArgumentNullException(nameof(filename));
+
+            var settings = NuGetSettings.LoadDefaultSettings(Path.GetDirectoryName(filename));
+
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+            
+            return settings;
         }
 
         private static string GetHome()

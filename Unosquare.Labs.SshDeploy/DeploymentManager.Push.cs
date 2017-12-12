@@ -119,6 +119,8 @@
         {
             $"    Deploying {dependencies.Count} dependencies.".WriteLine(ConsoleColor.Green);
             var nugetPath = NuGetHelper.GetGlobalPackagesFolder();
+            var nugetFallbackPath = NuGetHelper.GetFallbackPackageFolder();
+
             foreach (var file in dependencies)
             {
                 var relativePath = Path.GetFileName(file);
@@ -131,7 +133,12 @@
 
                 try
                 {
-                    using (var fileStream = File.OpenRead(Path.Combine(nugetPath, file)))
+                    var dependencyFile = Path.Combine(nugetPath, file);
+
+                    if (!File.Exists(dependencyFile))
+                        dependencyFile = Path.Combine(nugetFallbackPath, file);
+
+                    using (var fileStream = File.OpenRead(dependencyFile))
                     {
                         sftpClient.UploadFile(fileStream, fileTargetPath);
                         $"    {file}".WriteLine(ConsoleColor.Green);
