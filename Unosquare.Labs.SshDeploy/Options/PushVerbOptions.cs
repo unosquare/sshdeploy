@@ -6,7 +6,7 @@
     public class PushVerbOptions : CliExecuteOptionsBase
     {
         private const string BinFolder = "bin";
-        private const string PublishFolder = "bin";
+        private const string PublishFolder = "publish";
 
         [ArgumentOption('c', "configuration", DefaultValue = "Debug",
             HelpText = "Target configuration. The default for most projects is 'Debug'.", Required = false)]
