@@ -5,10 +5,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>dotnet-sshdeploy</AssemblyName>
     <PackageId>dotnet-sshdeploy</PackageId>
-    <Version>0.1.4</Version>
-    <PackageVersion>0.1.4-r1</PackageVersion>
+    <Version>0.1.5</Version>
+    <PackageVersion>0.1.5-r1</PackageVersion>
     <Authors>Unosquare</Authors>
-    <Description>A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the the Raspberry Pi running Raspbian.</Description>
+    <Description>A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the Raspberry Pi running Raspbian.</Description>
 
     <CodeAnalysisRuleSet>..\StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
     
