@@ -17,7 +17,7 @@
         public string Framework { get; set; }
 
         [ArgumentOption('r', "runtime", HelpText = "The given runtime used for creating a self-contained deployment",
-            Required = true)]
+            DefaultValue = "",Required = false)]
         public string Runtime { get; set; }
 
         public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework, Runtime, PublishFolder);
