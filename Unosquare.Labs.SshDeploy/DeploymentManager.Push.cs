@@ -18,7 +18,7 @@
             {
                 FileName = "dotnet",
                 Arguments = " msbuild /t:Publish " +
-                $" /p:Configuration={verbOptions.Configuration};" +
+                $" /p:Configuration={verbOptions.Configuration};BuildingInsideSshDeploy=true;" +
                 $"TargetFramework={verbOptions.Framework};RuntimeIdentifier={verbOptions.Runtime};" +
                 $"PreBuildEvent=\"\";PostBuildEvent=\"\""
             };
