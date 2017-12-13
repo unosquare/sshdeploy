@@ -340,7 +340,7 @@
 
             foreach (var file in filesToDeploy)
             {
-                var relativePath = Path.GetFileName(file);
+                var relativePath = MakeRelativePath(file, sourcePath + Path.DirectorySeparatorChar);
                 var fileTargetPath = Path.Combine(targetPath, relativePath)
                     .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
                 var targetDirectory = Path.GetDirectoryName(fileTargetPath)
@@ -353,6 +353,19 @@
                     sftpClient.UploadFile(fileStream, fileTargetPath);
                 }
             }
+        }
+
+        /// <summary>
+        /// Makes the given path relative to an absolute path.
+        /// </summary>
+        /// <param name="filePath">The file path.</param>
+        /// <param name="referencePath">The reference path.</param>
+        /// <returns></returns>
+        private static string MakeRelativePath(string filePath, string referencePath)
+        {
+            var fileUri = new Uri(filePath);
+            var referenceUri = new Uri(referencePath);
+            return referenceUri.MakeRelativeUri(fileUri).ToString();
         }
 
         private static void StopMonitorMode(SftpClient sftpClient, SshClient sshClient, FileSystemMonitor fsMonitor)
