@@ -48,7 +48,8 @@ As of now  CLI does not allow command line installation so you'll need to modify
  ```
  *Voilà! sshdeploy  finds the necessary arguments provided using proper xml tags and deploys after a successful build*
  
- **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
+ * **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
+ * **We use the property** `BuildingInsideSshDeploy` **to make sure this event will not be executed within sshdeploy's build method to avoid an infinite loop**
  #### Monitor
 1. Go to your Visual Studio Solution (the one you intend to continously deploy to the Raspberry Pi).
 2. Right click on the project and click on the menu item "Properties"
