@@ -77,6 +77,8 @@ As of now  CLI does not allow command line installation so you'll need to modify
 |      Args        |        XML Tag      | 
 | :--------------: | :------------------:| 
 | -m,--monitor     | `<SshDeployMonitorFile>`     |
+| -f,--framework   |   `<TargetFramework>`        | 
+| -r,--runtime     |   `<RuntimeIdentifier>`      | 
 |  -s, --source    | `<SshDeploySourcePath>`      |
 |  -t,--target     |`<SshDeployTargetPath>`       |
 |  --pre           |  `<SshDeployPreCommand>`     | 
