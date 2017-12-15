@@ -14,20 +14,6 @@
         FileModified
     }
 
-    internal class FileSystemEntryChangedEventArgs : EventArgs
-    {
-        public FileSystemEntryChangedEventArgs(FileSystemEntryChangeType changeType, string path)
-        {
-            ChangeType = changeType;
-            Path = path;
-        }
-
-        public FileSystemEntryChangeType ChangeType { get; }
-        public string Path { get; }
-
-        public override string ToString() => $"{ChangeType}: {Path}";
-    }
-
     /// <summary>
     /// Represents a trackable file system entry
     /// </summary>
@@ -67,6 +53,20 @@
         {
             // placeholder
         }
+    }
+
+    internal class FileSystemEntryChangedEventArgs : EventArgs
+    {
+        public FileSystemEntryChangedEventArgs(FileSystemEntryChangeType changeType, string path)
+        {
+            ChangeType = changeType;
+            Path = path;
+        }
+
+        public FileSystemEntryChangeType ChangeType { get; }
+        public string Path { get; }
+
+        public override string ToString() => $"{ChangeType}: {Path}";
     }
 
     /// <summary>
@@ -113,17 +113,7 @@
         /// The root path that is monitored for changes
         /// </summary>
         public string FileSystemPath { get; private set; }
-
-        /// <summary>
-        /// Raises the file system entry changed event.
-        /// </summary>
-        /// <param name="changeType">Type of the change.</param>
-        /// <param name="path">The path.</param>
-        private void RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType changeType, string path)
-        {
-            FileSystemEntryChanged?.Invoke(this, new FileSystemEntryChangedEventArgs(changeType, path));
-        }
-
+        
         /// <summary>
         /// Stops the File System Monitor
         /// This is a blocking call
@@ -197,6 +187,16 @@
                     Thread.Sleep(10);
                 }
             }
+        }
+
+        /// <summary>
+        /// Raises the file system entry changed event.
+        /// </summary>
+        /// <param name="changeType">Type of the change.</param>
+        /// <param name="path">The path.</param>
+        private void RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType changeType, string path)
+        {
+            FileSystemEntryChanged?.Invoke(this, new FileSystemEntryChangedEventArgs(changeType, path));
         }
 
         /// <summary>

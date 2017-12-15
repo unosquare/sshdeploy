@@ -73,18 +73,6 @@
         [Push(ShortName = "-r", LongName = "--runtime")]
         public string RuntimeIdentifier => FindElement(nameof(RuntimeIdentifier))?.Value;
 
-        private static Type GetAttributeType(string[] args)
-        {
-            if (args.Contains("push"))
-                return typeof(PushAttribute);
-            if (args.Contains("monitor"))
-                return typeof(MonitorAttribute);
-            if (args.Contains("run"))
-                return typeof(RunAttribute);
-
-            return typeof(ShellAttribute);
-        } 
-
         public override void ParseCsProjTags(ref string[] args)
         {
             var argsList = args.ToList();
@@ -113,5 +101,17 @@
 
             args = argsList.ToArray();
         }
+
+        private static Type GetAttributeType(string[] args)
+        {
+            if (args.Contains("push"))
+                return typeof(PushAttribute);
+            if (args.Contains("monitor"))
+                return typeof(MonitorAttribute);
+            if (args.Contains("run"))
+                return typeof(RunAttribute);
+
+            return typeof(ShellAttribute);
+        } 
     }
 }

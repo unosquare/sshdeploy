@@ -39,7 +39,7 @@
             PrintMonitorOptions(verbOptions);
 
             // Create the FS Monitor and connection info
-            var fsMonitor = new FileSystemMonitor(1, verbOptions.SourcePath);
+            var fsmonitor = new FileSystemMonitor(1, verbOptions.SourcePath);
             var simpleConnectionInfo = new PasswordConnectionInfo(
                 verbOptions.Host,
                 verbOptions.Port,
@@ -64,13 +64,13 @@
                     using (var shellStream = CreateShellStream(sshClient))
                     {
                         // Starts the FS Monitor and binds the event handler
-                        StartMonitorMode(fsMonitor, sshClient, sftpClient, shellStream, verbOptions);
+                        StartMonitorMode(fsmonitor, sshClient, sftpClient, shellStream, verbOptions);
 
                         // Allows user interaction with the shell
                         StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
 
                         // When we quit, we stop the monitor and disconnect the clients
-                        StopMonitorMode(sftpClient, sshClient, fsMonitor);
+                        StopMonitorMode(sftpClient, sshClient, fsmonitor);
                     }
                 }
             }
@@ -360,7 +360,7 @@
         /// </summary>
         /// <param name="filePath">The file path.</param>
         /// <param name="referencePath">The reference path.</param>
-        /// <returns></returns>
+        /// <returns>Relative path</returns>
         private static string MakeRelativePath(string filePath, string referencePath)
         {
             var fileUri = new Uri(filePath);
@@ -368,11 +368,11 @@
             return referenceUri.MakeRelativeUri(fileUri).ToString();
         }
 
-        private static void StopMonitorMode(SftpClient sftpClient, SshClient sshClient, FileSystemMonitor fsMonitor)
+        private static void StopMonitorMode(SftpClient sftpClient, SshClient sshClient, FileSystemMonitor fsmonitor)
         {
             string.Empty.WriteLine();
 
-            fsMonitor.Stop();
+            fsmonitor.Stop();
             "File System monitor was stopped.".WriteLine();
 
             if (sftpClient.IsConnected)
@@ -443,18 +443,18 @@
         {
             var escapeSequenceBytes = new List<byte>(128);
             var isInEscapeSequence = false;
-            byte rxBytePrevious = 0;
+            byte rxbyteprevious = 0;
             byte escapeSequenceType = 0;
-            var rxBuffer = e.Data;
+            var rxbuffer = e.Data;
 
-            foreach (var rxByte in rxBuffer)
+            foreach (var rxByte in rxbuffer)
             {
                 // We've found the beginning of an escapr sequence
                 if (isInEscapeSequence == false && rxByte == Escape)
                 {
                     isInEscapeSequence = true;
                     escapeSequenceBytes.Clear();
-                    rxBytePrevious = rxByte;
+                    rxbyteprevious = rxByte;
                     continue;
                 }
 
@@ -477,7 +477,7 @@
                             $"[NPC {rxByte}]".WriteLine(ConsoleColor.DarkYellow);
                     }
 
-                    rxBytePrevious = rxByte;
+                    rxbyteprevious = rxByte;
                     continue;
                 }
 
@@ -486,9 +486,9 @@
                 escapeSequenceBytes.Add(rxByte);
 
                 // Ignore the second escape byte 91 '[' or ']'
-                if (rxBytePrevious == Escape)
+                if (rxbyteprevious == Escape)
                 {
-                    rxBytePrevious = rxByte;
+                    rxbyteprevious = rxByte;
                     if (ControlSequenceInitiators.Contains(rxByte))
                     {
                         escapeSequenceType = rxByte;
@@ -513,13 +513,13 @@
                     {
                         isInEscapeSequence = false;
                         escapeSequenceBytes.Clear();
-                        rxBytePrevious = rxByte;
+                        rxbyteprevious = rxByte;
                     }
 
                     continue;
                 }
 
-                rxBytePrevious = rxByte;
+                rxbyteprevious = rxByte;
             }
         }
 
@@ -599,19 +599,19 @@
         /// <summary>
         /// Starts the monitor mode.
         /// </summary>
-        /// <param name="fsMonitor">The fs monitor.</param>
+        /// <param name="fsmonitor">The fs monitor.</param>
         /// <param name="sshClient">The SSH client.</param>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
         private static void StartMonitorMode(
-            FileSystemMonitor fsMonitor,
+            FileSystemMonitor fsmonitor,
             SshClient sshClient,
             SftpClient sftpClient,
             ShellStream shellStream,
             MonitorVerbOptions verbOptions)
         {
-            fsMonitor.FileSystemEntryChanged += (s, e) =>
+            fsmonitor.FileSystemEntryChanged += (s, e) =>
             {
                 // Detect changes to the monitor file by ignoring deletions and checking file paths.
                 if (e.ChangeType != FileSystemEntryChangeType.FileAdded &&

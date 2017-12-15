@@ -1,7 +1,7 @@
-﻿using Unosquare.Swan.Attributes;
-
-namespace Unosquare.Labs.SshDeploy.Options
+﻿namespace Unosquare.Labs.SshDeploy.Options
 {
+    using Unosquare.Swan.Attributes;
+
     public class MonitorVerbOptions : CliExecuteOptionsBase
     {
         [ArgumentOption('s', "source", HelpText = "The source path for the files to transfer", Required = true)]

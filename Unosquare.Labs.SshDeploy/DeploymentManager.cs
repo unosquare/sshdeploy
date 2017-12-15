@@ -18,7 +18,7 @@
         private const char WindowsDirectorySeparatorChar = '\\';
         private const string LinuxDirectorySeparator = "/";
         private const byte Escape = 27; // Escape sequence character
-        private static readonly byte[] ControlSequenceInitiators = {(byte) '[', (byte) ']'};
+        private static readonly byte[] ControlSequenceInitiators = { (byte) '[', (byte) ']' };
 
         public static void ExecuteRunVerb(RunVerbOptions invokedVerbOptions)
         {

@@ -34,9 +34,9 @@
 
             if (Directory.Exists(verbOptions.SourcePath) == false)
                 throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
+
             // Create connection info
-            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
-                verbOptions.Username, verbOptions.Password);
+            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port, verbOptions.Username, verbOptions.Password);
 
             // Instantiate an SFTP client and an SSH client
             // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
@@ -95,8 +95,7 @@
                 RunCommand(sshClient, "client", verbOptions.PreCommand);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);                
-                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,
-                    verbOptions.ExcludeFileSuffixes);
+                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,verbOptions.ExcludeFileSuffixes);
             }
             catch (Exception ex)
             {
