@@ -36,11 +36,11 @@ As of now  CLI does not allow command line installation so you'll need to modify
     <SshDeployTargetPath>/home/pi/libfprint-cs</SshDeployTargetPath>
     <SshDeployUsername>pi</SshDeployUsername>
     <SshDeployPassword>raspberry</SshDeployPassword>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
 </PropertyGroup>
  ``` 
 2. We need a post build event as well:
  ```xml
-<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
 <Target Condition="$(BuildingInsideSshDeploy) ==''" Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="cd $(ProjectDir)" />
     <Exec Command="dotnet sshdeploy push" />
