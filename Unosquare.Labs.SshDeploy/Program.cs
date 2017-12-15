@@ -53,7 +53,7 @@
             if (parseResult == false)
             {
                 Environment.ExitCode = 1;
-                Task.Delay(400).Wait();
+                Terminal.Flush();
                 return;
             }
 
@@ -109,7 +109,7 @@
                 "Completed.".WriteLine();
             }
 
-            Task.Delay(200).Wait();
+            Terminal.Flush();
         }
     }
 }
