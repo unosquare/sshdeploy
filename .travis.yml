@@ -1,5 +1,17 @@
 language: csharp
+notifications:
+  slack: unolabs:cbusXPH6pBwZ35rVDzi4k4ve
 solution: Unosquare.Labs.SshDeploy.sln
-os:
-  - linux
-  - osx
+mono: none
+dotnet: 2.0.0
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+    - os: osx
+      osx_image: xcode9.1
+install:
+  - dotnet restore
+script:
+- dotnet build
