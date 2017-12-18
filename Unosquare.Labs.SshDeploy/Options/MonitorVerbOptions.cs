@@ -1,11 +1,16 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Options
 {
-    using CommandLine;
+    using Unosquare.Swan.Attributes;
 
-    public class MonitorVerbOptions
-        : PushVerbOptions
+    public class MonitorVerbOptions : CliExecuteOptionsBase
     {
-        [Option('m', "monitor", DefaultValue = "sshdeploy.ready", HelpText = "The path to the file used as a signal that the files are ready to be deployed. Once the deployemtn is completed, the file is deleted.", Required = false)]
+        [ArgumentOption('s', "source", HelpText = "The source path for the files to transfer", Required = true)]
+        public string SourcePath { get; set; }
+
+        [ArgumentOption('m', "monitor", DefaultValue = "sshdeploy.ready", HelpText = "The command to run on the target machine", Required = false)]       
         public string MonitorFile { get; set; }
+
+        [ArgumentOption('l', "legacy", DefaultValue = false, HelpText = "Monitor files using legacy method", Required = false)]
+        public bool Legacy { get; set; }
     }
 }

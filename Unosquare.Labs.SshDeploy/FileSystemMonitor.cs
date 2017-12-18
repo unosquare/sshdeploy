@@ -3,39 +3,15 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.IO;
     using System.Linq;
+    using System.Threading;
 
-    /// <summary>
-    /// Represents the different change types that the
-    /// FileSystemMonitor class can detect
-    /// </summary>
     public enum FileSystemEntryChangeType
     {
         FileAdded,
         FileRemoved,
-        FileModified,
-    }
-
-    /// <summary>
-    /// Respresnets change data for a file system entry
-    /// </summary>
-    public class FileSystemEntryChangedEventArgs : EventArgs
-    {
-        public FileSystemEntryChangedEventArgs(FileSystemEntryChangeType changeType, string path)
-            : base()
-        {
-            this.ChangeType = changeType;
-            this.Path = path;
-        }
-
-        public FileSystemEntryChangeType ChangeType { get; private set; }
-        public string Path { get; private set; }
-
-        public override string ToString()
-        {
-            return string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                "{0}: {1}", ChangeType, Path);
-        }
+        FileModified
     }
 
     /// <summary>
@@ -44,18 +20,17 @@
     public class FileSystemEntry
     {
         /// <summary>
-        /// Initializes a new instance of this class.
-        /// The path needs to point to a file.
+        /// Initializes a new instance of the <see cref="FileSystemEntry"/> class.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">The path.</param>
         public FileSystemEntry(string path)
         {
-            var info = new System.IO.FileInfo(path);
-            this.Path = info.DirectoryName;
-            this.Filename = info.Name;
-            this.Size = info.Length;
-            this.DateCreatedUtc = info.CreationTimeUtc;
-            this.DateModifiedUtc = info.LastWriteTimeUtc;
+            var info = new FileInfo(path);
+            Path = info.DirectoryName;
+            Filename = info.Name;
+            Size = info.Length;
+            DateCreatedUtc = info.CreationTimeUtc;
+            DateModifiedUtc = info.LastWriteTimeUtc;
         }
 
         public string Filename { get; set; }
@@ -71,13 +46,27 @@
     public class FileSystemEntryDictionary : Dictionary<string, FileSystemEntry>
     {
         /// <summary>
-        /// Initializes a new instance of this class
+        /// Initializes a new instance of the <see cref="FileSystemEntryDictionary"/> class.
         /// </summary>
         public FileSystemEntryDictionary()
             : base(1024, StringComparer.InvariantCultureIgnoreCase)
         {
             // placeholder
         }
+    }
+
+    internal class FileSystemEntryChangedEventArgs : EventArgs
+    {
+        public FileSystemEntryChangedEventArgs(FileSystemEntryChangeType changeType, string path)
+        {
+            ChangeType = changeType;
+            Path = path;
+        }
+
+        public FileSystemEntryChangeType ChangeType { get; }
+        public string Path { get; }
+
+        public override string ToString() => $"{ChangeType}: {Path}";
     }
 
     /// <summary>
@@ -87,66 +76,55 @@
     /// amount of file or directories. In other words, do not monitor the root of a drive,
     /// or a folder with thousands of files.
     /// </summary>
-    public class FileSystemMonitor
+    internal class FileSystemMonitor
     {
         public const string AllFilesPattern = "*.*";
-        private readonly FileSystemEntryDictionary Entries = new FileSystemEntryDictionary();
-        private BackgroundWorker Worker = null;
-        public delegate void FileSystemEntryChangedHandler(object sender, FileSystemEntryChangedEventArgs e);
-        public event FileSystemEntryChangedHandler FileSystemEntryChanged;
+        private readonly FileSystemEntryDictionary _entries = new FileSystemEntryDictionary();
+        private readonly BackgroundWorker _worker;
 
         /// <summary>
-        /// Creates a new instanceof the FileSystemMonitor class
+        /// Initializes a new instance of the <see cref="FileSystemMonitor"/> class.
         /// </summary>
-        /// <param name="pollIntervalSeconds"></param>
-        /// <param name="fileSystemPath"></param>
+        /// <param name="pollIntervalSeconds">The poll interval seconds.</param>
+        /// <param name="fileSystemPath">The file system path.</param>
         public FileSystemMonitor(int pollIntervalSeconds, string fileSystemPath)
-            : base()
         {
-            this.PollIntervalSeconds = pollIntervalSeconds;
-            this.FileSystemPath = fileSystemPath;
-            this.Worker = new BackgroundWorker()
+            PollIntervalSeconds = pollIntervalSeconds;
+            FileSystemPath = fileSystemPath;
+            _worker = new BackgroundWorker
             {
                 WorkerReportsProgress = true,
                 WorkerSupportsCancellation = true
             };
 
-            this.Worker.DoWork += DoWork;
+            _worker.DoWork += DoWork;
         }
+
+        public delegate void FileSystemEntryChangedHandler(object sender, FileSystemEntryChangedEventArgs e);
+
+        public event FileSystemEntryChangedHandler FileSystemEntryChanged;
 
         /// <summary>
         /// The polling interval in seconds at which the file system is monitored for changes
         /// </summary>
-        public int PollIntervalSeconds { get; private set; }
+        public int PollIntervalSeconds { get; }
 
         /// <summary>
         /// The root path that is monitored for changes
         /// </summary>
         public string FileSystemPath { get; private set; }
-
-        /// <summary>
-        /// Raises the FileSystemEntryChanged Event
-        /// </summary>
-        /// <param name="changeType"></param>
-        /// <param name="path"></param>
-        private void RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType changeType, string path)
-        {
-            if (this.FileSystemEntryChanged != null)
-                this.FileSystemEntryChanged(this, new FileSystemEntryChangedEventArgs(changeType, path));
-        }
-
-
+        
         /// <summary>
         /// Stops the File System Monitor
         /// This is a blocking call
         /// </summary>
         public void Stop()
         {
-            if (Worker.CancellationPending)
+            if (_worker.CancellationPending)
                 return;
 
-            Worker.CancelAsync();
-            this.ClearMonitorEntries();
+            _worker.CancelAsync();
+            ClearMonitorEntries();
         }
 
         /// <summary>
@@ -155,10 +133,10 @@
         /// <exception cref="InvalidOperationException">Service is already running.</exception>
         public virtual void Start()
         {
-            if (Worker.IsBusy)
+            if (_worker.IsBusy)
                 throw new InvalidOperationException("Service is already running.");
 
-            Worker.RunWorkerAsync();
+            _worker.RunWorkerAsync();
         }
 
         /// <summary>
@@ -172,45 +150,53 @@
             const int maximumInterval = 60;
 
             // validate argumets
-            if (this.PollIntervalSeconds < minimumInterval || this.PollIntervalSeconds > maximumInterval)
+            if (PollIntervalSeconds < minimumInterval || PollIntervalSeconds > maximumInterval)
                 throw new ArgumentException("PollIntervalSeconds must be between 2 and 60");
 
-            if (System.IO.Directory.Exists(this.FileSystemPath) == false)
+            if (Directory.Exists(FileSystemPath) == false)
                 throw new ArgumentException("Configuration item InputFolderPath does not point to a valid folder");
 
             // normalize file system path parameter
-            this.FileSystemPath = System.IO.Path.GetFullPath(this.FileSystemPath);
+            FileSystemPath = Path.GetFullPath(FileSystemPath);
 
             // Only new files shall be taken into account.
-            this.InitializeMonitorEntries();
+            InitializeMonitorEntries();
 
             // keep track of a timout interval
             var lastPollTime = DateTime.Now;
-            while (!Worker.CancellationPending)
+            while (!_worker.CancellationPending)
             {
                 try
                 {
                     // check for polling interval before processing changes
-                    if (DateTime.Now.Subtract(lastPollTime).TotalSeconds > this.PollIntervalSeconds)
+                    if (DateTime.Now.Subtract(lastPollTime).TotalSeconds > PollIntervalSeconds)
                     {
                         lastPollTime = DateTime.Now;
-                        this.ProcessMonitorEntryChanges();
-                        Worker.ReportProgress(1, new DateTime?(DateTime.Now));
+                        ProcessMonitorEntryChanges();
+                        _worker.ReportProgress(1, DateTime.Now);
                     }
                 }
                 catch (Exception ex)
                 {
                     // Report the exception
-                    Worker.ReportProgress(0, ex);
+                    _worker.ReportProgress(0, ex);
                 }
                 finally
                 {
                     // sleep some so we don't overload the CPU
-                    System.Threading.Thread.Sleep(10);
+                    Thread.Sleep(10);
                 }
             }
+        }
 
-
+        /// <summary>
+        /// Raises the file system entry changed event.
+        /// </summary>
+        /// <param name="changeType">Type of the change.</param>
+        /// <param name="path">The path.</param>
+        private void RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType changeType, string path)
+        {
+            FileSystemEntryChanged?.Invoke(this, new FileSystemEntryChangedEventArgs(changeType, path));
         }
 
         /// <summary>
@@ -218,14 +204,15 @@
         /// </summary>
         private void InitializeMonitorEntries()
         {
-            this.ClearMonitorEntries();
-            var files = System.IO.Directory.GetFiles(this.FileSystemPath, AllFilesPattern, System.IO.SearchOption.AllDirectories);
+            ClearMonitorEntries();
+            var files = Directory.GetFiles(FileSystemPath, AllFilesPattern, SearchOption.AllDirectories);
+
             foreach (var file in files)
             {
                 try
                 {
                     var entry = new FileSystemEntry(file);
-                    this.Entries[file] = entry;
+                    _entries[file] = entry;
                 }
                 catch
                 {
@@ -240,16 +227,16 @@
         /// </summary>
         private void ProcessMonitorEntryChanges()
         {
-            var files = System.IO.Directory.GetFiles(this.FileSystemPath, AllFilesPattern, System.IO.SearchOption.AllDirectories);
+            var files = Directory.GetFiles(FileSystemPath, AllFilesPattern, SearchOption.AllDirectories);
 
             // check for any missing files
-            var existingKeys = this.Entries.Keys.ToArray();
+            var existingKeys = _entries.Keys.ToArray();
             foreach (var existingKey in existingKeys)
             {
                 if (files.Any(f => f.Equals(existingKey, StringComparison.InvariantCultureIgnoreCase)) == false)
                 {
-                    this.Entries.Remove(existingKey);
-                    this.RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType.FileRemoved, existingKey);
+                    _entries.Remove(existingKey);
+                    RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType.FileRemoved, existingKey);
                 }
             }
 
@@ -259,28 +246,27 @@
                 try
                 {
                     var entry = new FileSystemEntry(file);
-                    // in the case we already have it in the tracking collection
-                    if (this.Entries.ContainsKey(file))
+
+                    if (_entries.ContainsKey(file))
                     {
-                        var existingEntry = this.Entries[file];
+                        // in the case we already have it in the tracking collection
+                        var existingEntry = _entries[file];
+
                         if (existingEntry.DateCreatedUtc != entry.DateCreatedUtc ||
                             existingEntry.DateModifiedUtc != entry.DateModifiedUtc ||
                             existingEntry.Size != entry.Size)
                         {
                             // update the entry and raise the change event
-                            this.Entries[file] = entry;
-                            this.RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType.FileModified, file);
+                            _entries[file] = entry;
+                            RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType.FileModified, file);
                         }
-
                     }
-                    // in the case we do not have it in the tracking collection
                     else
                     {
                         // add the entry and raise the added event
-                        this.Entries[file] = entry;
-                        this.RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType.FileAdded, file);
+                        _entries[file] = entry;
+                        RaiseFileSystemEntryChangedEvent(FileSystemEntryChangeType.FileAdded, file);
                     }
-
                 }
                 catch
                 {
@@ -293,9 +279,6 @@
         /// Clears all the dictionary entries.
         /// This method is used when we startup or reset the file system monitor
         /// </summary>
-        private void ClearMonitorEntries()
-        {
-            this.Entries.Clear();
-        }
+        private void ClearMonitorEntries() => _entries.Clear();
     }
 }

@@ -1,11 +1,10 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Options
 {
-    using CommandLine;
+    using Unosquare.Swan.Attributes;
 
-    public class RunVerbOptions
-        : CliVerbOptionsBase
+    public class RunVerbOptions : CliVerbOptionsBase
     {
-        [Option('c', "command", HelpText = "The command to run on the target machine", Required = true)]
+        [ArgumentOption('c', "command", HelpText = "The command to run on the target machine", Required = true)]
         public string Command { get; set; }
     }
 }

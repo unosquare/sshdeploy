@@ -1,107 +1,115 @@
-﻿using System;
-using System.Threading;
-using Unosquare.Labs.SshDeploy.Options;
-
-namespace Unosquare.Labs.SshDeploy
+﻿namespace Unosquare.Labs.SshDeploy
 {
-    static public class Program
+    using Options;
+    using Swan;
+    using System;
+    using System.IO;
+    using Utils;
+    using Swan.Components;
+    using System.Threading.Tasks;
+    
+    public static class Program
     {
-        private static readonly string MutexName = string.Format("Global\\{0}", typeof(Program).Namespace);
-        static private Mutex AppMutex = null;
-
-        static public string Title
+        public static string Title
         {
-            get { return Console.Title; }
-            set { Console.Title = value + TitleSuffix; }
+            get => Console.Title;
+            set => Console.Title = value + TitleSuffix;
         }
 
-        static public string TitleSuffix { get; set; } = " - SSH Deploy";
+        public static string CurrentDirectory { get; } = Directory.GetCurrentDirectory();
 
+        public static string TitleSuffix { get; set; } = " - SSH Deploy";
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
+            Terminal.Settings.OverrideIsConsolePresent = true;
+
             Title = "Unosquare";
-
-            #region Handle Single Instance Application
-
-            bool isNewMutex;
-            AppMutex = new Mutex(true, MutexName, out isNewMutex);
-            if (isNewMutex == false)
+            
+            $"SSH Deployment Tool [Version {typeof(Program).Assembly.GetName().Version}]".WriteLine();
+            "(c)2015 - 2017 Unosquare SA de CV. All Rights Reserved.".WriteLine();
+            "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
+           
+                var options = new CliOptions();
+           
+            try
             {
-                AppMutex = null;
-                Environment.ExitCode = CommandLine.Parser.DefaultExitCodeFail;
-                return;
+                using (var csproj = new CsProjFile<CsProjNuGetMetadata>())
+                {
+                    csproj.Metadata.ParseCsProjTags(ref args);
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+               "Access to csproj file denied".WriteLine(ConsoleColor.Red);
+            }
+            catch (ArgumentNullException)
+            {
+                "No csproj file was found".WriteLine(ConsoleColor.DarkRed);
             }
 
-            #endregion
-
-            ConsoleManager.WriteLine("SSH Deployment Tool [Version " + typeof(Unosquare.Labs.SshDeploy.Program).Assembly.GetName().Version.ToString() + "]");
-            ConsoleManager.WriteLine("(c) 2015-2016 Unosquare SA de CV. All Rights Reserved.");
-            ConsoleManager.WriteLine("For additional help, please visit https://github.com/unosquare/sshdeploy");
-
-            var invokedVerbName = string.Empty;
-            CliVerbOptionsBase invokedVerbOptions = null;
-            var options = new CliOptions();
-
-            var parseResult = CommandLine.Parser.Default.ParseArguments(args, options, (verb, verbOptions) =>
-            {
-                invokedVerbName = verb;
-                invokedVerbOptions = verbOptions as CliVerbOptionsBase;
-
-                if (invokedVerbOptions != null)
-                    ConsoleManager.Verbose = invokedVerbOptions.Verbose != 0;
-            });
+            var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);
 
             if (parseResult == false)
             {
-                Environment.ExitCode = CommandLine.Parser.DefaultExitCodeFail;
+                Environment.ExitCode = 1;
+                Terminal.Flush();
                 return;
             }
 
             try
             {
-
-                switch (invokedVerbName)
+                if (options.RunVerbOptions != null)
                 {
-                    case CliOptions.RunVerb:
-                        {
-                            TitleSuffix = " - Run Mode" + TitleSuffix;
-                            Title = "Command";
-                            var verbOptions = invokedVerbOptions as RunVerbOptions;
-                            DeploymentManager.ExecuteRunVerb(verbOptions);
-                            break;
-                        }
-                    case CliOptions.ShellVerb:
-                        {
-                            TitleSuffix = " - Shell Mode" + TitleSuffix;
-                            Title = "Interactive";
-                            var verbOptions = invokedVerbOptions as ShellVerbOptions;
-                            DeploymentManager.ExecuteShellVerb(verbOptions);
-                            break;
-                        }
-                    case CliOptions.MonitorVerb:
-                        {
-                            TitleSuffix = " - Monitor Mode" + TitleSuffix;
-                            Title = "Monitor";
-                            var verbOptions = invokedVerbOptions as MonitorVerbOptions;
-                            DeploymentManager.ExecuteMonitorVerb(verbOptions);
-                            break;
-                        }
+                    TitleSuffix = $" - Run Mode{TitleSuffix}";
+                    Title = "Command";
+                    DeploymentManager.ExecuteRunVerb(options.RunVerbOptions);
+                }
+                else if (options.ShellVerbOptions != null)
+                {
+                    TitleSuffix = $" - Shell Mode{TitleSuffix}";
+                    Title = "Interactive";
+                    DeploymentManager.ExecuteShellVerb(options.ShellVerbOptions);
+                }
+                else if (options.MonitorVerbOptions != null)
+                {
+                    TitleSuffix = $" - Monitor Mode{TitleSuffix}";
+                    Title = "Monitor";
+
+                    if (options.MonitorVerbOptions.Legacy)
+                    {
+                        DeploymentManager.ExecuteMonitorVerbLegacy(options.MonitorVerbOptions);
+                    }
+                    else
+                    {
+                        DeploymentManager.ExecuteMonitorVerb(options.MonitorVerbOptions);
+                    }
+                }
+                else if (options.PushVerbOptions != null)
+                {
+                    TitleSuffix = $" - Push Mode{TitleSuffix}";
+                    Title = "Push";
+                    DeploymentManager.ExecutePushVerb(options.PushVerbOptions);
                 }
             }
             catch (Exception ex)
             {
-                ConsoleManager.ErrorWriteLine("Error - " + ex.GetType().Name);
-                ConsoleManager.ErrorWriteLine(ex.Message);
-                ConsoleManager.ErrorWriteLine(ex.StackTrace);
-                Environment.ExitCode = CommandLine.Parser.DefaultExitCodeFail;
+                $"Error - {ex.GetType().Name}".Error();
+                ex.Message.Error();
+                ex.StackTrace.Error();
+                Environment.ExitCode = 1;
             }
 
             if (Environment.ExitCode != 0)
-                ConsoleManager.ErrorWriteLine("Completed with errors. Exit Code " + Environment.ExitCode.ToString());
+            {
+                $"Completed with errors. Exit Code {Environment.ExitCode}".Error();
+            }
             else
-                ConsoleManager.WriteLine("Completed.");
+            {
+                "Completed.".WriteLine();
+            }
+
+            Terminal.Flush();
         }
     }
-
 }

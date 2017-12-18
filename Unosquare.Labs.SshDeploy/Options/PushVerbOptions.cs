@@ -1,39 +1,25 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Options
 {
-    using CommandLine;
-    using System;
+    using System.IO;
+    using Swan.Attributes;
 
-    public class PushVerbOptions
-        : CliVerbOptionsBase
+    public class PushVerbOptions : CliExecuteOptionsBase
     {
-        [Option('s', "source", HelpText = "The source path for the files to transfer", Required = true)]
-        public string SourcePath { get; set; }
+        private const string BinFolder = "bin";
+        private const string PublishFolder = "publish";
 
-        [Option('t', "target", HelpText = "The target path of the files to transfer", Required = true)]
-        public string TargetPath { get; set; }
+        [ArgumentOption('c', "configuration", DefaultValue = "Debug",
+            HelpText = "Target configuration. The default for most projects is 'Debug'.", Required = false)]
+        public string Configuration { get; set; }
 
-        [Option("pre", HelpText = "Command to execute prior file transfer to target", Required = false)]
-        public string PreCommand { get; set; }
+        [ArgumentOption('f', "framework", HelpText = "The target framework has to be specified in the project file.",
+            Required = true)]
+        public string Framework { get; set; }
 
-        [Option("post", HelpText = "Command to execute after file transfer to target", Required = false)]
-        public string PostCommand { get; set; }
+        [ArgumentOption('r', "runtime", HelpText = "The given runtime used for creating a self-contained deployment",
+            DefaultValue = "",Required = false)]
+        public string Runtime { get; set; }
 
-        [Option("clean", DefaultValue = 0, HelpText = "Deletes all files and folders on the target before pushing the new files.  0 to disable, any other number to enable.", Required = false)]
-        public int CleanTarget { get; set; }
-
-        [Option("exclude", DefaultValue = ".ready|.vshost.exe|.vshost.exe.config", HelpText = "a pipe (|) separated list of file suffixes to ignore while deploying.", Required = false)]
-        public string ExcludeFileSuffixes { get; set; }
-
-        public string[] ExcludeFileSuffixList
-        {
-            get
-            {
-                var ignoreFileSuffixes = string.IsNullOrWhiteSpace(ExcludeFileSuffixes) ?
-                    new string[] { } :
-                    ExcludeFileSuffixes.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-
-                return ignoreFileSuffixes;
-            }
-        }
+        public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework, Runtime, PublishFolder);
     }
 }

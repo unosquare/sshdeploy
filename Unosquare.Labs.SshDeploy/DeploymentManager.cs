@@ -1,60 +1,76 @@
 ﻿namespace Unosquare.Labs.SshDeploy
 {
-    using Renci.SshNet;
+    using System.Collections.Generic;
+    using Renci.SshNet.Common;
     using System;
     using System.Linq;
-    using Unosquare.Labs.SshDeploy.Options;
+    using System.Text;
+    using Renci.SshNet;
+    using Options;
+    using Swan;
 
     public static partial class DeploymentManager
     {
-
+        private const string TerminalName = "xterm"; // "vanilla" works well; "xterm" is also a good option
         private const string LinuxCurrentDirectory = ".";
         private const string LinuxParentDirectory = "..";
         private const char LinuxDirectorySeparatorChar = '/';
         private const char WindowsDirectorySeparatorChar = '\\';
         private const string LinuxDirectorySeparator = "/";
-        private const string WindowsDirectorySeparator = "\\";
         private const byte Escape = 27; // Escape sequence character
-        private readonly static byte[] ControlSequenceInitiators = new byte[] { (byte)'[', (byte)']' };
-        private const string TerminalName = "xterm"; // "vanilla" works well; "xterm" is also a good option
+        private static readonly byte[] ControlSequenceInitiators = { (byte) '[', (byte) ']' };
 
         public static void ExecuteRunVerb(RunVerbOptions invokedVerbOptions)
         {
-            using (var client = DeploymentManager.CreateClient(invokedVerbOptions))
+            using (var client = CreateClient(invokedVerbOptions))
             {
                 client.Connect();
-                var command = DeploymentManager.ExecuteCommand(client, invokedVerbOptions.Command);
+                var command = ExecuteCommand(client, invokedVerbOptions.Command);
                 Environment.ExitCode = command.ExitStatus;
                 client.Disconnect();
             }
         }
 
+        private static ShellStream CreateBaseShellStream(SshClient sshClient)
+        {
+            var bufferSize = Console.BufferWidth * Console.BufferHeight;
+
+            return sshClient.CreateShellStream(
+                TerminalName,
+                (uint) Console.BufferWidth,
+                (uint) Console.BufferHeight,
+                (uint) Console.WindowWidth,
+                (uint) Console.WindowHeight,
+                bufferSize,
+                new Dictionary<TerminalModes, uint> {{TerminalModes.ECHO, 0}, {TerminalModes.IGNCR, 1}});
+        }
+
         private static SshClient CreateClient(CliVerbOptionsBase options)
         {
-            var simpleConnectionInfo = new PasswordConnectionInfo(options.Host, options.Port, options.Username, options.Password);
-            return new Renci.SshNet.SshClient(simpleConnectionInfo);
+            var simpleConnectionInfo =
+                new PasswordConnectionInfo(options.Host, options.Port, options.Username, options.Password);
+            return new SshClient(simpleConnectionInfo);
         }
 
         private static SshCommand ExecuteCommand(SshClient client, string commandText)
         {
-            ConsoleManager.WriteLine("SSH TX:");
-            ConsoleManager.WriteLine(commandText, ConsoleColor.Green);
-
+            "SSH TX:".WriteLine();
+            commandText.WriteLine(ConsoleColor.Green);
 
             using (var command = client.CreateCommand(commandText))
             {
                 var result = command.Execute();
-                ConsoleManager.WriteLine("SSH RX:");
+                "SSH RX:".WriteLine();
 
                 if (command.ExitStatus != 0)
                 {
-                    ConsoleManager.ErrorWriteLine("Error " + command.ExitStatus);
-                    ConsoleManager.ErrorWriteLine(command.Error);
+                    $"Error {command.ExitStatus}".WriteLine();
+                    command.Error.Error();
                 }
 
                 if (string.IsNullOrWhiteSpace(result) == false)
                 {
-                    ConsoleManager.WriteLine(result, ConsoleColor.Yellow);
+                    result.WriteLine(ConsoleColor.Yellow);
                 }
 
                 return command;
@@ -63,15 +79,15 @@
 
         private static void HandleShellEscapeSequence(byte[] escapeSequence)
         {
-            var controlSequenceChars = ControlSequenceInitiators.Select(s => (char)s).ToArray();
-            var escapeString = System.Text.Encoding.ASCII.GetString(escapeSequence);
+            var controlSequenceChars = ControlSequenceInitiators.Select(s => (char) s).ToArray();
+            var escapeString = Encoding.ASCII.GetString(escapeSequence);
             var command = escapeString.Last();
             var arguments = escapeString
                 .TrimStart(controlSequenceChars)
                 .TrimEnd(command)
-                .Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                .Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries);
 
-            if (command == 'm')
+            if (command == 'm' | command == '\a')
             {
                 var background = "40";
                 var foreground = "37";
@@ -89,35 +105,64 @@
 
                 switch (foreground)
                 {
-                    case "30": Console.ForegroundColor = ConsoleColor.Black; break;
-                    case "31": Console.ForegroundColor = ConsoleColor.Red; break;
-                    case "32": Console.ForegroundColor = ConsoleColor.Green; break;
-                    case "33": Console.ForegroundColor = ConsoleColor.Yellow; break;
-                    case "34": Console.ForegroundColor = ConsoleColor.Cyan; break;
-                    case "35": Console.ForegroundColor = ConsoleColor.Magenta; break;
-                    case "36": Console.ForegroundColor = ConsoleColor.Cyan; break;
-                    case "37": Console.ForegroundColor = ConsoleColor.Gray; break;
+                    case "30":
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        break;
+                    case "31":
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        break;
+                    case "32":
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        break;
+                    case "33":
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        break;
+                    case "34":
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        break;
+                    case "35":
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                        break;
+                    case "36":
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        break;
+                    case "37":
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        break;
                 }
 
                 switch (background)
                 {
-                    case "40": Console.BackgroundColor = ConsoleColor.Black; break;
-                    case "41": Console.BackgroundColor = ConsoleColor.Red; break;
-                    case "42": Console.BackgroundColor = ConsoleColor.Green; break;
-                    case "43": Console.BackgroundColor = ConsoleColor.Yellow; break;
-                    case "44": Console.BackgroundColor = ConsoleColor.DarkBlue; break;
-                    case "45": Console.BackgroundColor = ConsoleColor.Magenta; break;
-                    case "46": Console.BackgroundColor = ConsoleColor.Cyan; break;
-                    case "47": Console.BackgroundColor = ConsoleColor.Gray; break;
+                    case "40":
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        break;
+                    case "41":
+                        Console.BackgroundColor = ConsoleColor.Red;
+                        break;
+                    case "42":
+                        Console.BackgroundColor = ConsoleColor.Green;
+                        break;
+                    case "43":
+                        Console.BackgroundColor = ConsoleColor.Yellow;
+                        break;
+                    case "44":
+                        Console.BackgroundColor = ConsoleColor.DarkBlue;
+                        break;
+                    case "45":
+                        Console.BackgroundColor = ConsoleColor.Magenta;
+                        break;
+                    case "46":
+                        Console.BackgroundColor = ConsoleColor.Cyan;
+                        break;
+                    case "47":
+                        Console.BackgroundColor = ConsoleColor.Gray;
+                        break;
                 }
             }
             else
             {
-                if (System.Diagnostics.Debugger.IsAttached)
-                {
-                    System.Diagnostics.Debug.WriteLine("Unhandled escape sequence.\r\n    Text:  {0}\r\n    Bytes: {1}",
-                        escapeString, string.Join(" ", escapeSequence.Select(s => s.ToString()).ToArray()));
-                }
+                $"Unhandled escape sequence.\r\n    Text:  {escapeString}\r\n    Bytes: {string.Join(" ", escapeSequence.Select(s => s.ToString()).ToArray())}"
+                    .Debug();
             }
         }
     }
