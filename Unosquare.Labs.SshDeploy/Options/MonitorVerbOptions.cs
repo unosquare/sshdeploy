@@ -1,6 +1,6 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Options
 {
-    using Unosquare.Swan.Attributes;
+    using Swan.Attributes;
 
     public class MonitorVerbOptions : CliExecuteOptionsBase
     {
