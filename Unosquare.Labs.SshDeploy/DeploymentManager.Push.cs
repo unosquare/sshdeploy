@@ -20,8 +20,9 @@
                 Arguments = " msbuild /t:Publish " +
                 $" /p:Configuration={verbOptions.Configuration};BuildingInsideSshDeploy=true;" +
                 $"TargetFramework={verbOptions.Framework};RuntimeIdentifier={verbOptions.Runtime};" +
-                $"PreBuildEvent=\"\";PostBuildEvent=\"\""
+                "PreBuildEvent=\"\";PostBuildEvent=\"\""
             };
+
             var process = Process.Start(psi);
             process.WaitForExit();
 
