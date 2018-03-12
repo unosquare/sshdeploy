@@ -11,8 +11,8 @@ A `dotnet` CLI extension that enables quick deployments over SSH. This program w
 **If you came here looking for our old version of SSHDeploy please click [here](https://www.nuget.org/packages/SSHDeploy/), otherwise you are in the right place**
 
  The following commands are currently available:
- * `dotnet monitor` - Watches changes on a single file, if this event is raised then it proceeds to send the specified source path files over SSH
- * `dotnet push` - Single-use command that transfers files over SSH
+ * `dotnet sshdeploy monitor` - Watches changes on a single file, if this event is raised then it proceeds to send the specified source path files over SSH
+ * `dotnet sshdeploy push` - Single-use command that transfers files over SSH
 
 ## Installation
 As of now, CLI does not allow command line installation so you'll need to modify your csproj manually.
