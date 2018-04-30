@@ -7,7 +7,8 @@
     using Utils;
     using Swan.Components;
     using System.Threading.Tasks;
-    
+    using System.Linq;
+
     public static class Program
     {
         public static string Title
@@ -19,6 +20,16 @@
         public static string CurrentDirectory { get; } = Directory.GetCurrentDirectory();
 
         public static string TitleSuffix { get; set; } = " - SSH Deploy";
+
+        public static string ResolveProjectFile()
+        {
+            var csproj = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(csproj))
+            {
+                return csproj;
+            }
+            return Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.fsproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+        }
 
         private static void Main(string[] args)
         {
@@ -34,7 +45,7 @@
            
             try
             {
-                using (var csproj = new CsProjFile<CsProjNuGetMetadata>())
+                using (var csproj = new CsProjFile<CsProjNuGetMetadata>(ResolveProjectFile()))
                 {
                     csproj.Metadata.ParseCsProjTags(ref args);
                 }
