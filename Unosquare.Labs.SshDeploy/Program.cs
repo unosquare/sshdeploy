@@ -25,7 +25,9 @@
         {
             var csproj = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
             if (!string.IsNullOrWhiteSpace(csproj))
+            {
                 return csproj;
+            }
             return Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.fsproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
         }
 
