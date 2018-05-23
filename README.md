@@ -1,4 +1,5 @@
-# <img width="32" height="32" src="https://github.com/unosquare/sshdeploy/raw/master/sshdeploy.png" /> sshdeploy
+# <img width="32" height="32" src="https://github.com/unosquare/sshdeploy/raw/master/sshdeploy.png" /> dotnet-sshdeploy
+[![NuGet](https://img.shields.io/nuget/dt/dotnet-sshdeploy.svg)](https://www.nuget.org/packages/dotnet-sshdeploy/)
  [![Analytics](https://ga-beacon.appspot.com/UA-8535255-2/unosquare/sshdeploy/)](https://github.com/igrigorik/ga-beacon)
 [![Build Status](https://travis-ci.org/unosquare/sshdeploy.svg?branch=master)](https://travis-ci.org/unosquare/sshdeploy)
 [![Build status](https://ci.appveyor.com/api/projects/status/p6c0whp2xfajuu0c?svg=true)](https://ci.appveyor.com/project/geoperez/sshdeploy)
