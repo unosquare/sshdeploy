@@ -16,7 +16,7 @@ A `dotnet` CLI command that enables quick deployments over SSH. This program was
  * `dotnet-sshdeploy push` - Single-use command that transfers files over SSH
 
 ## Installation
-With the new netcoreapp 2.1 the nuget can be a [global tool](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools) that are allowed to be install with the dotnet CLI using the fallowing command
+We are using the brand new implementation of the global tool in .NET Core Apps 2.1+. Now you can easily download the package by running the next command
 
 ```console
 dotnet tool install -g dotnet-sshdeploy
