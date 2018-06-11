@@ -15,3 +15,5 @@ install:
   - dotnet restore
 script:
 - dotnet build
+- dotnet pack
+- dotnet tool install -g dotnet-sshdeploy --add-source ./
