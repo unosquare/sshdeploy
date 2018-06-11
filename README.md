@@ -7,28 +7,42 @@
 
 :star: *Please star this project if you find it useful!*
 
-A `dotnet` CLI extension that enables quick deployments over SSH. This program was specifically designed to streamline .NET application development for the Raspberry Pi running Raspbian. 
+A `dotnet` CLI command that enables quick deployments over SSH. This program was specifically designed to streamline .NET application development for the Raspberry Pi running Raspbian. 
 
 **If you came here looking for our old version of SSHDeploy please click [here](https://www.nuget.org/packages/SSHDeploy/), otherwise you are in the right place**
 
  The following commands are currently available:
- * `dotnet sshdeploy monitor` - Watches changes on a single file, if this event is raised then it proceeds to send the specified source path files over SSH
- * `dotnet sshdeploy push` - Single-use command that transfers files over SSH
+ * `dotnet-sshdeploy monitor` - Watches changes on a single file, if this event is raised then it proceeds to send the specified source path files over SSH
+ * `dotnet-sshdeploy push` - Single-use command that transfers files over SSH
 
 ## Installation
-As of now, CLI does not allow command line installation so you'll need to modify your csproj manually.
+We are using the brand new implementation of the global tool in .NET Core Apps 2.1+. Now you can easily download the package by running the next command
 
- ```xml
-    <ItemGroup>
-     <DotNetCliToolReference Include="dotnet-sshdeploy" Version="0.1.6-r1" />
-    </ItemGroup>
- ```
- 
+```console
+dotnet tool install -g dotnet-sshdeploy
+```
+
+### Custom installation
+If you download the project and want to test installing your own version of the project you need to pack and then install the nuget
+
+```console
+// In the root of your project run
+dotnet pack
+
+// Run the following command where you nupkg was created
+dotnet tool install -g dotnet-sshdeploy --add-source ./
+
+```
+
+
 ## Usage
  **There are two ways of passing arguments: the old school way using the cli and our approach using the csproj file.**
+
 ### Using the csproj file
+
 #### Push
 1. Edit your csproj file and add:
+
 ```xml
 <PropertyGroup>
     <SshDeployHost>192.168.2.194</SshDeployHost>
@@ -40,10 +54,11 @@ As of now, CLI does not allow command line installation so you'll need to modify
 </PropertyGroup>
  ``` 
 2. We need a post build event as well:
+
  ```xml
 <Target Condition="$(BuildingInsideSshDeploy) ==''" Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="cd $(ProjectDir)" />
-    <Exec Command="dotnet sshdeploy push" />
+    <Exec Command="dotnet-sshdeploy push" />
 </Target>
  ```
  *Voilà! sshdeploy  finds the necessary arguments provided using proper xml tags and deploys after a successful build*
@@ -51,6 +66,8 @@ As of now, CLI does not allow command line installation so you'll need to modify
  * **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
  * **You MUST use the property** `BuildingInsideSshDeploy` **to make sure this event will not be executed within sshdeploy's build method to avoid an infinite loop**
  * **If no RuntimeIdentifier is provided a [Framework-dependent deployment](https://docs.microsoft.com/en-us/dotnet/core/deploying/) will be created otherwise a [Self-contained deployment](https://docs.microsoft.com/en-us/dotnet/core/deploying/) will**
+ * **The command neds to be excute in the same folder as the csproj**
+
  #### Monitor
 1. Go to your Visual Studio Solution (the one you intend to continuously deploy to the Raspberry Pi).
 2. Right-click on the project and click on the menu item "Properties"
@@ -67,7 +84,7 @@ As of now, CLI does not allow command line installation so you'll need to modify
  ```
  5. Execute 
   ```
- dotnet sshdeploy monitor
+ dotnet-sshdeploy monitor
  ```
  
  **FYI: Arguments passed using the csproj file will not override the ones provided using the cli**
@@ -100,13 +117,13 @@ cd C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\
 ```
 2. Execute this command with some arguments. Here's a simple example:
 ```
-dotnet sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.194
+dotnet-sshdeploy push -f netcoreapp2.0 -t "/home/pi/libfprint-cs" -h 192.168.2.194
 ```
 * In the command shown above :
     * `-f` refers to the source framework
     * `-t` refers to the target path 
     * `-h` refers to the host (IP address of the Raspberry Pi)
-* For a detailed list of all the arguments available please see [below](#push-mode) or execute `dotnet sshdeploy push`
+* For a detailed list of all the arguments available please see [below](#push-mode) or execute `dotnet-sshdeploy push`
 
 #### Monitor
 
@@ -118,10 +135,10 @@ The following steps outline a continuous deployment of a Visual Studio solution 
     *This simply writes the date and time to the `sshdeploy.ready` file. Whenever this file CHANGES, the deployment tool will perform a deployment.
 4. Open a Command Prompt (Start, Run, cmd, [Enter Key])
 5. Navigate to  your project folder where the csproj file resides
-* Example:`cd "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\"`
+* Example: `cd "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\"`
 6. Run this tool with some arguments. Here is an example so you can get started quickly.
 ```
-    dotnet sshdeploy monitor -s "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug" -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
+    dotnet-sshdeploy monitor -s "C:\projects\Unosquare.Labs.RasPiConsole\Unosquare.Labs.RasPiConsole\bin\Debug" -t "/home/pi/target" -h 192.168.2.194 -u pi -w raspberry
 ```
 * In the above command,
     * `-s` refers to the source path of the files to transfer.
@@ -131,7 +148,7 @@ The following steps outline a continuous deployment of a Visual Studio solution 
     * `-w` refers to the password.
 * Note that there are many more arguments you can use. Simply issue 
 ```
-dotnet sshdeploy monitor
+dotnet-sshdeploy monitor
 ```
 This will get you all the options you can use.
 
@@ -169,7 +186,7 @@ Ground Control to Major Tom: Have a nice trip in space!
 * *In order to make this tool much more useful, we need to take advantage of the pre and post commands. The idea is to find the process and kill it if it is currently running on the pre-command, and run the process once the deployment has been completed using the post-command argument. The hope is that this will make the deploy, run, and debug cycle, much less tedious for a .NET developer using a Raspberry Pi.*
 
 * Here's a good example of using pre and post commands to acocmplish the above:
- ```dotnet sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False```
+ ```dotnet-sshdeploy monitor -s "C:\projects\libfprint-cs\trunk\Unosquare.Labs.LibFprint.Tests\bin\Debug" -t "/home/pi/libfprint-cs" -h 192.168.2.194 --pre "pgrep -f 'Unosquare.Labs.LibFprint.Tests.exe' | xargs -r kill" --post "mono /home/pi/libfprint-cs/Unosquare.Labs.LibFprint.Tests.exe" --clean False```
 ## References
 ### Monitor Mode
 
