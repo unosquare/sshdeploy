@@ -8,18 +8,19 @@
         private const string BinFolder = "bin";
         private const string PublishFolder = "publish";
 
-        [ArgumentOption('c', "configuration", DefaultValue = "Debug",
-            HelpText = "Target configuration. The default for most projects is 'Debug'.", Required = false)]
+        public static bool IgnoreTargetFrameworkToOutputPath { get; set; }
+
+        [ArgumentOption('c', "configuration", DefaultValue = "Debug", HelpText = "Target configuration. The default for most projects is 'Debug'.", Required = false)]
         public string Configuration { get; set; }
 
-        [ArgumentOption('f', "framework", HelpText = "The target framework has to be specified in the project file.",
-            Required = true)]
+        [ArgumentOption('f', "framework", HelpText = "The target framework has to be specified in the project file.", Required = true)]
         public string Framework { get; set; }
 
-        [ArgumentOption('r', "runtime", HelpText = "The given runtime used for creating a self-contained deployment",
-            DefaultValue = "",Required = false)]
+        [ArgumentOption('r', "runtime", HelpText = "The given runtime used for creating a self-contained deployment", DefaultValue = "",Required = false)]
         public string Runtime { get; set; }
 
-        public string SourcePath => Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework, Runtime, PublishFolder);
+        public string SourcePath => IgnoreTargetFrameworkToOutputPath ?
+            Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Runtime, PublishFolder) :
+            Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework, Runtime, PublishFolder);
     }
 }
