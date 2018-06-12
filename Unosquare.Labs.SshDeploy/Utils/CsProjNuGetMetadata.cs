@@ -5,6 +5,7 @@
     using System;
     using System.Linq;
     using System.Reflection;
+    using Unosquare.Labs.SshDeploy.Options;
 
     public class CsProjNuGetMetadata : CsProjMetadataBase
     {
@@ -100,6 +101,7 @@
             }
 
             args = argsList.ToArray();
+            PushVerbOptions.IgnoreTargetFrameworkToOutputPath = FindElement("AppendTargetFrameworkToOutputPath")?.Value?.ToLowerInvariant() == "false";
         }
 
         private static Type GetAttributeType(string[] args)
