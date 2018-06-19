@@ -154,8 +154,9 @@ This will get you all the options you can use.
 
 * If all goes well you will see output similar to this:
 ```
-SSH Deployment Tool [Version 1.0.0.0]
-(c) 2015 Unosquare SA de CV. All Rights Reserved.
+SSH Deployment Tool [Version 0.3.1.0]
+(c)2015 - 2017 Unosquare SA de CV. All Rights Reserved.
+For additional help, please visit https://github.com/unosquare/sshdeploy
 
 Monitor mode starting
 Monitor parameters follow:
@@ -168,6 +169,7 @@ Monitor parameters follow:
     Clean Target    YES
     Pre Deployment
     Post Deployment
+Connecting to host 192.168.2.194:22 via SSH.
 Connecting to host 192.168.2.194:22 via SFTP.
 File System Monitor is now running.
 Writing a new monitor file will trigger a new deployment.
