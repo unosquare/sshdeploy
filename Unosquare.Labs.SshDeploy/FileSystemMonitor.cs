@@ -7,39 +7,6 @@
     using System.Linq;
     using System.Threading;
 
-    public enum FileSystemEntryChangeType
-    {
-        FileAdded,
-        FileRemoved,
-        FileModified
-    }
-
-    /// <summary>
-    /// Represents a trackable file system entry
-    /// </summary>
-    public class FileSystemEntry
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FileSystemEntry"/> class.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        public FileSystemEntry(string path)
-        {
-            var info = new FileInfo(path);
-            Path = info.DirectoryName;
-            Filename = info.Name;
-            Size = info.Length;
-            DateCreatedUtc = info.CreationTimeUtc;
-            DateModifiedUtc = info.LastWriteTimeUtc;
-        }
-
-        public string Filename { get; set; }
-        public string Path { get; set; }
-        public long Size { get; set; }
-        public DateTime DateCreatedUtc { get; set; }
-        public DateTime DateModifiedUtc { get; set; }
-    }
-
     /// <summary>
     /// A dictionary of file system entries. Keys are string paths, values are file system entries
     /// </summary>
@@ -149,7 +116,7 @@
             const int minimumInterval = 1;
             const int maximumInterval = 60;
 
-            // validate argumets
+            // validate arguments
             if (PollIntervalSeconds < minimumInterval || PollIntervalSeconds > maximumInterval)
                 throw new ArgumentException("PollIntervalSeconds must be between 2 and 60");
 

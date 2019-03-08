@@ -1,11 +1,11 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Utils
 {
     using Attributes;
+    using Options;
     using Swan.Components;
     using System;
     using System.Linq;
     using System.Reflection;
-    using Unosquare.Labs.SshDeploy.Options;
 
     public class CsProjNuGetMetadata : CsProjMetadataBase
     {
@@ -86,17 +86,16 @@
 
                 var attribute = (VerbAttributeBase)propertyInfo.GetCustomAttribute(type);
 
-                if (!args.Contains(attribute.LongName) & !args.Contains(attribute.ShortName))
+                if (!(!args.Contains(attribute.LongName) & !args.Contains(attribute.ShortName))) continue;
+
+                if (!(propertyInfo.GetValue(this) is bool))
                 {
-                    if (!(propertyInfo.GetValue(this) is bool))
-                    {
-                        argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
-                        argsList.Add(propertyInfo.GetValue(this).ToString());
-                    }
-                    else if (bool.Parse(propertyInfo.GetValue(this).ToString()))
-                    {
-                        argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
-                    }
+                    argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
+                    argsList.Add(propertyInfo.GetValue(this).ToString());
+                }
+                else if (bool.Parse(propertyInfo.GetValue(this).ToString()))
+                {
+                    argsList.Add(!string.IsNullOrWhiteSpace(attribute.ShortName) ? attribute.ShortName : attribute.LongName);
                 }
             }
 
@@ -110,10 +109,8 @@
                 return typeof(PushAttribute);
             if (args.Contains("monitor"))
                 return typeof(MonitorAttribute);
-            if (args.Contains("run"))
-                return typeof(RunAttribute);
 
-            return typeof(ShellAttribute);
+            return args.Contains("run") ? typeof(RunAttribute) : typeof(ShellAttribute);
         } 
     }
 }

@@ -92,8 +92,11 @@
             PrintMonitorOptions(verbOptions);
 
             // Create connection info
-            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port,
-                verbOptions.Username, verbOptions.Password);
+            var simpleConnectionInfo = new PasswordConnectionInfo(
+                verbOptions.Host, 
+                verbOptions.Port,
+                verbOptions.Username, 
+                verbOptions.Password);
 
             // Create a file watcher
             var watcher = new FileSystemWatcher
@@ -169,7 +172,7 @@
                 }
                 catch
                 {
-                    $"WARNING: Failed to delete file or folder '{file.FullName}'".Error();
+                    $"WARNING: Failed to delete file or folder '{file.FullName}'".Error(nameof(DeleteLinuxDirectoryRecursive));
                 }
             }
         }
@@ -273,7 +276,9 @@
         /// <param name="sshClient">The SSH client.</param>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void EnsureMonitorConnection(SshClient sshClient, SftpClient sftpClient,
+        private static void EnsureMonitorConnection(
+            SshClient sshClient, 
+            SftpClient sftpClient,
             CliVerbOptionsBase verbOptions)
         {
             if (sshClient.IsConnected == false)
@@ -558,7 +563,10 @@
                 RunSshClientCommand(sshClient, verbOptions);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
-                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,
+                UploadFilesToTarget(
+                    sftpClient, 
+                    verbOptions.SourcePath, 
+                    verbOptions.TargetPath,
                     verbOptions.ExcludeFileSuffixes);
             }
             catch (Exception ex)

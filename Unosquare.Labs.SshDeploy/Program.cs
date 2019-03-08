@@ -6,7 +6,6 @@
     using System.IO;
     using Utils;
     using Swan.Components;
-    using System.Threading.Tasks;
     using System.Linq;
 
     public static class Program
@@ -23,12 +22,14 @@
 
         public static string ResolveProjectFile()
         {
-            var csproj = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.csproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(csproj))
-            {
-                return csproj;
-            }
-            return Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.fsproj", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            var csproj = Directory
+                .EnumerateFiles(Directory.GetCurrentDirectory(), "*.csproj", SearchOption.TopDirectoryOnly)
+                .FirstOrDefault();
+
+            return !string.IsNullOrWhiteSpace(csproj)
+                ? csproj
+                : Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.fsproj", SearchOption.TopDirectoryOnly)
+                    .FirstOrDefault();
         }
 
         private static void Main(string[] args)
@@ -36,13 +37,11 @@
             Terminal.Settings.OverrideIsConsolePresent = true;
 
             Title = "Unosquare";
-            
+
             $"SSH Deployment Tool [Version {typeof(Program).Assembly.GetName().Version}]".WriteLine();
-            "(c)2015 - 2017 Unosquare SA de CV. All Rights Reserved.".WriteLine();
+            "(c)2015 - 2019 Unosquare SA de CV. All Rights Reserved.".WriteLine();
             "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
-           
-                var options = new CliOptions();
-           
+
             try
             {
                 using (var csproj = new CsProjFile<CsProjNuGetMetadata>(ResolveProjectFile()))
@@ -52,16 +51,14 @@
             }
             catch (UnauthorizedAccessException)
             {
-               "Access to csproj file denied".WriteLine(ConsoleColor.Red);
+                "Access to csproj file denied".WriteLine(ConsoleColor.Red);
             }
             catch (ArgumentNullException)
             {
                 "No csproj file was found".WriteLine(ConsoleColor.DarkRed);
             }
 
-            var parseResult = Runtime.ArgumentParser.ParseArguments(args, options);
-
-            if (parseResult == false)
+            if (!Runtime.ArgumentParser.ParseArguments<CliOptions>(args, out var options))
             {
                 Environment.ExitCode = 1;
                 Terminal.Flush();
