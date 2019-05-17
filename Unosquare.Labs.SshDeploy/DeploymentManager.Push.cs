@@ -17,7 +17,7 @@
             var psi = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = " msbuild /t:Publish " +
+                Arguments = " msbuild -restore /t:Publish " +
                 $" /p:Configuration={verbOptions.Configuration};BuildingInsideSshDeploy=true;" +
                 $"TargetFramework={verbOptions.Framework};RuntimeIdentifier={verbOptions.Runtime};" +
                 "PreBuildEvent=\"\";PostBuildEvent=\"\""
@@ -55,9 +55,7 @@
         
         private static void NormalizePushVerbOptions(PushVerbOptions verbOptions)
         {
-            var targetPath = verbOptions.TargetPath.Trim();
-
-            verbOptions.TargetPath = targetPath;
+            verbOptions.TargetPath = verbOptions.TargetPath.Trim();
         }
 
         private static void PrintPushOptions(PushVerbOptions verbOptions)
@@ -97,6 +95,7 @@
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);                
                 UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,verbOptions.ExcludeFileSuffixes);
+                AllowExecute(sshClient, verbOptions);
             }
             catch (Exception ex)
             {

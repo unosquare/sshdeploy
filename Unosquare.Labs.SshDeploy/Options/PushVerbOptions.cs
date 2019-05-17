@@ -16,8 +16,11 @@
         [ArgumentOption('f', "framework", HelpText = "The target framework has to be specified in the project file.", Required = true)]
         public string Framework { get; set; }
 
-        [ArgumentOption('r', "runtime", HelpText = "The given runtime used for creating a self-contained deployment", DefaultValue = "",Required = false)]
+        [ArgumentOption('r', "runtime", HelpText = "The given runtime used for creating a self-contained deployment.", DefaultValue = "",Required = false)]
         public string Runtime { get; set; }
+
+        [ArgumentOption('x', "execute", HelpText = "Adds user execute mode permission to files transferred.", DefaultValue = "", Required = false)]
+        public string Execute { get; set; }
 
         public string SourcePath => IgnoreTargetFrameworkToOutputPath ?
             Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Runtime, PublishFolder) :

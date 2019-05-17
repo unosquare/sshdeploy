@@ -100,23 +100,24 @@ If your project happens to target multiple runtimes, i.e. `win-x64` and `linux-a
  ### XML Tags
  Heres a complete list of arguments with their corresponding XML tag.
  
-|      Args        |        XML Tag      | 
-| :--------------: | :------------------:| 
-| -m,--monitor     | `<SshDeployMonitorFile>`     |
-| -f,--framework   |   `<TargetFramework>`        | 
-| -r,--runtime     |   `<RuntimeIdentifier>`      | 
-|  -s, --source    | `<SshDeploySourcePath>`      |
-|  -t,--target     |`<SshDeployTargetPath>`       |
-|  --pre           |  `<SshDeployPreCommand>`     | 
-| --post           | `<SshDeployPostCommand>`     | 
-|    --clean       | `<SshDeployClean/>`          |
-|    --exclude     | `<SshDeployExclude>`         |
-|  -v,--verbose    | `<SshDeployVerbose/>`        | 
-|  -h,--host       |  `<SshDeployHost>`           |
-| -p,--port        |   `<SshDeployPort>`          | 
-|  -u,--username   |  `<SshDeployUsername>`       | 
-|  -w,--password   |  `<SshDeployPassword>`       |
-|  -l,--legacy     |     `<SshDeployLegacy/>`     |
+|      Args       |             XML Tag            |
+| :-------------- | :----------------------------: | 
+| -m,--monitor    | `<SshDeployMonitorFile>`       |
+| -f,--framework  | `<TargetFramework>`            |
+| -r,--runtime    | `<RuntimeIdentifier>`          |
+| -s, --source    | `<SshDeploySourcePath>`        |
+| -t,--target     | `<SshDeployTargetPath>`        |
+| --pre           | `<SshDeployPreCommand>`        |
+| --post          | `<SshDeployPostCommand>`       |
+| --clean         | `<SshDeployClean/>`            |
+| --exclude       | `<SshDeployExclude>`           |
+| -v,--verbose    | `<SshDeployVerbose/>`          |
+| -h,--host       | `<SshDeployHost>`              |
+| -p,--port       | `<SshDeployPort>`              |
+| -u,--username   | `<SshDeployUsername>`          |
+| -w,--password   | `<SshDeployPassword>`          |
+| -l,--legacy     | `<SshDeployLegacy/>`           |
+| -x, --execute   | `<SshDeployExecutePermission>` |
 
 ### Old school way
 #### Push
@@ -221,20 +222,20 @@ Ground Control to Major Tom: Have a nice trip in space!
 ### Push Mode
 
 
-
-|Short Argument | Long Argument |               Description                              | Default      | Required     |
-|:-------------:| :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
-| -c            |--configuration|  Target configuration.                                 | Debug        | :x:           | 
-| -f            |--framework    |The source framework                                    |              |:heavy_check_mark:|  
-|               | --pre         | Command to execute prior file transfer to target       |              | :x:           |
-|               |--post         | Command to execute after file transfer to target | | :x:
-|               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |:x: |
-|               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |:x:|
-|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | :x:|
-|  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | |:heavy_check_mark:|
-| -p            | --port        | Port on which SSH is running.                          | 22            | :x:          |
-|  -u           |--username     | The username under which the connection will be established. |pi       |  :x:         |
-|  -w           | --password    |The password for the given username.                    | raspberry     | :x:          |
+|Short Argument | Long Argument   |               Description                              | Default       | Required          |
+|:------------- | :-------------- | :----------------------------------------------------: | :-----------: | :---------------: |
+| -c            | --configuration | Target configuration.                                  | Debug         | :x:               |
+| -f            | --framework     | The source framework.                                  |               | :heavy_check_mark:|
+|               | --pre           | Command to execute prior file transfer to target.      |               | :x:               |
+|               | --post          | Command to execute after file transfer to target.      |               | :x:               |
+|               | --clean         | Deletes all files and folders on the target before pushing the new files. | True | :x:     |
+|               | --exclude       | a pipe (\|) separated list of file suffixes to ignore while deploying. |.ready\|.vshost.exe\|.vshost.exe.config | :x: |
+| -v            | --verbose       | Add this option to print messages to standard error and standard output streams. | True | :x:  |
+| -h            | --host          | Hostname or IP Address of the target. -- Must be running an SSH server. | | :heavy_check_mark: |
+| -p            | --port          | Port on which SSH is running.                          | 22            | :x:               |
+| -u            | --username      | The username under which the connection will be established. | pi      | :x:               |
+| -w            | --password      | The password for the given username.                   | raspberry     | :x:               |
+| -x            | --execute       | Adds user execute permissions to the deployed files.   | False         | :x:               |
   
 
 ## Special Thanks

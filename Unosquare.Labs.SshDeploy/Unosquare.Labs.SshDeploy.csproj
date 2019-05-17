@@ -5,10 +5,11 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
     <AssemblyName>dotnet-sshdeploy</AssemblyName>
     <PackageId>dotnet-sshdeploy</PackageId>
-    <Version>0.3.2</Version>
-    <PackageVersion>0.3.2</PackageVersion>
+    <Version>0.3.3</Version>
+    <PackageVersion>0.3.3</PackageVersion>
     <Authors>Unosquare</Authors>
     <Description>A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the Raspberry Pi running Raspbian.</Description>
 

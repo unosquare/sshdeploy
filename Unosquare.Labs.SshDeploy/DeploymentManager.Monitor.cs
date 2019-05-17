@@ -233,7 +233,7 @@
             if (string.IsNullOrWhiteSpace(commandText)) return;
 
             "    Executing SSH client command.".WriteLine(ConsoleColor.Green);
-            var result = sshClient.RunCommand(commandText);
+            var result = RunCommand(sshClient, commandText);
             $"    SSH TX: {commandText}".WriteLine(ConsoleColor.DarkYellow);
             $"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}".WriteLine(ConsoleColor.DarkYellow);
         }
@@ -244,11 +244,27 @@
 
             $"    Executing SSH {type} command.".WriteLine(ConsoleColor.Green);
 
-            var result = sshClient.RunCommand(command);
+            var result = RunCommand(sshClient, command);
             $"    SSH TX: {command}".WriteLine(ConsoleColor.DarkYellow);
             $"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}".WriteLine(ConsoleColor.DarkYellow);
         }
 
+        private static void AllowExecute(SshClient sshClient, PushVerbOptions verbOptions)
+        {
+            if (bool.TryParse(verbOptions.Execute, out var value) && value)
+            {
+                $"    Changing mode.".WriteLine(ConsoleColor.Green);
+                var target = Path.Combine(verbOptions.TargetPath, "*").Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
+                var command = $"chmod -R u+x {target}";
+                var result = RunCommand(sshClient, command);
+                $"    SSH TX: {command}".WriteLine(ConsoleColor.DarkYellow);
+                $"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}".WriteLine(ConsoleColor.DarkYellow);
+            }
+        }
+
+        private static SshCommand RunCommand(SshClient sshClient, string command) => 
+            sshClient.RunCommand(command);
+            
         /// <summary>
         /// Prints the currently supplied monitor mode options.
         /// </summary>
