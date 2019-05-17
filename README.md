@@ -208,21 +208,21 @@ Ground Control to Major Tom: Have a nice trip in space!
 ### Monitor Mode
 
 
-|Short Argument | Long Argument |               Description                              | Default      | Required|
-|:-----:        | :-----------: | :----------------------------------------------------: | :-----------:| :-----------:|
+|Short Argument | Long Argument |               Description                              | Default      | Required           |
+|:------------- | :------------ | :----------------------------------------------------  | :-----------:| :----------------: |
 |  -m           | --monitor     | The path to the file used as a signal that the files are ready to be deployed. Once the deploymetn is completed,the file is deleted. | sshdeploy.ready | :heavy_check_mark:|
-|  -s           | --source      | The source path for the files to transfer              |              |:heavy_check_mark:|
-|  -t           | --target      | The target path of the files to transfer               |              |:heavy_check_mark:|
-|               | --pre         | Command to execute prior file transfer to target       |              | :x:          |
-|               |--post         | Command to execute after file transfer to target | | :x:
-|               | --clean       | Deletes all files and folders on the target before pushing the new files | True  |:x: |
-|               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying.|.ready\|.vshost.exe\|.vshost.exe.config |:x:|
-|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | :x:|
-|  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | |:heavy_check_mark:|
-| -p            | --port        | Port on which SSH is running.                          | 22            | :x:          |
-|  -u           |--username     | The username under which the connection will be established. |pi       | :x:          |
-|  -w           | --password    |The password for the given username.                    | raspberry     | :x:          |
-|  -l           | --legacy      | Monitor files using legacy method                      | False         | :x:          |
+|  -s           | --source      | The source path for the files to transfer.             |              | :heavy_check_mark: |
+|  -t           | --target      | The target path of the files to transfer.              |              | :heavy_check_mark: |
+|               | --pre         | Command to execute prior file transfer to target.      |              | :x:                |
+|               | --post        | Command to execute after file transfer to target.      |              | :x:                |
+|               | --clean       | Deletes all files and folders on the target before pushing the new files | True | :x:      |
+|               | --exclude     | a pipe (\|) separated list of file suffixes to ignore while deploying. | .ready\|.vshost.exe\|.vshost.exe.config |:x:|
+|  -v           | --verbose     |Add this option to print messages to standard error and standard output streams. | True | :x: |
+|  -h           | --host        | Hostname or IP Address of the target. -- Must be running an SSH server. | | :heavy_check_mark: |
+|  -p           | --port        | Port on which SSH is running.                          | 22            | :x:               |
+|  -u           | --username    | The username under which the connection will be established. | pi      | :x:               |
+|  -w           | --password    |The password for the given username.                    | raspberry     | :x:               |
+|  -l           | --legacy      | Monitor files using legacy method                      | False         | :x:               |
 
 ### Push Mode
 
