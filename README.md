@@ -33,7 +33,12 @@ dotnet pack
 dotnet tool install -g dotnet-sshdeploy --add-source ./
 
 ```
+### Update
+To update ssh-deploy to the latest version, use the dotnet tool update command
 
+```console
+dotnet tool update -g dotnet-sshdeploy
+```
 
 ## Usage
  **There are two ways of passing arguments: the old school way using the cli and our approach using the csproj file.**
