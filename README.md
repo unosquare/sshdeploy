@@ -228,7 +228,7 @@ Ground Control to Major Tom: Have a nice trip in space!
 
 
 |Short Argument | Long Argument   |               Description                              | Default       | Required          |
-|:------------- | :-------------- | :----------------------------------------------------: | :-----------: | :---------------: |
+|:------------- | :-------------- | :----------------------------------------------------  | :-----------: | :---------------: |
 | -c            | --configuration | Target configuration.                                  | Debug         | :x:               |
 | -f            | --framework     | The source framework.                                  |               | :heavy_check_mark:|
 |               | --pre           | Command to execute prior file transfer to target.      |               | :x:               |
