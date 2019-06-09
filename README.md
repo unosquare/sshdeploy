@@ -71,7 +71,7 @@ dotnet tool update -g dotnet-sshdeploy
  * **Be sure you are using ' */* ' with *RemoteTargetPath* otherwise it will not work.**
  * **You MUST use the property** `BuildingInsideSshDeploy` **to make sure this event will not be executed within sshdeploy's build method to avoid an infinite loop**
  * **If no RuntimeIdentifier is provided a [Framework-dependent deployment](https://docs.microsoft.com/en-us/dotnet/core/deploying/) will be created otherwise a [Self-contained deployment](https://docs.microsoft.com/en-us/dotnet/core/deploying/) will**
- * **The command neds to be excute in the same folder as the csproj**
+ * **The command needs to be excuted in the same folder as the csproj**
 
 If your project happens to target multiple runtimes, i.e. `win-x64` and `linux-arm`, then sshdeploy does not necessarily know which binaries to deploy. Also, you might want to control that i.e. only the `linux-arm` build should be automatically deployed. In this case, you can change the post build event and add an additional condition to the target (only run on builds for linux), and also pass the desired runtime identifier to the actual deployment call as follows:
 
