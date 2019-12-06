@@ -1,7 +1,7 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Options
 {
     using System.IO;
-    using Swan.Attributes;
+    using Swan.Parsers;
 
     public class PushVerbOptions : CliExecuteOptionsBase
     {
@@ -11,16 +11,16 @@
         public static bool IgnoreTargetFrameworkToOutputPath { get; set; }
 
         [ArgumentOption('c', "configuration", DefaultValue = "Debug", HelpText = "Target configuration. The default for most projects is 'Debug'.", Required = false)]
-        public string Configuration { get; set; }
+        public string? Configuration { get; set; }
 
         [ArgumentOption('f', "framework", HelpText = "The target framework has to be specified in the project file.", Required = true)]
         public string Framework { get; set; }
 
         [ArgumentOption('r', "runtime", HelpText = "The given runtime used for creating a self-contained deployment.", DefaultValue = "",Required = false)]
-        public string Runtime { get; set; }
+        public string? Runtime { get; set; }
 
         [ArgumentOption('x', "execute", HelpText = "Adds user execute mode permission to files transferred.", DefaultValue = "", Required = false)]
-        public string Execute { get; set; }
+        public string? Execute { get; set; }
 
         public string SourcePath => IgnoreTargetFrameworkToOutputPath ?
             Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Runtime, PublishFolder) :

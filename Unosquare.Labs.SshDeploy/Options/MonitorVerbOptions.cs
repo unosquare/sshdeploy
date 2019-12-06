@@ -1,6 +1,6 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Options
 {
-    using Swan.Attributes;
+    using Swan.Parsers;
 
     public class MonitorVerbOptions : CliExecuteOptionsBase
     {
@@ -8,7 +8,7 @@
         public string SourcePath { get; set; }
 
         [ArgumentOption('m', "monitor", DefaultValue = "sshdeploy.ready", HelpText = "The command to run on the target machine", Required = false)]       
-        public string MonitorFile { get; set; }
+        public string? MonitorFile { get; set; }
 
         [ArgumentOption('l', "legacy", DefaultValue = false, HelpText = "Monitor files using legacy method", Required = false)]
         public bool Legacy { get; set; }

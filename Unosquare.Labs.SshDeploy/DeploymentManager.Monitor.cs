@@ -9,6 +9,7 @@
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using Swan.Logging;
 
     public partial class DeploymentManager
     {
@@ -52,28 +53,25 @@
 
             // Instantiate an SFTP client and an SSH client
             // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
-            using (var sftpClient = new SftpClient(simpleConnectionInfo))
-            {
-                // SSH will be used to execute commands and to get the output back from the program we are running
-                using (var sshClient = new SshClient(simpleConnectionInfo))
-                {
-                    // Connect SSH and SFTP clients
-                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
+            using var sftpClient = new SftpClient(simpleConnectionInfo);
 
-                    // Create the shell stream so we can get debugging info from the post-deployment command
-                    using (var shellStream = CreateShellStream(sshClient))
-                    {
-                        // Starts the FS Monitor and binds the event handler
-                        StartMonitorMode(fsmonitor, sshClient, sftpClient, shellStream, verbOptions);
+            // SSH will be used to execute commands and to get the output back from the program we are running
+            using var sshClient = new SshClient(simpleConnectionInfo);
 
-                        // Allows user interaction with the shell
-                        StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
+            // Connect SSH and SFTP clients
+            EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
 
-                        // When we quit, we stop the monitor and disconnect the clients
-                        StopMonitorMode(sftpClient, sshClient, fsmonitor);
-                    }
-                }
-            }
+            // Create the shell stream so we can get debugging info from the post-deployment command
+            using var shellStream = CreateShellStream(sshClient);
+
+            // Starts the FS Monitor and binds the event handler
+            StartMonitorMode(fsmonitor, sshClient, sftpClient, shellStream, verbOptions);
+
+            // Allows user interaction with the shell
+            StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
+
+            // When we quit, we stop the monitor and disconnect the clients
+            StopMonitorMode(sftpClient, sshClient, fsmonitor);
         }
 
         /// <summary>
@@ -93,9 +91,9 @@
 
             // Create connection info
             var simpleConnectionInfo = new PasswordConnectionInfo(
-                verbOptions.Host, 
+                verbOptions.Host,
                 verbOptions.Port,
-                verbOptions.Username, 
+                verbOptions.Username,
                 verbOptions.Password);
 
             // Create a file watcher
@@ -103,7 +101,7 @@
             {
                 Path = verbOptions.SourcePath,
                 NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
-                Filter = Path.GetFileName(verbOptions.MonitorFile)
+                Filter = Path.GetFileName(verbOptions.MonitorFile),
             };
 
             // Validate source path exists
@@ -112,35 +110,32 @@
 
             // Instantiate an SFTP client and an SSH client
             // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands
-            using (var sftpClient = new SftpClient(simpleConnectionInfo))
-            {
-                // SSH will be used to execute commands and to get the output back from the program we are running
-                using (var sshClient = new SshClient(simpleConnectionInfo))
-                {
-                    // Connect SSH and SFTP clients
-                    EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
+            using var sftpClient = new SftpClient(simpleConnectionInfo);
 
-                    // Create the shell stream so we can get debugging info from the post-deployment command
-                    using (var shellStream = CreateShellStream(sshClient))
-                    {
-                        // Adds an onChange event and enables it
-                        watcher.Changed += (s, e) =>
-                            CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
-                        watcher.EnableRaisingEvents = true;
+            // SSH will be used to execute commands and to get the output back from the program we are running
+            using var sshClient = new SshClient(simpleConnectionInfo);
 
-                        "File System Monitor is now running.".WriteLine();
-                        "Writing a new monitor file will trigger a new deployment.".WriteLine();
-                        "Press H for help!".WriteLine();
-                        "Ground Control to Major Tom: Have a nice trip in space!.".WriteLine(ConsoleColor.DarkCyan);
+            // Connect SSH and SFTP clients
+            EnsureMonitorConnection(sshClient, sftpClient, verbOptions);
 
-                        // Allows user interaction with the shell
-                        StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
+            // Create the shell stream so we can get debugging info from the post-deployment command
+            using var shellStream = CreateShellStream(sshClient);
 
-                        // When we quit, we stop the monitor and disconnect the clients
-                        StopMonitorMode(sftpClient, sshClient, watcher);
-                    }
-                }
-            }
+            // Adds an onChange event and enables it
+            watcher.Changed += (s, e) =>
+                CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
+            watcher.EnableRaisingEvents = true;
+
+            Terminal.WriteLine("File System Monitor is now running.");
+            Terminal.WriteLine("Writing a new monitor file will trigger a new deployment.");
+            Terminal.WriteLine("Press H for help!");
+            Terminal.WriteLine("Ground Control to Major Tom: Have a nice trip in space!.", ConsoleColor.DarkCyan);
+
+            // Allows user interaction with the shell
+            StartUserInteraction(sshClient, sftpClient, shellStream, verbOptions);
+
+            // When we quit, we stop the monitor and disconnect the clients
+            StopMonitorMode(sftpClient, sshClient, watcher);
         }
 
         #endregion
@@ -182,7 +177,7 @@
         /// </summary>
         /// <param name="client">The client.</param>
         /// <param name="path">The path.</param>
-        /// <exception cref="ArgumentException">Argument path must start with  + LinuxDirectorySeparator</exception>
+        /// <exception cref="ArgumentException">Argument path must start with  + LinuxDirectorySeparator.</exception>
         private static void CreateLinuxDirectoryRecursive(SftpClient client, string path)
         {
             if (path.StartsWith(LinuxDirectorySeparator) == false)
@@ -207,7 +202,7 @@
         }
 
         /// <summary>
-        /// Runs pre and post deployment commands over the SSH client
+        /// Runs pre and post deployment commands over the SSH client.
         /// </summary>
         /// <param name="shellStream">The shell stream.</param>
         /// <param name="verbOptions">The verb options.</param>
@@ -216,10 +211,10 @@
             var commandText = verbOptions.PostCommand;
             if (string.IsNullOrWhiteSpace(commandText)) return;
 
-            "    Executing shell command.".WriteLine(ConsoleColor.Green);
+            Terminal.WriteLine("    Executing shell command.", ConsoleColor.Green);
             shellStream.Write($"{commandText}\r\n");
             shellStream.Flush();
-            $"    TX: {commandText}".WriteLine(ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    TX: {commandText}", ConsoleColor.DarkYellow);
         }
 
         /// <summary>
@@ -232,58 +227,58 @@
             var commandText = verbOptions.PreCommand;
             if (string.IsNullOrWhiteSpace(commandText)) return;
 
-            "    Executing SSH client command.".WriteLine(ConsoleColor.Green);
+            Terminal.WriteLine("    Executing SSH client command.", ConsoleColor.Green);
+
             var result = RunCommand(sshClient, commandText);
-            $"    SSH TX: {commandText}".WriteLine(ConsoleColor.DarkYellow);
-            $"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}".WriteLine(ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    SSH TX: {commandText}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}", ConsoleColor.DarkYellow);
         }
 
         private static void RunCommand(SshClient sshClient, string type, string command)
         {
             if (string.IsNullOrWhiteSpace(command)) return;
 
-            $"    Executing SSH {type} command.".WriteLine(ConsoleColor.Green);
+            Terminal.WriteLine($"    Executing SSH {type} command.", ConsoleColor.Green);
 
             var result = RunCommand(sshClient, command);
-            $"    SSH TX: {command}".WriteLine(ConsoleColor.DarkYellow);
-            $"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}".WriteLine(ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    SSH TX: {command}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}", ConsoleColor.DarkYellow);
         }
 
         private static void AllowExecute(SshClient sshClient, PushVerbOptions verbOptions)
         {
-            if (bool.TryParse(verbOptions.Execute, out var value) && value)
-            {
-                $"    Changing mode.".WriteLine(ConsoleColor.Green);
-                var target = Path.Combine(verbOptions.TargetPath, "*").Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
-                var command = $"chmod -R u+x {target}";
-                var result = RunCommand(sshClient, command);
-                $"    SSH TX: {command}".WriteLine(ConsoleColor.DarkYellow);
-                $"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}".WriteLine(ConsoleColor.DarkYellow);
-            }
+            if (!bool.TryParse(verbOptions.Execute, out var value) || !value) return;
+
+            Terminal.WriteLine("    Changing mode.", ConsoleColor.Green);
+            var target = Path.Combine(verbOptions.TargetPath, "*").Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
+            var command = $"chmod -R u+x {target}";
+
+            var result = RunCommand(sshClient, command);
+            Terminal.WriteLine($"    SSH TX: {command}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}", ConsoleColor.DarkYellow);
         }
 
-        private static SshCommand RunCommand(SshClient sshClient, string command) => 
+        private static SshCommand RunCommand(SshClient sshClient, string command) =>
             sshClient.RunCommand(command);
-            
+
         /// <summary>
         /// Prints the currently supplied monitor mode options.
         /// </summary>
         /// <param name="verbOptions">The verb options.</param>
         private static void PrintMonitorOptions(MonitorVerbOptions verbOptions)
         {
-            string.Empty.WriteLine();
-            "Monitor mode starting".WriteLine();
-            "Monitor parameters follow: ".WriteLine();
-            $"    Monitor File    {verbOptions.MonitorFile}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Source Path     {verbOptions.SourcePath}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Excluded Files  {string.Join("|", verbOptions.ExcludeFileSuffixes)}".WriteLine(
-                ConsoleColor.DarkYellow);
-            $"    Target Address  {verbOptions.Host}:{verbOptions.Port}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Username        {verbOptions.Username}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Target Path     {verbOptions.TargetPath}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Clean Target    {(verbOptions.CleanTarget ? "YES" : "NO")}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Pre Deployment  {verbOptions.PreCommand}".WriteLine(ConsoleColor.DarkYellow);
-            $"    Post Deployment {verbOptions.PostCommand}".WriteLine(ConsoleColor.DarkYellow);
+            Terminal.WriteLine();
+            Terminal.WriteLine("Monitor mode starting");
+            Terminal.WriteLine("Monitor parameters follow: ");
+            Terminal.WriteLine($"    Monitor File    {verbOptions.MonitorFile}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    Source Path     {verbOptions.SourcePath}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    Excluded Files  {string.Join("|", verbOptions.ExcludeFileSuffixes)}",  ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    Target Address  {verbOptions.Host}:{verbOptions.Port}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    Username        {verbOptions.Username}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    Target Path     {verbOptions.TargetPath}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    Clean Target    {(verbOptions.CleanTarget ? "YES" : "NO")}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    Pre Deployment  {verbOptions.PreCommand}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    Post Deployment {verbOptions.PostCommand}", ConsoleColor.DarkYellow);
         }
 
         /// <summary>
@@ -293,19 +288,19 @@
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
         private static void EnsureMonitorConnection(
-            SshClient sshClient, 
+            SshClient sshClient,
             SftpClient sftpClient,
             CliVerbOptionsBase verbOptions)
         {
             if (sshClient.IsConnected == false)
             {
-                $"Connecting to host {verbOptions.Host}:{verbOptions.Port} via SSH.".WriteLine();
+                Terminal.WriteLine($"Connecting to host {verbOptions.Host}:{verbOptions.Port} via SSH.");
                 sshClient.Connect();
             }
 
             if (sftpClient.IsConnected == false)
             {
-                $"Connecting to host {verbOptions.Host}:{verbOptions.Port} via SFTP.".WriteLine();
+                Terminal.WriteLine($"Connecting to host {verbOptions.Host}:{verbOptions.Port} via SFTP.");
                 sftpClient.Connect();
             }
         }
@@ -319,10 +314,9 @@
         {
             if (sftpClient.Exists(verbOptions.TargetPath)) return;
 
-            $"    Target Path '{verbOptions.TargetPath}' does not exist. -- Will attempt to create.".WriteLine(
-                ConsoleColor.Green);
+            Terminal.WriteLine($"    Target Path '{verbOptions.TargetPath}' does not exist. -- Will attempt to create.", ConsoleColor.Green);
             CreateLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
-            $"    Target Path '{verbOptions.TargetPath}' created successfully.".WriteLine(ConsoleColor.Green);
+            Terminal.WriteLine($"    Target Path '{verbOptions.TargetPath}' created successfully.", ConsoleColor.Green);
         }
 
         /// <summary>
@@ -333,7 +327,7 @@
         private static void PrepareTargetPath(SftpClient sftpClient, CliExecuteOptionsBase verbOptions)
         {
             if (!verbOptions.CleanTarget) return;
-            $"    Cleaning Target Path '{verbOptions.TargetPath}'".WriteLine(ConsoleColor.Green);
+            Terminal.WriteLine($"    Cleaning Target Path '{verbOptions.TargetPath}'", ConsoleColor.Green);
             DeleteLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
         }
 
@@ -345,19 +339,19 @@
         /// <param name="targetPath">The target path.</param>
         /// <param name="excludeFileSuffixes">The exclude file suffixes.</param>
         private static void UploadFilesToTarget(
-            SftpClient sftpClient, 
-            string sourcePath, 
+            SftpClient sftpClient,
+            string sourcePath,
             string targetPath,
             string[] excludeFileSuffixes)
         {
             var filesInSource = Directory.GetFiles(
-                sourcePath, 
+                sourcePath,
                 FileSystemMonitor.AllFilesPattern,
                 SearchOption.AllDirectories);
             var filesToDeploy = filesInSource.Where(file => !excludeFileSuffixes.Any(file.EndsWith))
                 .ToList();
 
-            $"    Deploying {filesToDeploy.Count} files.".WriteLine(ConsoleColor.Green);
+            Terminal.WriteLine($"    Deploying {filesToDeploy.Count} files.", ConsoleColor.Green);
 
             foreach (var file in filesToDeploy)
             {
@@ -369,10 +363,8 @@
 
                 CreateLinuxDirectoryRecursive(sftpClient, targetDirectory);
 
-                using (var fileStream = File.OpenRead(file))
-                {
-                    sftpClient.UploadFile(fileStream, fileTargetPath);
-                }
+                using var fileStream = File.OpenRead(file);
+                sftpClient.UploadFile(fileStream, fileTargetPath);
             }
         }
 
@@ -381,7 +373,7 @@
         /// </summary>
         /// <param name="filePath">The file path.</param>
         /// <param name="referencePath">The reference path.</param>
-        /// <returns>Relative path</returns>
+        /// <returns>Relative path.</returns>
         private static string MakeRelativePath(string filePath, string referencePath)
         {
             var fileUri = new Uri(filePath);
@@ -391,40 +383,40 @@
 
         private static void StopMonitorMode(SftpClient sftpClient, SshClient sshClient, FileSystemMonitor fsmonitor)
         {
-            string.Empty.WriteLine();
+            Terminal.WriteLine();
 
             fsmonitor.Stop();
-            "File System monitor was stopped.".WriteLine();
+            Terminal.WriteLine("File System monitor was stopped.");
 
             if (sftpClient.IsConnected)
                 sftpClient.Disconnect();
 
-            "SFTP client disconnected.".WriteLine();
+            Terminal.WriteLine("SFTP client disconnected.");
 
             if (sshClient.IsConnected)
                 sshClient.Disconnect();
 
-            "SSH client disconnected.".WriteLine();
-            "Application will exit now.".WriteLine();
+            Terminal.WriteLine("SSH client disconnected.");
+            Terminal.WriteLine("Application will exit now.");
         }
 
         private static void StopMonitorMode(SftpClient sftpClient, SshClient sshClient, FileSystemWatcher watcher)
         {
-            string.Empty.WriteLine();
+            Terminal.WriteLine();
 
             watcher.EnableRaisingEvents = false;
-            "File System monitor was stopped.".WriteLine();
+            Terminal.WriteLine("File System monitor was stopped.");
 
             if (sftpClient.IsConnected)
                 sftpClient.Disconnect();
 
-            "SFTP client disconnected.".WriteLine();
+            Terminal.WriteLine("SFTP client disconnected.");
 
             if (sshClient.IsConnected)
                 sshClient.Disconnect();
 
-            "SSH client disconnected.".WriteLine();
-            "Application will exit now.".WriteLine();
+            Terminal.WriteLine("SSH client disconnected.");
+            Terminal.WriteLine("Application will exit now.");
         }
 
         /// <summary>
@@ -445,8 +437,7 @@
         /// <param name="deploymentNumber">The deployment number.</param>
         private static void PrintDeploymentNumber(int deploymentNumber)
         {
-            $"    Starting deployment ID {deploymentNumber} - {DateTime.Now.ToLongDateString()} {DateTime.Now.ToLongTimeString()}"
-                .WriteLine(ConsoleColor.Green);
+            Terminal.WriteLine($"    Starting deployment ID {deploymentNumber} - {DateTime.Now.ToLongDateString()} {DateTime.Now.ToLongTimeString()}", ConsoleColor.Green);
         }
 
         private static ShellStream CreateShellStream(SshClient sshClient)
@@ -495,7 +486,7 @@
                     else
                     {
                         if (_forwardShellStreamOutput)
-                            $"[NPC {rxByte}]".WriteLine(ConsoleColor.DarkYellow);
+                            Terminal.WriteLine($"[NPC {rxByte}]", ConsoleColor.DarkYellow);
                     }
 
                     rxbyteprevious = rxByte;
@@ -558,12 +549,11 @@
             MonitorVerbOptions verbOptions)
         {
             // At this point the change has been detected; Make sure we are not deploying
-            string.Empty.WriteLine();
+            Terminal.WriteLine();
 
             if (_isDeploying)
             {
-                "WARNING: Deployment already in progress. Deployment will not occur."
-                    .WriteLine(ConsoleColor.DarkYellow);
+                Terminal.WriteLine("WARNING: Deployment already in progress. Deployment will not occur.", ConsoleColor.DarkYellow);
                 return;
             }
 
@@ -580,8 +570,8 @@
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
                 UploadFilesToTarget(
-                    sftpClient, 
-                    verbOptions.SourcePath, 
+                    sftpClient,
+                    verbOptions.SourcePath,
                     verbOptions.TargetPath,
                     verbOptions.ExcludeFileSuffixes);
             }
@@ -595,8 +585,7 @@
                 _isDeploying = false;
                 _deploymentNumber++;
                 stopwatch.Stop();
-                $"    Finished deployment in {Math.Round(stopwatch.Elapsed.TotalSeconds, 2)} seconds."
-                    .WriteLine(ConsoleColor.Green);
+                Terminal.WriteLine($"    Finished deployment in {Math.Round(stopwatch.Elapsed.TotalSeconds, 2)} seconds.", ConsoleColor.Green);
 
                 _forwardShellStreamOutput = true;
                 RunShellStreamCommand(shellStream, verbOptions);
@@ -650,10 +639,10 @@
                 CreateNewDeployment(sshClient, sftpClient, shellStream, verbOptions);
             };
 
-            "File System Monitor is now running.".WriteLine();
-            "Writing a new monitor file will trigger a new deployment.".WriteLine();
-            "Press H for help!".WriteLine();
-            "Ground Control to Major Tom: Have a nice trip in space!.".WriteLine(ConsoleColor.DarkCyan);
+            Terminal.WriteLine("File System Monitor is now running.");
+            Terminal.WriteLine("Writing a new monitor file will trigger a new deployment.");
+            Terminal.WriteLine("Press H for help!");
+            Terminal.WriteLine("Ground Control to Major Tom: Have a nice trip in space!.", ConsoleColor.DarkCyan);
         }
 
         /// <summary>
@@ -681,13 +670,13 @@
                     if (_forwardShellStreamInput)
                     {
                         Program.Title = "Monitor (Interactive)";
-                        "    >> Entered console input forwarding.".WriteLine(ConsoleColor.Green);
+                        Terminal.WriteLine("    >> Entered console input forwarding.", ConsoleColor.Green);
                         _forwardShellStreamOutput = true;
                     }
                     else
                     {
                         Program.Title = "Monitor (Press H for Help)";
-                        "    >> Left console input forwarding.".WriteLine(ConsoleColor.Red);
+                        Terminal.WriteLine("    >> Left console input forwarding.", ConsoleColor.Red);
                     }
 
                     continue;
@@ -727,20 +716,19 @@
                     case ConsoleKey.H:
 
                         const ConsoleColor helpColor = ConsoleColor.Cyan;
-                        "Console help".WriteLine(helpColor);
-                        "    H    Prints this screen".WriteLine(helpColor);
-                        "    Q    Quits this application".WriteLine(helpColor);
-                        "    C    Clears the screen".WriteLine(helpColor);
-                        "    N    Force a deployment cycle".WriteLine(helpColor);
-                        "    E    Run the Pre-deployment command".WriteLine(helpColor);
-                        "    S    Run the Post-deployment command".WriteLine(helpColor);
-                        "    F1   Toggle shell-interactive mode".WriteLine(helpColor);
+                        Terminal.WriteLine("Console help", helpColor);
+                        Terminal.WriteLine("    H    Prints this screen", helpColor);
+                        Terminal.WriteLine("    Q    Quits this application", helpColor);
+                        Terminal.WriteLine("    C    Clears the screen", helpColor);
+                        Terminal.WriteLine("    N    Force a deployment cycle", helpColor);
+                        Terminal.WriteLine("    E    Run the Pre-deployment command", helpColor);
+                        Terminal.WriteLine("    S    Run the Post-deployment command", helpColor);
+                        Terminal.WriteLine("    F1   Toggle shell-interactive mode", helpColor);
 
-                        string.Empty.WriteLine();
+                        Terminal.WriteLine();
                         break;
                     default:
-                        $"Unrecognized command '{readKey.KeyChar}' -- Press 'H' to get a list of available commands."
-                            .WriteLine(ConsoleColor.Red);
+                        Terminal.WriteLine($"Unrecognized command '{readKey.KeyChar}' -- Press 'H' to get a list of available commands.", ConsoleColor.Red);
                         break;
                 }
             }

@@ -4,7 +4,7 @@
     using System.IO;
 
     /// <summary>
-    /// Represents a trackable file system entry
+    /// Represents a trackable file system entry.
     /// </summary>
     public class FileSystemEntry
     {

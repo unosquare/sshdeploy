@@ -1,6 +1,6 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Options
 {
-    using Swan.Attributes;
+    using Swan.Parsers;
 
     public class CliOptions
     {

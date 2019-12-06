@@ -2,11 +2,12 @@
 {
     using Options;
     using Swan;
+    using Swan.Logging;
+    using Swan.Parsers;
     using System;
     using System.IO;
-    using Utils;
-    using Swan.Components;
     using System.Linq;
+    using Utils;
 
     public static class Program
     {
@@ -34,31 +35,27 @@
 
         private static void Main(string[] args)
         {
-            Terminal.Settings.OverrideIsConsolePresent = true;
-
             Title = "Unosquare";
 
-            $"SSH Deployment Tool [Version {typeof(Program).Assembly.GetName().Version}]".WriteLine();
-            "(c)2015 - 2019 Unosquare SA de CV. All Rights Reserved.".WriteLine();
-            "For additional help, please visit https://github.com/unosquare/sshdeploy".WriteLine();
+            Terminal.WriteLine($"SSH Deployment Tool [Version {typeof(Program).Assembly.GetName().Version}]");
+            Terminal.WriteLine("(c)2015 - 2019 Unosquare SA de CV. All Rights Reserved.");
+            Terminal.WriteLine("For additional help, please visit https://github.com/unosquare/sshdeploy");
 
             try
             {
-                using (var csproj = new CsProjFile<CsProjNuGetMetadata>(ResolveProjectFile()))
-                {
-                    csproj.Metadata.ParseCsProjTags(ref args);
-                }
+                using var csproj = new CsProjFile<CsProjNuGetMetadata>(ResolveProjectFile());
+                csproj.Metadata.ParseCsProjTags(ref args);
             }
             catch (UnauthorizedAccessException)
             {
-                "Access to csproj file denied".WriteLine(ConsoleColor.Red);
+                Terminal.WriteLine("Access to csproj file denied", ConsoleColor.Red);
             }
             catch (ArgumentNullException)
             {
-                "No csproj file was found".WriteLine(ConsoleColor.DarkRed);
+                Terminal.WriteLine("No csproj file was found", ConsoleColor.DarkRed);
             }
 
-            if (!Runtime.ArgumentParser.ParseArguments<CliOptions>(args, out var options))
+            if (!ArgumentParser.Current.ParseArguments<CliOptions>(args, out var options))
             {
                 Environment.ExitCode = 1;
                 Terminal.Flush();
@@ -114,7 +111,7 @@
             }
             else
             {
-                "Completed.".WriteLine();
+                Terminal.WriteLine("Completed.");
             }
 
             Terminal.Flush();
