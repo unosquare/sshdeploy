@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Rules for StyleCop.Analyzers" Description="Code analysis rules for StyleCop.Analyzers.csproj." ToolsVersion="15.0">
+<RuleSet Name="Rules for StyleCop.Analyzers" Description="Code analysis rules for StyleCop.Analyzers.csproj." ToolsVersion="16.0">
   <Rules AnalyzerId="AsyncUsageAnalyzers" RuleNamespace="AsyncUsageAnalyzers">
     <Rule Id="UseConfigureAwait" Action="Warning" />
   </Rules>
@@ -84,9 +84,9 @@
     <Rule Id="SA1121" Action="None" />
     <Rule Id="SA1123" Action="None" />
     <Rule Id="SA1124" Action="None" />
+    <Rule Id="SA1135" Action="None" />
     <Rule Id="SA1208" Action="None" />
     <Rule Id="SA1210" Action="None" />
-    <Rule Id="SA1305" Action="Warning" />
     <Rule Id="SA1308" Action="None" />
     <Rule Id="SA1309" Action="None" />
     <Rule Id="SA1402" Action="None" />
@@ -99,7 +99,6 @@
     <Rule Id="SA1516" Action="None" />
     <Rule Id="SA1518" Action="Error" />
     <Rule Id="SA1600" Action="None" />
-    <Rule Id="SA1609" Action="None" />
     <Rule Id="SA1623" Action="None" />
     <Rule Id="SA1633" Action="None" />
     <Rule Id="SA1652" Action="None" />

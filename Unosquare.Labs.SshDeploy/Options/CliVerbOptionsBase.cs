@@ -1,6 +1,6 @@
 ﻿namespace Unosquare.Labs.SshDeploy.Options
 {
-    using Swan.Attributes;
+    using Swan.Parsers;
 
     public abstract class CliVerbOptionsBase
     {
@@ -35,6 +35,6 @@
             DefaultValue = "raspberry", 
             HelpText = "The password for the given username.",
             Required = false)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
     }
 }

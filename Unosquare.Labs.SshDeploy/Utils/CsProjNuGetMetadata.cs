@@ -2,7 +2,6 @@
 {
     using Attributes;
     using Options;
-    using Swan.Components;
     using System;
     using System.Linq;
     using System.Reflection;
@@ -10,27 +9,27 @@
     public class CsProjNuGetMetadata : CsProjMetadataBase
     {
         [Push(ShortName = "-f", LongName = "--framework")]
-        public new string TargetFramework => FindElement(nameof(TargetFramework))?.Value;
+        public new string? TargetFramework => FindElement(nameof(TargetFramework))?.Value;
 
         [Monitor(ShortName = "-l", LongName = "--legacy")]
         public bool SshDeployLegacy => FindElement(nameof(SshDeployLegacy)) != null;
 
         [Monitor(ShortName = "-m", LongName = "--monitor")]
-        public string SshDeployMonitorFile => FindElement(nameof(SshDeployMonitorFile))?.Value;
+        public string? SshDeployMonitorFile => FindElement(nameof(SshDeployMonitorFile))?.Value;
 
         [Push(ShortName = "-c", LongName = "--configuration")]
-        public string SshDeployConfiguration => FindElement(nameof(SshDeployConfiguration))?.Value;
+        public string? SshDeployConfiguration => FindElement(nameof(SshDeployConfiguration))?.Value;
 
         [Run(ShortName = "-c", LongName = "--command")]
-        public string SshDeployCommand => FindElement(nameof(SshDeployCommand))?.Value;
+        public string? SshDeployCommand => FindElement(nameof(SshDeployCommand))?.Value;
 
         [Push(LongName = "--pre")]
         [Monitor(LongName = "--pre")]
-        public string SshDeployPreCommand => FindElement(nameof(SshDeployPreCommand))?.Value;
+        public string? SshDeployPreCommand => FindElement(nameof(SshDeployPreCommand))?.Value;
 
         [Push(LongName = "--post")]
         [Monitor(LongName = "--post")]
-        public string SshDeployPostCommand => FindElement(nameof(SshDeployPostCommand))?.Value;
+        public string? SshDeployPostCommand => FindElement(nameof(SshDeployPostCommand))?.Value;
 
         [Push(LongName = "--clean")]
         [Monitor(LongName = "--clean")]
@@ -38,45 +37,45 @@
 
         [Push(LongName = "--exclude")]
         [Monitor(LongName = "--exclude")]
-        public string SshDeployExclude => FindElement(nameof(SshDeployExclude))?.Value;
+        public string? SshDeployExclude => FindElement(nameof(SshDeployExclude))?.Value;
 
         [Push(ShortName = "-h", LongName = "--host")]
         [Monitor(ShortName = "-h", LongName = "--host")]
         [Shell(ShortName = "-h", LongName = "--host")]
         [Run(ShortName = "-h", LongName = "--host")]
-        public string SshDeployHost => FindElement(nameof(SshDeployHost))?.Value;
+        public string? SshDeployHost => FindElement(nameof(SshDeployHost))?.Value;
 
         [Push(ShortName = "-p", LongName = "--port")]
         [Monitor(ShortName = "-p", LongName = "--port")]
         [Shell(ShortName = "-p", LongName = "--port")]
         [Run(ShortName = "-p", LongName = "--port")]
-        public string SshDeployPort => FindElement(nameof(SshDeployPort))?.Value;
+        public string? SshDeployPort => FindElement(nameof(SshDeployPort))?.Value;
 
         [Push(ShortName = "-u", LongName = "--username")]
         [Monitor(ShortName = "-u", LongName = "--username")]
         [Shell(ShortName = "-u", LongName = "--username")]
         [Run(ShortName = "-u", LongName = "--username")]
-        public string SshDeployUsername => FindElement(nameof(SshDeployUsername))?.Value;
+        public string? SshDeployUsername => FindElement(nameof(SshDeployUsername))?.Value;
 
         [Push(ShortName = "-w", LongName = "--password")]
         [Monitor(ShortName = "-w", LongName = "--password")]
         [Shell(ShortName = "-w", LongName = "--password")]
         [Run(ShortName = "-w", LongName = "--password")]
-        public string SshDeployPassword => FindElement(nameof(SshDeployPassword))?.Value;
+        public string? SshDeployPassword => FindElement(nameof(SshDeployPassword))?.Value;
 
         [Monitor(ShortName = "-s", LongName = "--source")]
-        public string SshDeploySourcePath => FindElement(nameof(SshDeploySourcePath))?.Value;
+        public string? SshDeploySourcePath => FindElement(nameof(SshDeploySourcePath))?.Value;
 
         [Monitor(ShortName = "-t", LongName = "--target")]
         [Push(ShortName = "-t", LongName = "--target")]
-        public string SshDeployTargetPath => FindElement(nameof(SshDeployTargetPath))?.Value;
+        public string? SshDeployTargetPath => FindElement(nameof(SshDeployTargetPath))?.Value;
 
         [Push(ShortName = "-r", LongName = "--runtime")]
-        public string RuntimeIdentifier => FindElement(nameof(RuntimeIdentifier))?.Value;
+        public string? RuntimeIdentifier => FindElement(nameof(RuntimeIdentifier))?.Value;
 
         [Push(ShortName = "-x", LongName = "--execute")]
-        public string SshDeployExecutePermission => FindElement(nameof(SshDeployExecutePermission))?.Value;
-        
+        public string? SshDeployExecutePermission => FindElement(nameof(SshDeployExecutePermission))?.Value;
+
         public override void ParseCsProjTags(ref string[] args)
         {
             var argsList = args.ToList();
@@ -106,7 +105,7 @@
             }
 
             args = argsList.ToArray();
-            PushVerbOptions.IgnoreTargetFrameworkToOutputPath = FindElement("AppendTargetFrameworkToOutputPath")?.Value?.ToLowerInvariant() == "false";
+            PushVerbOptions.IgnoreTargetFrameworkToOutputPath = FindElement("AppendTargetFrameworkToOutputPath")?.Value.ToLowerInvariant() == "false";
         }
 
         private static Type GetAttributeType(string[] args)
@@ -117,6 +116,6 @@
                 return typeof(MonitorAttribute);
 
             return args.Contains("run") ? typeof(RunAttribute) : typeof(ShellAttribute);
-        } 
+        }
     }
 }

@@ -1,13 +1,14 @@
 ﻿namespace Unosquare.Labs.SshDeploy
 {
-    using System.Collections.Generic;
+    using Options;
+    using Renci.SshNet;
     using Renci.SshNet.Common;
+    using Swan;
+    using Swan.Logging;
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using Renci.SshNet;
-    using Options;
-    using Swan;
 
     public static partial class DeploymentManager
     {
@@ -22,13 +23,11 @@
 
         public static void ExecuteRunVerb(RunVerbOptions invokedVerbOptions)
         {
-            using (var client = CreateClient(invokedVerbOptions))
-            {
-                client.Connect();
-                var command = ExecuteCommand(client, invokedVerbOptions.Command);
-                Environment.ExitCode = command.ExitStatus;
-                client.Disconnect();
-            }
+            using var client = CreateClient(invokedVerbOptions);
+            client.Connect();
+            var command = ExecuteCommand(client, invokedVerbOptions.Command);
+            Environment.ExitCode = command.ExitStatus;
+            client.Disconnect();
         }
 
         private static ShellStream CreateBaseShellStream(SshClient sshClient)
@@ -54,27 +53,23 @@
 
         private static SshCommand ExecuteCommand(SshClient client, string commandText)
         {
-            "SSH TX:".WriteLine();
-            commandText.WriteLine(ConsoleColor.Green);
+            Terminal.WriteLine("SSH TX:");
+            Terminal.WriteLine(commandText, ConsoleColor.Green);
 
-            using (var command = client.CreateCommand(commandText))
+            using var command = client.CreateCommand(commandText);
+            var result = command.Execute();
+            Terminal.WriteLine("SSH RX:");
+
+            if (command.ExitStatus != 0)
             {
-                var result = command.Execute();
-                "SSH RX:".WriteLine();
-
-                if (command.ExitStatus != 0)
-                {
-                    $"Error {command.ExitStatus}".WriteLine();
-                    command.Error.Error();
-                }
-
-                if (string.IsNullOrWhiteSpace(result) == false)
-                {
-                    result.WriteLine(ConsoleColor.Yellow);
-                }
-
-                return command;
+                Terminal.WriteLine($"Error {command.ExitStatus}");
+                Terminal.WriteLine(command.Error);
             }
+
+            if (!string.IsNullOrWhiteSpace(result))
+                Terminal.WriteLine(result, ConsoleColor.Yellow);
+
+            return command;
         }
 
         private static void HandleShellEscapeSequence(byte[] escapeSequence)
@@ -103,61 +98,31 @@
                     background = arguments[0];
                 }
 
-                switch (foreground)
+                Console.ForegroundColor = foreground switch
                 {
-                    case "30":
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        break;
-                    case "31":
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        break;
-                    case "32":
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        break;
-                    case "33":
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        break;
-                    case "34":
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        break;
-                    case "35":
-                        Console.ForegroundColor = ConsoleColor.Magenta;
-                        break;
-                    case "36":
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        break;
-                    case "37":
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                        break;
-                }
+                    "30" => ConsoleColor.Black,
+                    "31" => ConsoleColor.Red,
+                    "32" => ConsoleColor.Green,
+                    "33" => ConsoleColor.Yellow,
+                    "34" => ConsoleColor.Cyan,
+                    "35" => ConsoleColor.Magenta,
+                    "36" => ConsoleColor.Cyan,
+                    "37" => ConsoleColor.Gray,
+                    _ => Console.ForegroundColor
+                };
 
-                switch (background)
+                Console.BackgroundColor = background switch
                 {
-                    case "40":
-                        Console.BackgroundColor = ConsoleColor.Black;
-                        break;
-                    case "41":
-                        Console.BackgroundColor = ConsoleColor.Red;
-                        break;
-                    case "42":
-                        Console.BackgroundColor = ConsoleColor.Green;
-                        break;
-                    case "43":
-                        Console.BackgroundColor = ConsoleColor.Yellow;
-                        break;
-                    case "44":
-                        Console.BackgroundColor = ConsoleColor.DarkBlue;
-                        break;
-                    case "45":
-                        Console.BackgroundColor = ConsoleColor.Magenta;
-                        break;
-                    case "46":
-                        Console.BackgroundColor = ConsoleColor.Cyan;
-                        break;
-                    case "47":
-                        Console.BackgroundColor = ConsoleColor.Gray;
-                        break;
-                }
+                    "40" => ConsoleColor.Black,
+                    "41" => ConsoleColor.Red,
+                    "42" => ConsoleColor.Green,
+                    "43" => ConsoleColor.Yellow,
+                    "44" => ConsoleColor.DarkBlue,
+                    "45" => ConsoleColor.Magenta,
+                    "46" => ConsoleColor.Cyan,
+                    "47" => ConsoleColor.Gray,
+                    _ => Console.BackgroundColor
+                };
             }
             else
             {

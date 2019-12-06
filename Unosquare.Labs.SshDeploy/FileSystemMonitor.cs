@@ -1,40 +1,10 @@
 ﻿namespace Unosquare.Labs.SshDeploy
 {
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel;
     using System.IO;
     using System.Linq;
     using System.Threading;
-
-    /// <summary>
-    /// A dictionary of file system entries. Keys are string paths, values are file system entries
-    /// </summary>
-    public class FileSystemEntryDictionary : Dictionary<string, FileSystemEntry>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FileSystemEntryDictionary"/> class.
-        /// </summary>
-        public FileSystemEntryDictionary()
-            : base(1024, StringComparer.InvariantCultureIgnoreCase)
-        {
-            // placeholder
-        }
-    }
-
-    internal class FileSystemEntryChangedEventArgs : EventArgs
-    {
-        public FileSystemEntryChangedEventArgs(FileSystemEntryChangeType changeType, string path)
-        {
-            ChangeType = changeType;
-            Path = path;
-        }
-
-        public FileSystemEntryChangeType ChangeType { get; }
-        public string Path { get; }
-
-        public override string ToString() => $"{ChangeType}: {Path}";
-    }
 
     /// <summary>
     /// Represents a long-running file system monitor based on polling
@@ -61,7 +31,7 @@
             _worker = new BackgroundWorker
             {
                 WorkerReportsProgress = true,
-                WorkerSupportsCancellation = true
+                WorkerSupportsCancellation = true,
             };
 
             _worker.DoWork += DoWork;
@@ -72,18 +42,18 @@
         public event FileSystemEntryChangedHandler FileSystemEntryChanged;
 
         /// <summary>
-        /// The polling interval in seconds at which the file system is monitored for changes
+        /// The polling interval in seconds at which the file system is monitored for changes.
         /// </summary>
         public int PollIntervalSeconds { get; }
 
         /// <summary>
-        /// The root path that is monitored for changes
+        /// The root path that is monitored for changes.
         /// </summary>
         public string FileSystemPath { get; private set; }
         
         /// <summary>
         /// Stops the File System Monitor
-        /// This is a blocking call
+        /// This is a blocking call.
         /// </summary>
         public void Stop()
         {
@@ -129,7 +99,7 @@
             // Only new files shall be taken into account.
             InitializeMonitorEntries();
 
-            // keep track of a timout interval
+            // keep track of a timeout interval
             var lastPollTime = DateTime.Now;
             while (!_worker.CancellationPending)
             {
@@ -167,7 +137,7 @@
         }
 
         /// <summary>
-        /// We don't want to fire events for files that were there before we started the worker
+        /// We don't want to fire events for files that were there before we started the worker.
         /// </summary>
         private void InitializeMonitorEntries()
         {
@@ -190,7 +160,7 @@
 
         /// <summary>
         /// Compares what we are tracking under Entries and what the file system reports
-        /// Based on such comparisons it raises the necessary events
+        /// Based on such comparisons it raises the necessary events.
         /// </summary>
         private void ProcessMonitorEntryChanges()
         {
@@ -244,7 +214,7 @@
 
         /// <summary>
         /// Clears all the dictionary entries.
-        /// This method is used when we startup or reset the file system monitor
+        /// This method is used when we startup or reset the file system monitor.
         /// </summary>
         private void ClearMonitorEntries() => _entries.Clear();
     }

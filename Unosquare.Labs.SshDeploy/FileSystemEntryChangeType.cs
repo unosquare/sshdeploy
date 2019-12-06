@@ -4,6 +4,6 @@
     {
         FileAdded,
         FileRemoved,
-        FileModified
+        FileModified,
     }
 }

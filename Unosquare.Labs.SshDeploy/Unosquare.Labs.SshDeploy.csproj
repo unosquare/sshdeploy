@@ -2,15 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFrameworks>netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <AssemblyName>dotnet-sshdeploy</AssemblyName>
     <PackageId>dotnet-sshdeploy</PackageId>
-    <Version>0.3.3</Version>
-    <PackageVersion>0.3.3</PackageVersion>
-    <Authors>Unosquare</Authors>
+    <Version>0.4.0</Version>
+    <PackageVersion>0.4.0</PackageVersion>
+    <Authors>Unosquare</Authors><LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
     <Description>A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the Raspberry Pi running Raspbian.</Description>
 
     <CodeAnalysisRuleSet>..\StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
@@ -19,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2016.1.0" />
     <PackageReference Include="System.IO.FileSystem.Watcher" Version="4.3.0" />
-    <PackageReference Include="Unosquare.Swan" Version="1.2.4" />
+    <PackageReference Include="Unosquare.Swan" Version="2.4.2" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
