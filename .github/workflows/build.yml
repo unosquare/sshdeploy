@@ -15,6 +15,6 @@ jobs:
         dotnet-version: 3.1.100
     - name: Test with dotnet
       run: |
-      dotnet build
-      dotnet pack
+        dotnet build
+        dotnet pack
         dotnet tool install -g dotnet-sshdeploy --add-source ./
