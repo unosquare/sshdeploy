@@ -10,7 +10,8 @@
     <PackageId>dotnet-sshdeploy</PackageId>
     <Version>0.4.0</Version>
     <PackageVersion>0.4.0</PackageVersion>
-    <Authors>Unosquare</Authors><LangVersion>8.0</LangVersion>
+    <Authors>Unosquare</Authors>
+    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
     <Description>A command-line tool that enables quick deployments over SSH. This is program was specifically designed to streamline .NET application development for the Raspberry Pi running Raspbian.</Description>
 
