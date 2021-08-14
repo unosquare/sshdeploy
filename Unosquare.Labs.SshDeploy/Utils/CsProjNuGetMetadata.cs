@@ -63,6 +63,18 @@
         [Run(ShortName = "-w", LongName = "--password")]
         public string? SshDeployPassword => FindElement(nameof(SshDeployPassword))?.Value;
 
+        [Push(ShortName = "-k", LongName = "--keypath")]
+        [Monitor(ShortName = "-k", LongName = "--keypath")]
+        [Shell(ShortName = "-k", LongName = "--keypath")]
+        [Run(ShortName = "-k", LongName = "--keypath")]
+        public string? SshDeployKeyPath => FindElement(nameof(SshDeployKeyPath))?.Value;
+
+        [Push(LongName = "--keypassword")]
+        [Monitor(LongName = "--keypassword")]
+        [Shell(LongName = "--keypassword")]
+        [Run(LongName = "--keypassword")]
+        public string? SshDeployKeyPassword => FindElement(nameof(SshDeployKeyPassword))?.Value;
+
         [Monitor(ShortName = "-s", LongName = "--source")]
         public string? SshDeploySourcePath => FindElement(nameof(SshDeploySourcePath))?.Value;
 

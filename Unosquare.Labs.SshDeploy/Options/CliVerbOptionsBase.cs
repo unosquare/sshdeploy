@@ -36,5 +36,20 @@
             HelpText = "The password for the given username.",
             Required = false)]
         public string? Password { get; set; }
+
+        [ArgumentOption(
+            'k', 
+            "keypath", 
+            DefaultValue = "", 
+            HelpText = "The private key path used for key authentication on the target machine.",
+            Required = false)]
+        public string? KeyPath { get; set; }
+
+        [ArgumentOption(
+            "keypassword", 
+            DefaultValue = "", 
+            HelpText = "The password used to open the private key file.",
+            Required = false)]
+        public string? KeyPassword { get; set; }
     }
 }

@@ -7,6 +7,7 @@
     using Swan.Logging;
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Text;
 
@@ -20,6 +21,17 @@
         private const string LinuxDirectorySeparator = "/";
         private const byte Escape = 27; // Escape sequence character
         private static readonly byte[] ControlSequenceInitiators = { (byte) '[', (byte) ']' };
+        public static ConnectionInfo? GetConnectionInfo(CliVerbOptionsBase options)
+        {
+            ConnectionInfo? connectionInfo = default;
+            if (options.Password != default)
+                connectionInfo = new PasswordConnectionInfo(options.Host, options.Port, options.Username, options.Password);
+            else if (options.KeyPath != default && File.Exists(options.KeyPath) && options.KeyPassword==default)
+                connectionInfo = new PrivateKeyConnectionInfo(options.Host, options.Port, options.Username, new PrivateKeyFile(options.KeyPath));
+            else if (options.KeyPath != default && File.Exists(options.KeyPath) && options.KeyPassword!=default)
+                connectionInfo = new PrivateKeyConnectionInfo(options.Host, options.Port, options.Username, new PrivateKeyFile(options.KeyPath, options.KeyPassword));
+            return connectionInfo;
+        }
 
         public static void ExecuteRunVerb(RunVerbOptions invokedVerbOptions)
         {
@@ -42,13 +54,10 @@
                 (uint) Console.WindowHeight,
                 bufferSize,
                 new Dictionary<TerminalModes, uint> {{TerminalModes.ECHO, 0}, {TerminalModes.IGNCR, 1}});
-        }
-
+        }        
         private static SshClient CreateClient(CliVerbOptionsBase options)
-        {
-            var simpleConnectionInfo =
-                new PasswordConnectionInfo(options.Host, options.Port, options.Username, options.Password);
-            return new SshClient(simpleConnectionInfo);
+        {   
+            return new SshClient(GetConnectionInfo(options));
         }
 
         private static SshCommand ExecuteCommand(SshClient client, string commandText)

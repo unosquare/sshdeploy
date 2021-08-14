@@ -37,7 +37,7 @@
                 throw new DirectoryNotFoundException($"Source Path \'{verbOptions.SourcePath}\' was not found.");
 
             // Create connection info
-            var simpleConnectionInfo = new PasswordConnectionInfo(verbOptions.Host, verbOptions.Port, verbOptions.Username, verbOptions.Password);
+            var simpleConnectionInfo = DeploymentManager.GetConnectionInfo(verbOptions);
 
             // Instantiate an SFTP client and an SSH client
             // SFTP will be used to transfer the files and SSH to execute pre-deployment and post-deployment commands

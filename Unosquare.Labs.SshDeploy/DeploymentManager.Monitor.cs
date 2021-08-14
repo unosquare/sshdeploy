@@ -41,11 +41,7 @@
 
             // Create the FS Monitor and connection info
             var fsmonitor = new FileSystemMonitor(1, verbOptions.SourcePath);
-            var simpleConnectionInfo = new PasswordConnectionInfo(
-                verbOptions.Host,
-                verbOptions.Port,
-                verbOptions.Username,
-                verbOptions.Password);
+            var simpleConnectionInfo = DeploymentManager.GetConnectionInfo(verbOptions);
 
             // Validate source path exists
             if (Directory.Exists(verbOptions.SourcePath) == false)
@@ -90,11 +86,7 @@
             PrintMonitorOptions(verbOptions);
 
             // Create connection info
-            var simpleConnectionInfo = new PasswordConnectionInfo(
-                verbOptions.Host,
-                verbOptions.Port,
-                verbOptions.Username,
-                verbOptions.Password);
+            var simpleConnectionInfo = DeploymentManager.GetConnectionInfo(verbOptions);
 
             // Create a file watcher
             var watcher = new FileSystemWatcher
