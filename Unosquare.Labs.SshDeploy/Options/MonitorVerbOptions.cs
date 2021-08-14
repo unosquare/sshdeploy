@@ -11,6 +11,6 @@
         public string? MonitorFile { get; set; }
 
         [ArgumentOption('l', "legacy", DefaultValue = false, HelpText = "Monitor files using legacy method", Required = false)]
-        public bool Legacy { get; set; }
+        public bool Legacy { get; set; }        
     }
 }

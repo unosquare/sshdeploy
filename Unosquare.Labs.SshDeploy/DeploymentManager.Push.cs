@@ -6,6 +6,7 @@
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Text;
 
     public partial class DeploymentManager
     {
@@ -13,16 +14,23 @@
         {
             NormalizePushVerbOptions(verbOptions);
             PrintPushOptions(verbOptions);
+            var builder = new StringBuilder("BuildingInsideSshDeploy=true");
+            if (!string.IsNullOrWhiteSpace(verbOptions.Configuration))
+                builder.Append($";Configuration={verbOptions.Configuration}");
+            if (!string.IsNullOrWhiteSpace(verbOptions.Framework) && !verbOptions.SkipBuildTargetFramework)
+                builder.Append($";TargetFramework={verbOptions.Framework}");
+            if (!string.IsNullOrWhiteSpace(verbOptions.Runtime))
+                builder.Append($";RuntimeIdentifier={verbOptions.Runtime}");
+            //builder.Append("PreBuildEvent=\"\";PostBuildEvent=\"\"");
 
+            var arguments = " msbuild -restore /t:Publish " +
+                $" /p:{builder}";
             var psi = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = " msbuild -restore /t:Publish " +
-                $" /p:Configuration={verbOptions.Configuration};BuildingInsideSshDeploy=true;" +
-                $"TargetFramework={verbOptions.Framework};RuntimeIdentifier={verbOptions.Runtime};" +
-                "PreBuildEvent=\"\";PostBuildEvent=\"\"",
+                Arguments = arguments,
             };
-
+            Console.WriteLine($"building with command: dotnet {arguments}");
             var process = Process.Start(psi);
             process.WaitForExit();
 
@@ -66,6 +74,8 @@
             Terminal.WriteLine($"    Excluded Files  {string.Join("|", verbOptions.ExcludeFileSuffixes)}", ConsoleColor.DarkYellow);
             Terminal.WriteLine($"    Target Address  {verbOptions.Host}:{verbOptions.Port}", ConsoleColor.DarkYellow);
             Terminal.WriteLine($"    Username        {verbOptions.Username}", ConsoleColor.DarkYellow);
+            if (!string.IsNullOrWhiteSpace(verbOptions.KeyPath))
+                Terminal.WriteLine($"    KeyPath        {verbOptions.KeyPath}", ConsoleColor.DarkYellow);
             Terminal.WriteLine($"    Target Path     {verbOptions.TargetPath}", ConsoleColor.DarkYellow);
             Terminal.WriteLine($"    Clean Target    {(verbOptions.CleanTarget ? "YES" : "NO")}", ConsoleColor.DarkYellow);
             Terminal.WriteLine($"    Pre Deployment  {verbOptions.PreCommand}", ConsoleColor.DarkYellow);
@@ -90,8 +100,13 @@
                 _forwardShellStreamOutput = false;
                 RunCommand(sshClient, "client", verbOptions.PreCommand);
                 CreateTargetPath(sftpClient, verbOptions);
-                PrepareTargetPath(sftpClient, verbOptions);                
-                UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath,verbOptions.ExcludeFileSuffixes);
+                if (verbOptions.UseSync)
+                    SyncDirectories(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath);
+                else
+                {
+                    PrepareTargetPath(sftpClient, verbOptions);
+                    UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath, verbOptions.ExcludeFileSuffixes);
+                }
                 AllowExecute(sshClient, verbOptions);
             }
             catch (Exception ex)

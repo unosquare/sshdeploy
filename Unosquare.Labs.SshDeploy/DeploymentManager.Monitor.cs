@@ -2,14 +2,17 @@
 {
     using Options;
     using Renci.SshNet;
+    using Renci.SshNet.Sftp;
     using Renci.SshNet.Common;
     using Swan;
+    using Swan.Logging;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
-    using Swan.Logging;
+    using System.Text;
 
     public partial class DeploymentManager
     {
@@ -157,9 +160,9 @@
                 {
                     client.Delete(file.FullName);
                 }
-                catch
+                catch (Exception e)
                 {
-                    $"WARNING: Failed to delete file or folder '{file.FullName}'".Error(nameof(DeleteLinuxDirectoryRecursive));
+                    $"WARNING: Failed to delete file or folder '{file.FullName}'. Details: {e.Message}".Error(nameof(DeleteLinuxDirectoryRecursive));
                 }
             }
         }
@@ -284,15 +287,22 @@
             SftpClient sftpClient,
             CliVerbOptionsBase verbOptions)
         {
+            var builder = new StringBuilder($"Connecting to host {verbOptions.Host}:{verbOptions.Port}");
+            if (!string.IsNullOrWhiteSpace(verbOptions.Username))
+                builder.Append($" with username {verbOptions.Username}");
+            if (!string.IsNullOrWhiteSpace(verbOptions.KeyPath))
+                builder.Append($" using key authentication file {verbOptions.KeyPath}");
             if (sshClient.IsConnected == false)
             {
-                Terminal.WriteLine($"Connecting to host {verbOptions.Host}:{verbOptions.Port} via SSH.");
+                builder.Append(" via SSH");
+                Terminal.WriteLine(builder.ToString());
                 sshClient.Connect();
             }
 
             if (sftpClient.IsConnected == false)
             {
-                Terminal.WriteLine($"Connecting to host {verbOptions.Host}:{verbOptions.Port} via SFTP.");
+                builder.Append(" via SFTP");
+                Terminal.WriteLine(builder.ToString());
                 sftpClient.Connect();
             }
         }
@@ -321,6 +331,75 @@
             if (!verbOptions.CleanTarget) return;
             Terminal.WriteLine($"    Cleaning Target Path '{verbOptions.TargetPath}'", ConsoleColor.Green);
             DeleteLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
+        }
+
+        private static void SyncDirectories(
+            SftpClient sftpClient,
+            string sourcePath,
+            string targetPath)
+        {
+            Terminal.WriteLine($"    Sync Source Directory '{sourcePath}' with Target Directory '{targetPath}'", ConsoleColor.Green);
+            //sftpClient.SynchronizeDirectories(sourcePath, targetPath, FileSystemMonitor.AllFilesPattern);
+            string searchPattern = FileSystemMonitor.AllFilesPattern;
+            if (string.IsNullOrWhiteSpace(targetPath))
+                throw new ArgumentException("destinationPath");
+
+            if (!Directory.Exists(sourcePath))
+                throw new FileNotFoundException(string.Format("Source directory not found: {0}", sourcePath));
+
+            var uploadedFiles = new List<FileInfo>();
+
+            var sourceDirectory = new DirectoryInfo(sourcePath);
+
+            var sourceFiles = sourceDirectory.GetFiles(searchPattern);
+            var sourceDirs = sourceDirectory.GetDirectories();
+            if (!(sourceFiles?.Any()??false) && !(sourceDirs?.Any()??false))
+                return;
+            foreach (var dir in sourceDirs)
+            {
+                var remoteDir = string.Format(CultureInfo.InvariantCulture, @"{0}/{1}", targetPath, dir.Name);
+                SyncDirectories(sftpClient, dir.FullName, remoteDir);
+            }
+            CreateLinuxDirectoryRecursive(sftpClient, targetPath);
+            var destFiles = sftpClient.ListDirectory(targetPath, null);
+            var destDict = new Dictionary<string, Renci.SshNet.Sftp.SftpFile>();
+            foreach (var destFile in destFiles)
+            {
+                if (destFile.IsDirectory)
+                    continue;
+                destDict.Add(destFile.Name, destFile);
+            }
+
+            foreach (var localFile in sourceFiles)
+            {
+                var isDifferent = !destDict.ContainsKey(localFile.Name);
+
+                if (!isDifferent)
+                {
+                    var temp = destDict[localFile.Name];
+                    //  TODO:   Use md5 to detect a difference
+                    //ltang: File exists at the destination => Using filesize to detect the difference
+                    isDifferent = localFile.Length != temp.Length;
+                }
+
+                if (isDifferent)
+                {
+                    var remoteFileName = string.Format(CultureInfo.InvariantCulture, @"{0}/{1}", targetPath, localFile.Name);
+                    try
+                    {
+                        using (var file = File.OpenRead(localFile.FullName))
+                        {
+                            sftpClient.UploadFile(file, remoteFileName);
+                        }
+
+                        uploadedFiles.Add(localFile);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(string.Format("Failed to upload {0} to {1}", localFile.FullName, remoteFileName), ex);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -561,7 +640,10 @@
                 RunSshClientCommand(sshClient, verbOptions);
                 CreateTargetPath(sftpClient, verbOptions);
                 PrepareTargetPath(sftpClient, verbOptions);
-                UploadFilesToTarget(
+                if (verbOptions.UseSync)
+                    SyncDirectories(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath);
+                else
+                    UploadFilesToTarget(
                     sftpClient,
                     verbOptions.SourcePath,
                     verbOptions.TargetPath,

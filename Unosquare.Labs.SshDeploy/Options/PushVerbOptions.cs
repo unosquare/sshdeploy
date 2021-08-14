@@ -22,6 +22,8 @@
         [ArgumentOption('x', "execute", HelpText = "Adds user execute mode permission to files transferred.", DefaultValue = "", Required = false)]
         public string? Execute { get; set; }
 
+        [ArgumentOption("skipbuildtargetframework", DefaultValue = false, HelpText = "Skips adding TargetFramework to the build command", Required = false)]
+        public bool SkipBuildTargetFramework { get; set; }
         public string SourcePath => IgnoreTargetFrameworkToOutputPath ?
             Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Runtime, PublishFolder) :
             Path.Combine(Program.CurrentDirectory, BinFolder, Configuration, Framework, Runtime, PublishFolder);

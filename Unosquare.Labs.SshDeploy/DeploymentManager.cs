@@ -24,12 +24,12 @@
         public static ConnectionInfo? GetConnectionInfo(CliVerbOptionsBase options)
         {
             ConnectionInfo? connectionInfo = default;
-            if (options.Password != default)
-                connectionInfo = new PasswordConnectionInfo(options.Host, options.Port, options.Username, options.Password);
-            else if (options.KeyPath != default && File.Exists(options.KeyPath) && options.KeyPassword==default)
+            if (options.KeyPath != default && File.Exists(options.KeyPath) && options.KeyPassword==default)
                 connectionInfo = new PrivateKeyConnectionInfo(options.Host, options.Port, options.Username, new PrivateKeyFile(options.KeyPath));
             else if (options.KeyPath != default && File.Exists(options.KeyPath) && options.KeyPassword!=default)
                 connectionInfo = new PrivateKeyConnectionInfo(options.Host, options.Port, options.Username, new PrivateKeyFile(options.KeyPath, options.KeyPassword));
+            else if (options.Password != default)
+                connectionInfo = new PasswordConnectionInfo(options.Host, options.Port, options.Username, options.Password);
             return connectionInfo;
         }
 

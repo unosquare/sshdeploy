@@ -11,6 +11,9 @@
         [Push(ShortName = "-f", LongName = "--framework")]
         public new string? TargetFramework => FindElement(nameof(TargetFramework))?.Value;
 
+        [Push(LongName = "--skipbuildtargetframework")]
+        public bool SshDeploySkipBuildTargetFramework => FindElement(nameof(SshDeploySkipBuildTargetFramework)) != null;
+
         [Monitor(ShortName = "-l", LongName = "--legacy")]
         public bool SshDeployLegacy => FindElement(nameof(SshDeployLegacy)) != null;
 
@@ -81,6 +84,10 @@
         [Monitor(ShortName = "-t", LongName = "--target")]
         [Push(ShortName = "-t", LongName = "--target")]
         public string? SshDeployTargetPath => FindElement(nameof(SshDeployTargetPath))?.Value;
+
+        [Monitor(LongName = "--sync")]
+        [Push(LongName = "--sync")]
+        public string? SshDeployUseSync => FindElement(nameof(SshDeployUseSync))?.Value;
 
         [Push(ShortName = "-r", LongName = "--runtime")]
         public string? RuntimeIdentifier => FindElement(nameof(RuntimeIdentifier))?.Value;
