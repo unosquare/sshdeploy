@@ -89,6 +89,12 @@
         [Push(LongName = "--sync")]
         public string? SshDeployUseSync => FindElement(nameof(SshDeployUseSync))?.Value;
 
+        [Push(LongName = "--zip")]
+        public string? SshDeployUseZip => FindElement(nameof(SshDeployUseZip))?.Value;
+
+        [Push(LongName = "--sudo")]
+        public string? SshDeploySudoAllowed => FindElement(nameof(SshDeploySudoAllowed))?.Value;
+
         [Push(ShortName = "-r", LongName = "--runtime")]
         public string? RuntimeIdentifier => FindElement(nameof(RuntimeIdentifier))?.Value;
 

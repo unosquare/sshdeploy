@@ -99,14 +99,25 @@
             {
                 _forwardShellStreamOutput = false;
                 RunCommand(sshClient, "client", verbOptions.PreCommand);
-                CreateTargetPath(sftpClient, verbOptions);
+                
                 if (verbOptions.UseSync)
+                {
+                    CreateTargetPath(sftpClient, verbOptions);
                     SyncDirectories(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath);
+                }
+                else if (verbOptions.UseZip)
+                {
+                    var zipPath = GetRemoteZipFilename(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath);
+                    PrepareTargetPath(sftpClient, verbOptions, sshClient);
+                    CreateTargetPath(sftpClient, verbOptions);
+                    Unzip(sshClient, verbOptions, zipPath);
+                }
                 else
                 {
-                    PrepareTargetPath(sftpClient, verbOptions);
+                    PrepareTargetPath(sftpClient, verbOptions, sshClient);
+                    CreateTargetPath(sftpClient, verbOptions);
                     UploadFilesToTarget(sftpClient, verbOptions.SourcePath, verbOptions.TargetPath, verbOptions.ExcludeFileSuffixes);
-                }
+                }                
                 AllowExecute(sshClient, verbOptions);
             }
             catch (Exception ex)

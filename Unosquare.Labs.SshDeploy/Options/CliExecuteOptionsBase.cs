@@ -4,8 +4,14 @@
 
     public class CliExecuteOptionsBase : CliVerbOptionsBase
     {
+        [ArgumentOption("sudo", HelpText = "Instructs the engine to use sudo if required", Required = false)]
+        public bool SudoAllowed { get; set; }
+
         [ArgumentOption("sync", HelpText = "Instructs the engine to sync the source and target directories without performing a full replacement", Required = false)]
         public bool UseSync { get; set; }
+        
+        [ArgumentOption("zip", HelpText = "Instructs the engine to zip the source and extract to target directory", Required = false)]
+        public bool UseZip { get; set; }
 
         [ArgumentOption('t', "target", HelpText = "The target path of the files to transfer", Required = true)]
         public string TargetPath { get; set; }

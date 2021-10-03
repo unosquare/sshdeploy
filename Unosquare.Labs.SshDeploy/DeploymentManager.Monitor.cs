@@ -13,6 +13,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.IO.Compression;
 
     public partial class DeploymentManager
     {
@@ -142,8 +143,17 @@
         /// </summary>
         /// <param name="client">The client.</param>
         /// <param name="path">The path.</param>
-        private static void DeleteLinuxDirectoryRecursive(SftpClient client, string path)
+        private static void DeleteLinuxDirectoryRecursive(SshClient sshClient, CliExecuteOptionsBase options)
         {
+            if (sshClient != default)
+            {
+                var command = $"{(options.SudoAllowed?"sudo" : string.Empty)} rm -rf {options.TargetPath}";
+                var result = RunCommand(sshClient, command);
+                Terminal.WriteLine($"    SSH TX: {command}", ConsoleColor.DarkYellow);
+                Terminal.WriteLine($"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}", ConsoleColor.DarkYellow);
+                return;
+            }
+            /*
             var files = client.ListDirectory(path);
 
             foreach (var file in files)
@@ -165,6 +175,7 @@
                     $"WARNING: Failed to delete file or folder '{file.FullName}'. Details: {e.Message}".Error(nameof(DeleteLinuxDirectoryRecursive));
                 }
             }
+            */
         }
 
         /// <summary>
@@ -252,6 +263,26 @@
             Terminal.WriteLine($"    SSH TX: {command}", ConsoleColor.DarkYellow);
             Terminal.WriteLine($"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}", ConsoleColor.DarkYellow);
         }
+        private static void Unzip(SshClient sshClient, PushVerbOptions verbOptions, string zipPath)
+        {
+            Terminal.WriteLine("    Unzipping.", ConsoleColor.Green);
+            var target = Path.Combine(verbOptions.TargetPath).Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
+            var command = $"unzip -o {zipPath} -d {target}";//unzip file.zip -d destination_folder
+
+            var result = RunCommand(sshClient, command);
+            if(result.Error?.Contains("unzip: command not found")??false)
+            {
+                Terminal.WriteLine("    unzip not found, trying installing it...", ConsoleColor.Yellow);
+                var installResult = RunCommand(sshClient, $"{(verbOptions.SudoAllowed?"sudo" : string.Empty)} apt-get install unzip");
+                if(installResult.ExitStatus!=0)
+                {
+                    Terminal.WriteLine($"    unable to install unzip: {installResult.Error}", ConsoleColor.Red);
+                }
+                result = RunCommand(sshClient, command);
+            }
+            Terminal.WriteLine($"    SSH TX: {command}", ConsoleColor.DarkYellow);
+            Terminal.WriteLine($"    SSH RX: [{result.ExitStatus}] {result.Result} {result.Error}", ConsoleColor.DarkYellow);
+        }
 
         private static SshCommand RunCommand(SshClient sshClient, string command) =>
             sshClient.RunCommand(command);
@@ -326,20 +357,32 @@
         /// </summary>
         /// <param name="sftpClient">The SFTP client.</param>
         /// <param name="verbOptions">The verb options.</param>
-        private static void PrepareTargetPath(SftpClient sftpClient, CliExecuteOptionsBase verbOptions)
+        private static void PrepareTargetPath(SftpClient sftpClient, CliExecuteOptionsBase verbOptions, SshClient sshClient=default)
         {
             if (!verbOptions.CleanTarget) return;
             Terminal.WriteLine($"    Cleaning Target Path '{verbOptions.TargetPath}'", ConsoleColor.Green);
-            DeleteLinuxDirectoryRecursive(sftpClient, verbOptions.TargetPath);
+            DeleteLinuxDirectoryRecursive(sshClient, verbOptions);
         }
 
+        private static string GetRemoteZipFilename(SftpClient sftpClient,
+            string sourcePath,
+            string targetPath)
+        {
+            var zipFile = CreateZip(sourcePath);
+            Terminal.WriteLine($"    Zip file created {zipFile}", ConsoleColor.Green);
+            var fileTargetPath = Path.Combine(Path.GetDirectoryName(targetPath), "dotnet_ssh_build.zip")
+                    .Replace(WindowsDirectorySeparatorChar, LinuxDirectorySeparatorChar);
+            using var fileStream = File.OpenRead(zipFile);
+            sftpClient.UploadFile(fileStream, fileTargetPath);
+            Terminal.WriteLine($"    Zip file uploaded to {fileTargetPath}", ConsoleColor.Green);
+            return fileTargetPath;
+        }
         private static void SyncDirectories(
             SftpClient sftpClient,
             string sourcePath,
             string targetPath)
         {
             Terminal.WriteLine($"    Sync Source Directory '{sourcePath}' with Target Directory '{targetPath}'", ConsoleColor.Green);
-            //sftpClient.SynchronizeDirectories(sourcePath, targetPath, FileSystemMonitor.AllFilesPattern);
             string searchPattern = FileSystemMonitor.AllFilesPattern;
             if (string.IsNullOrWhiteSpace(targetPath))
                 throw new ArgumentException("destinationPath");
@@ -377,9 +420,7 @@
                 if (!isDifferent)
                 {
                     var temp = destDict[localFile.Name];
-                    //  TODO:   Use md5 to detect a difference
-                    //ltang: File exists at the destination => Using filesize to detect the difference
-                    isDifferent = localFile.Length != temp.Length;
+                    isDifferent = localFile.Length != temp.Length || localFile.LastWriteTimeUtc != temp.LastWriteTimeUtc;
                 }
 
                 if (isDifferent)
@@ -401,7 +442,24 @@
                 }
             }
         }
-
+        private static string CreateZip(string directory)
+        {
+            var path = Path.Combine(Path.GetTempPath(), "dotnet_ssh_build.zip");
+            if (File.Exists(path))
+                File.Delete(path);
+            ZipFile.CreateFromDirectory(directory, path);
+            return path;
+        }
+        static List<string> GetFilesToDeploy(string sourcePath, string[]? excludeFileSuffixes)
+        {
+            var filesInSource = Directory.GetFiles(
+                sourcePath,
+                FileSystemMonitor.AllFilesPattern,
+                SearchOption.AllDirectories);
+            var filesToDeploy = filesInSource.Where(file => !excludeFileSuffixes.Any(file.EndsWith))
+                .ToList();
+            return filesToDeploy;
+        }
         /// <summary>
         /// Uploads the files in the source Windows path to the target Linux path.
         /// </summary>
@@ -415,13 +473,8 @@
             string targetPath,
             string[] excludeFileSuffixes)
         {
-            var filesInSource = Directory.GetFiles(
-                sourcePath,
-                FileSystemMonitor.AllFilesPattern,
-                SearchOption.AllDirectories);
-            var filesToDeploy = filesInSource.Where(file => !excludeFileSuffixes.Any(file.EndsWith))
-                .ToList();
-
+            var filesToDeploy = GetFilesToDeploy(sourcePath, excludeFileSuffixes);
+            
             Terminal.WriteLine($"    Deploying {filesToDeploy.Count} files.", ConsoleColor.Green);
 
             foreach (var file in filesToDeploy)
