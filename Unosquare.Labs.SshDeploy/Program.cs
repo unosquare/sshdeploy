@@ -26,6 +26,7 @@
             var csproj = Directory
                 .EnumerateFiles(Directory.GetCurrentDirectory(), "*.csproj", SearchOption.TopDirectoryOnly)
                 .FirstOrDefault();
+            csproj = @"D:\personal\Ordini\Ordini.Web\Ordini.Web.csproj";
             return !string.IsNullOrWhiteSpace(csproj)
                 ? csproj
                 : Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.fsproj", SearchOption.TopDirectoryOnly)

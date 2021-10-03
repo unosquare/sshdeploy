@@ -22,7 +22,8 @@
             if (!string.IsNullOrWhiteSpace(verbOptions.Runtime))
                 builder.Append($";RuntimeIdentifier={verbOptions.Runtime}");
             //builder.Append("PreBuildEvent=\"\";PostBuildEvent=\"\"");
-
+            if (Directory.Exists(verbOptions.SourcePath))
+                Directory.Delete(verbOptions.SourcePath, true);
             var arguments = " msbuild -restore /t:Publish " +
                 $" /p:{builder}";
             var psi = new ProcessStartInfo
