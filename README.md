@@ -1,3 +1,5 @@
+**This project has been archived**
+
 # <img width="32" height="32" src="https://github.com/unosquare/sshdeploy/raw/master/sshdeploy.png" /> dotnet-sshdeploy
 [![NuGet](https://img.shields.io/nuget/dt/dotnet-sshdeploy.svg)](https://www.nuget.org/packages/dotnet-sshdeploy/)
  [![Analytics](https://ga-beacon.appspot.com/UA-8535255-2/unosquare/sshdeploy/)](https://github.com/igrigorik/ga-beacon)
